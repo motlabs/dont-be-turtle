@@ -14,8 +14,9 @@ Author: Jaewook Kang
 ### Description
 
 This **Don't be a Turtle Project** makes all of IT people have right posture and feel good while they are working!
-
-We investigate a mobile machine learning based methodology providing feedbacks with respect to your neck posture. For this purpose, we monitor neck, detecting that whether you are maintaining good working posture. Then, if you are working in an overhanging posture, you will be alerted to maintain a good posture.
+We investigate a mobile machine learning based methodology providing feedbacks with respect to your neck posture. 
+For this purpose, we monitor neck, detecting  whether you are maintaining good working posture. 
+If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
 ![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/about.jpg)
 
@@ -40,9 +41,9 @@ We investigate a mobile machine learning based methodology providing feedbacks w
 ### Technical Stacks
 
 - [Tf slim library](https://github.com/tensorflow/models/tree/master/research/slim/nets) (python model module building, pb/ckpt file export)
-- → [Tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection) (pb/ckpt file export)
-- → Tensorflow lite conversion (tflite)
-- → android  nnapi / iOS coreML
+- [Tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection) (pb/ckpt file export)
+- Tensorflow lite conversion (tflite)
+- Android  nnapi / iOS coreML
 
 ## Expected Results
 
@@ -66,7 +67,7 @@ We investigate a mobile machine learning based methodology providing feedbacks w
 
 ## Research Baselines
 
-### Tensorflow code baselines
+### Tensorflow code 
 
 - [SungKim smile-more repo](https://github.com/hunkim/smile_more)
 - [Face-detection-with-mobilenet-ssd](https://github.com/bruceyang2012/Face-detection-with-mobilenet-ssd)
@@ -82,33 +83,25 @@ We investigate a mobile machine learning based methodology providing feedbacks w
     - iOS demo: [Readme](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/docs_src/mobile/tflite/demo_ios.md), [codes](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite/examples/ios)
 - [Tensorflow android camera demo (tensorflow lite를 사용하지 않고 tensorflow c++사용)](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/android)
 
-### Data set Baseline:
+### Data set :
 
 - Facial expression classification
     - [Affective-MIT facial expression data set (AM-FED),](https://www.affectiva.com/science-resource/affectiva-mit-facial-expression-dataset-am-fed/) [paper](https://www.affectiva.com/wp-content/uploads/2017/03/Crowdsourcing_Facial_Responses_to_Online_Videos._IEEE_Transactions_on_Affective_Comp.pdf)
     - [Kaggle facial expression dataset](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data)
 - Face detection
-
 - [AFW dataset](https://www.ics.uci.edu/~xzhu/face/), [paper](https://www.ics.uci.edu/~xzhu/paper/face-cvpr12.pdf)
 - [PASCAL dataset](http://host.robots.ox.ac.uk/pascal/VOC/databases.html)
 - [FDDB dataset](http://vis-www.cs.umass.edu/fddb/), [paper](http://vis-www.cs.umass.edu/fddb/fddb.pdf)
 - [Wider face dataset](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/), [paper](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/paper.pdf)
 
-### CNN classification Model Baselines
+### CNN  Model 
 
-- Mobilenet v2](https://arxiv.org/pdf/1801.04381.pdf)
-- NasNet:
-- SqueezeNet:
-- [facial expression classification  paper 1](https://arxiv.org/pdf/1710.07557.pdf)
+- [Mobilenet v2](https://arxiv.org/pdf/1801.04381.pdf)
+- [NasNet](https://arxiv.org/abs/1707.07012)
+- [SqueezeNet](https://arxiv.org/abs/1602.07360)
 
-### Human pose estimation Model baseline
+### Human Pose Estimation  
 
 - [DeepPose](https://arxiv.org/abs/1312.4659)
-
 - [Tensorflow human pose estimation](https://github.com/ildoonet/tf-pose-estimation)
-
-## Challenges:
-
-- Collecting Dataset for tech neck pose estimation and classification
-- Tensorflow lite ops set may not fully support tensorflow ops used in the CNN model implementation
 
