@@ -2,13 +2,12 @@
 
 Author: Jaewook Kang
 
-Final update: 2018 4 22
 
 ## Purpose
 
-1. 1)Mobile CNN Research
-2. 2)Providing new user experience
-3. 3)Simple Implementation
+1. Mobile CNN Research
+2. Providing new user experience
+3. Simple Implementation
 
 ## About
 
@@ -18,7 +17,7 @@ This **Don't be a Turtle Project** makes all of IT people have right posture and
 
 We investigate a mobile machine learning based methodology providing feedbacks with respect to your neck posture. For this purpose, we monitor neck, detecting that whether you are maintaining good working posture. Then, if you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
-
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/about.jpg)
 
 ### Our Solution Approach
 
@@ -28,7 +27,7 @@ We investigate a mobile machine learning based methodology providing feedbacks w
 - Reference:
     - [Toshev and Szegedy, &quot;DeepPose: Human Pose Estimation via Deep Neural Networks&quot;, CVPR 2014](https://arxiv.org/abs/1312.4659)
 
-
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/approach.jpg)
 
 ### Keywords
 
@@ -40,10 +39,10 @@ We investigate a mobile machine learning based methodology providing feedbacks w
 
 ### Technical Stacks
 
-- -- [Tf slim library](https://github.com/tensorflow/models/tree/master/research/slim/nets) (python model module building, pb/ckpt file export)
-- --→ [Tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection) (pb/ckpt file export)
-- --→ Tensorflow lite conversion (tflite)
-- --→ android  nnapi / iOS coreML
+- [Tf slim library](https://github.com/tensorflow/models/tree/master/research/slim/nets) (python model module building, pb/ckpt file export)
+- → [Tensorflow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection) (pb/ckpt file export)
+- → Tensorflow lite conversion (tflite)
+- → android  nnapi / iOS coreML
 
 ## Expected Results
 
@@ -108,7 +107,7 @@ We investigate a mobile machine learning based methodology providing feedbacks w
 
 - [Tensorflow human pose estimation](https://github.com/ildoonet/tf-pose-estimation)
 
-### Challenges:
+## Challenges:
 
 - Collecting Dataset for tech neck pose estimation and classification
 - Tensorflow lite ops set may not fully support tensorflow ops used in the CNN model implementation
