@@ -5,7 +5,7 @@ Author: Jaewook Kang
 
 ## Purpose
 
-1. Mobile CNN Research
+1. Establishing benchmarks for mobile CNN research
 2. Providing new user experience
 3. Simple Implementation
 
@@ -23,7 +23,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ### Our Solution Approach
 
 - A Classification + estimation approach
-  - **Pose Estimation Task** : Neck pose estimation from CNN feature using 4 joint positions of human body: head, neck, right shoulder, left shoulder
+  - **Pose Estimation task** : Neck pose estimation from CNN features containing four joint positions of human body: head, neck, right shoulder, left shoulder
   - **Pose Classification task** : Classification whether neck posture is neck tech from CNN features.
 - Reference:
     - [Toshev and Szegedy, &quot;DeepPose: Human Pose Estimation via Deep Neural Networks&quot;, CVPR 2014](https://arxiv.org/abs/1312.4659)
