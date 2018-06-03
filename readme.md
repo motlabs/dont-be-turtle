@@ -28,21 +28,22 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/approach.jpg)
 
 
-### Keywords
+## Keywords
 - Tech neck classification
 - Human pose estimation
 - Transfer learning
 - Mobile convolutional neural networks
 - Tensorflow Lite
 
-### Technical Stacks
+## Technical Stacks
 - Tensorflow
 - Tf slim library (python model module building, pb/ckpt file export)
-- Tensorflow lite conversion (tflite)
+- Tensorflow lite
 - Android + nnapi / iOS + coreML (Mobile running optimization and Hardware delegation)
 
 
 ## Expected Results
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/product.jpg)
 
 ### Product outputs
 - Tensorflow model (pb/ckpt)
@@ -50,14 +51,12 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 - An Android/iOS Mobile benchmark APP
 - An arXiv Paper
 
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/product.jpg)
 
 
 ### Benchmarks
-- Million Mult-Add
-- Million Parameters
+- Million Mult-Add / Parameters
 - tflite model size (MB)
-- per-runtime accuracy (acc/ms) ([LPIRC CVPR 2018 measure](https://docs.google.com/document/d/1_toBzIrfcrZwxF9B1jMIbMvqxrw9AS1rWy-fdSP_OvI/edit))
+- per-runtime accuracy (acc/ms) ([see LPIRC CVPR 2018 measure](https://docs.google.com/document/d/1_toBzIrfcrZwxF9B1jMIbMvqxrw9AS1rWy-fdSP_OvI/edit))
 - App Battery consumption (mAh)
 
 
@@ -122,19 +121,19 @@ Most of development works and background study will be done before starting the 
 ### Model Baselines
 - Mobile CNN models
     - [Mobilenet v1](https://arxiv.org/abs/1704.04861)
-    - [Mobilenet v2] (https://arxiv.org/abs/1801.04381)
+    - [Mobilenet v2](https://arxiv.org/abs/1801.04381)
     - [SqueezeNet](https://arxiv.org/abs/1602.07360)
-    - [Shufflenet] (https://arxiv.org/abs/1707.01083)
+    - [Shufflenet](https://arxiv.org/abs/1707.01083)
     - [Unet](https://arxiv.org/abs/1505.04597)
 
 - Pose estimation models
     - [DeepPose](https://arxiv.org/abs/1312.4659)
 
 ### Related  Activities
-- [Jaewook Kang, _From NIN to Inception V3_, Modulabs Machine Learning of Things(MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
-- [Jaewwok Kang, _Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_, Google Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
-- [Jaewook Kang, _Mobile Vision Learning_, Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
-- Jaewook Kang, _Mobile Vision Learning: Model Compression perspective_ ETRI, 2018 June (TBU)
+- [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
+- [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
+- [Jaewook Kang, "_Mobile Vision Learning_," Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
+- Jaewook Kang, "_Mobile Vision Learning: Model Compression perspective_," ETRI, 2018 June (TBU)
 
 ### Our Challenges
 - Collecting Dataset for tech neck pose estimation and classification
@@ -146,6 +145,6 @@ Most of development works and background study will be done before starting the 
 - Distracted driver detection ([A Kaggle link](https://www.kaggle.com/c/state-farm-distracted-driver-detection#description))
     - Which is not in the scope of the Jeju camp
 
-### Contributors
+## Project Contributors
 Modulabs machine learning of things (MoT) labs members
 
