@@ -16,7 +16,7 @@ whether you are maintaining good working posture.
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
 
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/images/about.jpg)
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/about.jpg)
 
 
 ### Our Solution Approach
@@ -25,7 +25,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
     - Pose Classification task: Classification whether neck posture is neck tech from CNN features.
 
 
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/images/approach.jpg)
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/approach.jpg)
 
 
 ### Keywords
@@ -50,7 +50,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 - An Android/iOS Mobile benchmark APP
 - An arXiv Paper
 
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/images/product.jpg)
+![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/product.jpg)
 
 
 ### Benchmarks
