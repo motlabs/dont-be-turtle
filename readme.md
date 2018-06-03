@@ -129,22 +129,17 @@ Most of development works and background study will be done before starting the 
 - Pose estimation models
     - [DeepPose](https://arxiv.org/abs/1312.4659)
 
-### Related  Activities
+## Related  Activities
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
 - [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
 - [Jaewook Kang, "_Mobile Vision Learning_," Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
 - Jaewook Kang, "_Mobile Vision Learning: Model Compression perspective_," ETRI, 2018 June (TBU)
 
-### Our Challenges
-- Collecting Dataset for tech neck pose estimation and classification
-- App battery consumption and TF model size
-- Classification accuracy when squeezing the TF model.
-- Tensorflow lite ops set may not fully support tensorflow ops used in the TF model implementation.
 
-### Further Application Extension
+## Further Application Extension
 - Distracted driver detection ([A Kaggle link](https://www.kaggle.com/c/state-farm-distracted-driver-detection#description))
     - Which is not in the scope of the Jeju camp
 
 ## Project Contributors
-Modulabs machine learning of things (MoT) labs members
-
+Modulabs, Machine Learning of Things (MoT) labs members (2018):
+- Jaewook Kang, Sungjin Lee, Seoyeon Yang, Joonho Lee, Yunbum Baek, Joongwon Hwang, Doyoung Gwak, Jeongah Shin, Taekmin Kim, YongGeunLee, Jihwan Lee, Jonguk Lee
