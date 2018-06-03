@@ -141,5 +141,5 @@ Most of development works and background study will be done before starting the 
     - Which is not in the scope of the Jeju camp
 
 ## Project Contributors
-Modulabs, Machine Learning of Things (MoT) labs members (2018):
-- Jaewook Kang, Sungjin Lee, Seoyeon Yang, Joonho Lee, Yunbum Baek, Joongwon Hwang, Doyoung Gwak, Jeongah Shin, Taekmin Kim, YongGeunLee, Jihwan Lee, Jonguk Lee
+Modulabs, Machine Learning of Things (MoT) labs members:
+- 2018 June: Jaewook Kang, Sungjin Lee, Seoyeon Yang, Joonho Lee, Yunbum Baek, Joongwon Hwang, Doyoung Gwak, Jeongah Shin, Taekmin Kim, YongGeunLee, Jihwan Lee, Jonguk Lee
