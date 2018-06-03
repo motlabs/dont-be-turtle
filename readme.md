@@ -44,7 +44,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 ## Expected Results
 
-###Product outputs
+### Product outputs
 - Tensorflow model (pb/ckpt)
 - Tensorflow lite model (tflite)
 - An Android/iOS Mobile benchmark APP
@@ -79,64 +79,73 @@ Most of development works and background study will be done before starting the 
 
 
 ## Tentative Schedules
-~~Apr: Writing project proposal and submission~~
-~~May: Background study and establishing a baseline model using mobilenetv2 and DeepPose ideas~~
-June:
-Tensorflow development to shorten training pipeline.
-Tensorflow to Tensorflowlite conversion automation
-Building a benchmark android or iOS Apps.
-July (In Jeju camp)
-Week1: Investigation for improving accuracy of our proposed model without concerning model size and inference time.
-Week2: Investigation for reducing model size while maintaining the accuracy
-Week3: Investigation for reducing inference time given maintaining the accuracy and the model size.
-Week4: Paper writing and final presentation preparation
+~~- Apr: Writing project proposal and submission~~
+
+~~- May: Background study and establishing a baseline model using mobilenetv2 and DeepPose ideas~~
+
+- June:
+    - Tensorflow development to shorten training pipeline.
+    - Tensorflow to Tensorflowlite conversion automation
+    - Building a benchmark android or iOS Apps.
+
+- July (In Jeju camp)
+    - Week1: Investigation for improving accuracy of our proposed model without concerning model size and inference time.
+    - Week2: Investigation for reducing model size while maintaining the accuracy
+    - Week3: Investigation for reducing inference time given maintaining the accuracy and the model size.
+    - Week4: Paper writing and final presentation preparation
 
 
-Research Baselines
-Tensorflow code baselines
-SungKim smile-more repo
-Face-detection-with-mobilenet-ssd
-Tensorflow object detection api github
-Tf Slim.nets repo
-Tensorflow lite support ops set
-Pre-converted tflite model list
+## Baselines
 
 
-Mobile Apps
-Tensorflow lite demo:
-Android: Readme, codes
-iOS demo: Readme, codes
-Tensorflow android camera demo (tensorflow lite를 사용하지 않고 tensorflow c++사용)
+### Dataset Baseline
+- [FLIC dataset 4000+1000 (training + vtest)](https://bensapp.github.io/flic-dataset.html)
+- [LSP  dataset 11000+1000 (training +test)](http://sam.johnson.io/research/lsp.html)
+- [MPII Human Pose Dataset](http://human-pose.mpi-inf.mpg.de/#)
+    - Image dataset
+    - 25K images
+    - 410 types of activities
+    - 2D annotation
+- https://posetrack.net/
+    - 500 video sequence → 20k frames
+    - 2D annotation
+- [VGG pose dataset](https://www.robots.ox.ac.uk/~vgg/data/pose/)
+    - YouTobe pose
+    - BBC pose
+    - BBC extended pose
+    - Short BBC pose
+    - 2D annocation
 
-Data set Baseline:
-Facial expression classification
-Affective-MIT facial expression data set (AM-FED), paper
-Kaggle facial expression dataset
-Face detection
-AFW dataset, paper
-PASCAL dataset
-FDDB dataset, paper
-Wider face dataset, paper
-
-CNN classification Model Baselines
-Mobilenet v2
-NasNet
-SqueezeNet
-
-Human pose estimation Model baseline
-DeepPose
-Tensorflow human pose estimation
+- Also see [this](https://docs.google.com/document/d/1C1kp-qXud6xqhB2-cuPmA1_YvcLfVMbs7udzqNoq3Zk/edit#)
 
 
-Our Challenges
-Collecting Dataset for tech neck pose estimation and classification
-App battery consumption and TF model size
-Classification accuracy when squeezing the TF model.
-Tensorflow lite ops set may not fully support tensorflow ops used in the TF model implementation.
-Further Application Extension
-Distracted driver detection (A Kaggle link)
-Which is not in the scope of the Jeju camp
+### Model Baselines
+- Mobile CNN models
+    - [Mobilenet v1](https://arxiv.org/abs/1704.04861)
+    - [Mobilenet v2] (https://arxiv.org/abs/1801.04381)
+    - [SqueezeNet](https://arxiv.org/abs/1602.07360)
+    - [Shufflenet] (https://arxiv.org/abs/1707.01083)
+    - [Unet](https://arxiv.org/abs/1505.04597)
 
-Contributors
-Modulabs machine learning of things (MoT) labs members:
+- Pose estimation models
+    - [DeepPose](https://arxiv.org/abs/1312.4659)
+
+### Related  Activities
+- [Jaewook Kang, _From NIN to Inception V3_, Modulabs Machine Learning of Things(MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
+- [Jaewwok Kang, _Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_, Google Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
+- [Jaewook Kang, _Mobile Vision Learning_, Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
+- Jaewook Kang, _Mobile Vision Learning: Model Compression perspective_ ETRI, 2018 June (TBU)
+
+### Our Challenges
+- Collecting Dataset for tech neck pose estimation and classification
+- App battery consumption and TF model size
+- Classification accuracy when squeezing the TF model.
+- Tensorflow lite ops set may not fully support tensorflow ops used in the TF model implementation.
+
+### Further Application Extension
+- Distracted driver detection ([A Kaggle link](https://www.kaggle.com/c/state-farm-distracted-driver-detection#description))
+    - Which is not in the scope of the Jeju camp
+
+### Contributors
+Modulabs machine learning of things (MoT) labs members
 
