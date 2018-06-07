@@ -21,8 +21,8 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 ### Our Solution Approach
 - A Classification + estimation approach
-    - Pose Estimation Task: Neck pose estimation from CNN features using four joint positions of human body: head, neck, right shoulder, left shoulder
-    - Pose Classification task: Classification whether neck posture is neck tech from CNN features.
+    - TASK1: Pose Estimation Task: Neck pose estimation from CNN features using four joint positions of human body: head, neck, right shoulder, left shoulder
+    - TASK2: Pose Classification task: Classification whether neck posture is neck tech from CNN features.
 
 
 ![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/approach.jpg)
