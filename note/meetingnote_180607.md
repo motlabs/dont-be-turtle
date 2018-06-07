@@ -8,10 +8,13 @@
 1) Designing the pose estimation (task1) based on Unet
 2) Establishing training + testing pipeline
 3) Designing the pose classification (task2)
+
 -------------  Camp Start -----------------------
 4) Reducing model size and complexity
 5) Porting to mobile app using Tensorflow lite
 6) Preparing demo and presentation
+-------------  Camp End -----------------------
+
 
 ## Issues
 - 앱을 구동시키는 환경에 대한 명확한 정의가 필요함
