@@ -4,16 +4,18 @@
 
 
 ## Workflow 요약
+
+### Before the camp
 0) Tech-neck dataset collections (manually  T.T)
 1) Designing the pose estimation (task1) based on Unet
 2) Establishing training + testing pipeline
 3) Designing the pose classification (task2)
 
--------------  Camp Start -----------------------
+### In the camp
 4) Reducing model size and complexity
 5) Porting to mobile app using Tensorflow lite
 6) Preparing demo and presentation
--------------  Camp End -----------------------
+
 
 
 ## Issues
