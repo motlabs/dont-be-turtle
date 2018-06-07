@@ -37,17 +37,17 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 ## Technical Stacks
 - Tensorflow
-- Tf slim library (python model module building, pb/ckpt file export)
-- Tensorflow lite
-- Android + nnapi / iOS + coreML (Mobile running optimization and Hardware delegation)
+- Tensorflow-Slim library (python model module building, pb/ckpt file export)
+- Tensorflow Lite
+- Android + NNAPI / iOS + Core ML (Mobile running optimization and Hardware delegation)
 
 
 ## Expected Results
 ![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/product.jpg)
 
 ### Product outputs
-- Tensorflow model (pb/ckpt)
-- Tensorflow lite model (tflite)
+- Tensorflow model (`.pb`/`.ckpt`)
+- Tensorflow lite model (`tflite`)
 - An Android/iOS Mobile benchmark APP
 - An arXiv Paper
 
@@ -120,8 +120,8 @@ Most of development works and background study will be done before starting the 
 
 ### Model Baselines
 - Mobile CNN models
-    - [Mobilenet v1](https://arxiv.org/abs/1704.04861)
-    - [Mobilenet v2](https://arxiv.org/abs/1801.04381)
+    - [MobileNets v1](https://arxiv.org/abs/1704.04861)
+    - [MobileNet v2](https://arxiv.org/abs/1801.04381)
     - [SqueezeNet](https://arxiv.org/abs/1602.07360)
     - [Shufflenet](https://arxiv.org/abs/1707.01083)
     - [Unet](https://arxiv.org/abs/1505.04597)
