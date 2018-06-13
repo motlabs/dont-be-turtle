@@ -56,3 +56,9 @@ freeline_project_description.json
 
 *.xml
 */*.xml
+
+# tf export files
+exportfiles/*.*
+
+# wrt Python
+*.pyc
