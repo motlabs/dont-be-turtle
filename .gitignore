@@ -64,6 +64,7 @@ freeline_project_description.json
 *.pb
 *.index
 *.local
+*.data*
 
 # wrt Python
 *.pyc
