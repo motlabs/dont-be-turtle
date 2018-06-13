@@ -36,10 +36,10 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 - Tensorflow Lite
 
 ## Technical Stacks
-- Tensorflow
-- Tensorflow-Slim library (python model module building, pb/ckpt file export)
-- Tensorflow Lite
-- Android + NNAPI / iOS + Core ML (Mobile running optimization and Hardware delegation)
+- Tensorflow >= 1.8
+- Tf slim library (python model module building, pb/ckpt file export)
+- Tensorflow lite
+- Android + nnapi / iOS + coreML (Mobile running optimization and Hardware delegation)
 
 
 ## Expected Results

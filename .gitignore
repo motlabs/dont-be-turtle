@@ -39,6 +39,7 @@ captures/
 .idea/gradle.xml
 .idea/dictionaries
 .idea/libraries
+.idea/vcs.xml
 
 # Keystore files
 *.jks
@@ -56,3 +57,17 @@ freeline_project_description.json
 
 *.xml
 */*.xml
+
+# tf export files
+
+#*.ckpt
+#*.meta
+#*.pb
+#.index
+#*.data*
+
+# tensorboad files
+*.local
+
+# wrt Python files
+*.pyc
