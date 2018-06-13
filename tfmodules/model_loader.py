@@ -10,26 +10,20 @@
 '''
 
 import tensorflow as tf
-import sys
+import path_manager
 
 # file I/O wrappers without thread locking
 from tensorflow.python.platform import gfile
-from os import getcwd
-
-
-
-EXPORT_FILE_PATH = getcwd()+'/exportfiles'
-sys.path.insert(0,EXPORT_FILE_PATH)
 
 
 class ModelLoader(object):
 
 
-    def __init__(self,filename):
+    def __init__(self,subdir_and_filename):
 
         # private
-        self._filename = filename
-        split_filename = filename.split('.')
+        self._filename = subdir_and_filename
+        split_filename = subdir_and_filename.split('.')
 
         # print('[ModelLoader] loading file format is %s' % split_filename[-1])
         if split_filename[-1] == 'pb':
@@ -45,6 +39,7 @@ class ModelLoader(object):
 
         # public
         self.model_graph = tf.Graph()
+        print ('-------------------------------------')
 
 
 
@@ -52,7 +47,7 @@ class ModelLoader(object):
     def load_model(self,clear_devices=True):
 
         tf.reset_default_graph()
-        model_file_path = EXPORT_FILE_PATH +self._filename
+        model_file_path = path_manager.EXPORT_DIR + self._filename
         print ('[ModelLoader] model_file_path = %s' % model_file_path)
         with self.model_graph.as_default():
             if self._mode =='pb':
@@ -74,6 +69,7 @@ class ModelLoader(object):
 
 
         print ("[ModelLoader] Graph loading complete.")
+        print ('-------------------------------------')
 
         return self.model_graph
 

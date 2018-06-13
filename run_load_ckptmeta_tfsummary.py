@@ -21,37 +21,36 @@ from __future__ import division
 from __future__ import print_function
 
 import sys
+import tensorflow as tf
+
 from datetime import datetime
 from os import getcwd
 
-import tensorflow as tf
-
-EXPORT_DIR = getcwd() + '/exportfiles'
 MODULE_DIR = getcwd() + '/tfmodules'
-
-sys.path.insert(0,EXPORT_DIR)
 sys.path.insert(0,MODULE_DIR)
 
+import path_manager
 import model_loader as ld
 
+sys.path.insert(0,path_manager.EXPORT_DIR)
 
-model_filename  = '/runtrain-20180613-yglee/net.ckpt.meta'
 
-model_loader    = ld.ModelLoader(model_filename)
+
+import_meta_filename  = '/runtrain-20180613-yglee/net.ckpt.meta'
+
+model_loader    = ld.ModelLoader(subdir_and_filename = import_meta_filename)
 model_graph_def = model_loader.load_model(clear_devices=True)
 
 
 # tensorboard graph summary =============
 # tensorboard config
 now                 = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-root_logpath        = EXPORT_DIR + '/tf_logs'
-tb_logdir           = "{}/run-{}/".format(root_logpath, now)
+tb_logdir           = "{}/run-{}/".format(path_manager.TENSORBOARD_DIR, now)
 
 # summary
 tb_summary_writer   = tf.summary.FileWriter(logdir=tb_logdir)
 tb_summary_writer.add_graph(model_graph_def)
-
-
 tb_summary_writer.close()
+
 
 
