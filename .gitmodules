@@ -1,0 +1,3 @@
+[submodule "mobile_apps/tflite_convert_examples"]
+	path = mobile_apps/tflite_convert_examples
+	url = https://github.com/jwkanggist/tensorflowlite
