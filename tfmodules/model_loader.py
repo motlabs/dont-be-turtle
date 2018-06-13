@@ -10,13 +10,13 @@
 '''
 
 import tensorflow as tf
+import sys
 
 # file I/O wrappers without thread locking
 from tensorflow.python.platform import gfile
-
-import sys
-
 from os import getcwd
+
+
 
 EXPORT_FILE_PATH = getcwd()+'/exportfiles'
 sys.path.insert(0,EXPORT_FILE_PATH)
@@ -70,7 +70,7 @@ class ModelLoader(object):
                                                          clear_devices=clear_devices)
 
                 sess = tf.Session(graph= self.model_graph)
-                meta_loader.restore(sess,model_file_path)
+                meta_loader.restore(sess,model_file_path[:-5])
 
 
         print ("[ModelLoader] Graph loading complete.")

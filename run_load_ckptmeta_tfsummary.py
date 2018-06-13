@@ -47,6 +47,7 @@ now                 = datetime.utcnow().strftime("%Y%m%d%H%M%S")
 root_logpath        = EXPORT_DIR + '/tf_logs'
 tb_logdir           = "{}/run-{}/".format(root_logpath, now)
 
+# summary
 tb_summary_writer   = tf.summary.FileWriter(logdir=tb_logdir)
 tb_summary_writer.add_graph(model_graph_def)
 
