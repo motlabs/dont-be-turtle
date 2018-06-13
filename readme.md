@@ -133,7 +133,7 @@ Most of development works and background study will be done before starting the 
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
 - [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
 - [Jaewook Kang, "_Mobile Vision Learning_," Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
-- Jaewook Kang, "_Mobile Vision Learning: Model Compression perspective_," ETRI, 2018 June (TBU)
+- [Jaewook Kang, "_Mobile Vision Learning: Model Compression and Efficient Convolution perspective," ETRI, 2018 June 12th](https://docs.google.com/presentation/d/1_spnxEttqiTTh31c8S7xvHoSdZ3k4Rhm1f7GM7wNMdw/edit#slide=id.p1)
 
 
 ## Further Application Extension
