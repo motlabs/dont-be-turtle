@@ -68,7 +68,7 @@ class DataSet(object):
         # ------------------------------
 
 
-        return np_curr_batch
+        return np_curr_batch_data, np_curr_batch_label
 
 
 
@@ -132,7 +132,6 @@ class Dataloader(object):
 
 
     def merge_external_data(self,np_external_data,datatype):
-
 
 
 

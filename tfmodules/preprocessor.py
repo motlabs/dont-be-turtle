@@ -21,7 +21,7 @@ def resize_image(self, np_input_images):
 #  to have weight:height = 3:4 ratio.
 
 
-def run_image_augmentation(np_image_array):
+def augment_image(np_image_array):
     '''
     Scale:
     목적: 사람과 스마트폰의 거리값은 다양할 수 있다는 UX반영
