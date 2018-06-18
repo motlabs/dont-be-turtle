@@ -14,11 +14,11 @@ import cv2
 import numpy as np
 
 
-def resize_image(self, np_input_images):
+def resize_image(self, np_input_images,weight_resol,height_resol):
 
 
 # This method resizes the input image arryar, "np_input_images",
-#  to have weight:height = 3:4 ratio.
+#  In this project we have weight:height = 320*480
 
 
 def augment_image(np_image_array):
