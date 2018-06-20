@@ -24,7 +24,7 @@ class ModelConfig(object):
         self.is_trainable       = True
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
         self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.biases_initializer   = None
+        self.biases_initializer  = slim.init_ops.zeros_initializer()
         self.normalizer_fn      = slim.batch_norm
 
         self.activation_fn      = tf.nn.relu6
