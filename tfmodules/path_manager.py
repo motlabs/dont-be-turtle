@@ -11,10 +11,9 @@
 from os import getcwd
 
 
-
 PROJ_HOME = getcwd()
-TF_MODULE_DIR      = PROJ_HOME + '/tfmodules'
-EXPORT_DIR         = PROJ_HOME + '/exportfiles'
-TENSORBOARD_DIR    = EXPORT_DIR + '/tf_logs'
+TF_MODULE_DIR = PROJ_HOME + '/tfmodules'
+EXPORT_DIR = PROJ_HOME + '/exportfiles'
+TENSORBOARD_DIR = EXPORT_DIR + '/tf_logs'
 
 
