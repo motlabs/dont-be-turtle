@@ -8,34 +8,92 @@
     created at 2018 06 13
 
 '''
-
+import argparse
 import tensorflow as tf
-import path_manager
+
+# from . import path_manager
+from data_loader import DataSet
 
 
 class Trainer(object):
+    def __init__(self, train_path, eval_path):
+        self.train_path = train_path
+        self.eval_path = eval_path
+
+    # def export_graphdef_as_pb(self,subdir,filename):
+    #     sess = tf.Session(graph=self._model_graph)
+    #     savedir = path_manager.EXPORT_DIR + subdir
+    #
+    #     # 바이너리로 저장
+    #     tf.train.write_graph(sess.graph_def, savedir, filename, as_text=False)
+    #     print ("TF graph_def is save in binary at %s" % savedir + '/'+ filename)
+    #     tf.train.write_graph(sess.graph_def, savedir, filename+'txt')
+    #     print ("TF graph_def is save in txt at %s" % savedir + '/'+ filename+'txt')
+    #     print ("---------------------------------------------------------")
 
 
-    def __init__(self,model_graph,config):
+    def fit(self, num_epochs, batch_size):
+        train_dataset = DataSet(batch_size).input_data(self.train_path, is_training=True)
+        eval_dataset = DataSet(batch_size=1).input_data(self.eval_path, is_training=False)
 
-        self._trainconfig   = config
-        self._model_graph   = model_graph
+        num_dataset = len([1 for iter in tf.python_io.tf_record_iterator(train_dataset)])
+        print(num_dataset)
+        train_iter, train_image, train_label = train_dataset.iterator
+        eval_iter, eval_image, eval_label = eval_dataset.iterator
 
-    def export_graphdef_as_pb(self,subdir,filename):
-        sess = tf.Session(graph=self._model_graph)
-        savedir = path_manager.EXPORT_DIR + subdir
+        with tf.Session() as sess:
+            sess.run(train_iter.initializer)
+            sess.run(eval_iter.initializer)
 
-        # 바이너리로 저장
-        tf.train.write_graph(sess.graph_def, savedir, filename, as_text=False)
-        print ("TF graph_def is save in binary at %s" % savedir + '/'+ filename)
-        tf.train.write_graph(sess.graph_def, savedir, filename+'txt')
-        print ("TF graph_def is save in txt at %s" % savedir + '/'+ filename+'txt')
-        print ("---------------------------------------------------------")
+            epoch = 0
+            while epoch <= num_epochs:
 
-
-
-
-
-
+                for step in range(num_dataset//batch_size):
+                    image, label = sess.run([train_image, train_label])
+                    print(image.shape, label.shape)
 
 
+def main(train_path, eval_path, num_epochs, batch_size):
+    trainer = Trainer(train_path, eval_path)
+    trainer.fit(num_epochs, batch_size)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--train-path',
+        default='../dataset/train_dataset.tfrecord',
+        help='Path of train dataset',
+        # nargs='+',
+        required=False
+    )
+
+    parser.add_argument(
+        '--eval-path',
+        default='../dataset/eval_dataset.tfrecord',
+        help='Path of eval dataset',
+        # nargs='+',
+        required=False
+    )
+
+    parser.add_argument(
+        '--num-epochs',
+        default=None,
+        help='Number of Epochs for training',
+        # nargs='+',
+        required=False,
+        type=int
+    )
+
+    parser.add_argument(
+        '--batch-size',
+        help='batch size for training',
+        default=4,
+        required=True,
+        type=int
+    )
+
+    args = parser.parse_args()
+
+    main(args.train_path, args.eval_path, args.num_epochs, args.batch_size)
