@@ -43,14 +43,42 @@ class DataSet:
         self.batch_size = batch_size
 
     def input_data(self, filenames, is_training):
-        dataset = tf.data.TFRecordDataset([filenames])
-        # dataset = dataset.map(preprocess_fn)
+        compression_type = 'ZLIB' if filenames.split('.')[-1] == 'zlib' else 'GZIP'
+        dataset = tf.data.TFRecordDataset([filenames], compression_type=compression_type)
+
+        def parser(record):
+            keys_to_features = {
+                "height": tf.FixedLenFeature((), tf.int64, default_value=0),
+                "width": tf.FixedLenFeature((), tf.int64, default_value=0),
+                "channel": tf.FixedLenFeature((), tf.int64, default_value=3),
+                "image": tf.FixedLenFeature((), tf.string, default_value=""),
+                "label": tf.FixedLenFeature((), tf.string, default_value="")
+            }
+            parsed = tf.parse_single_example(record, keys_to_features)
+
+            # get the original image shape
+            height = parsed['height']
+            width = parsed['width']
+            channel = parsed['channel']
+            img_shape = tf.stack([height, width, channel])
+
+            # reshape images
+            image = tf.decode_raw(parsed['image'], tf.int32)
+            image = tf.cast(image, tf.float32)
+            image = tf.reshape(image, img_shape)
+
+            # temporarily decode label
+            label = tf.decode_raw(parsed['label'], tf.int32)
+            label = tf.cast(label, tf.float32)
+
+            return image, label
+
+        dataset = dataset.map(parser)
         dataset = dataset.repeat()
         if is_training:
             dataset = dataset.shuffle(buffer_size=(100))  # int(len(filenames) * 0.4) + 3 * self.batch_size)
         dataset = dataset.batch(self.batch_size)
 
         iterator = dataset.make_initializable_iterator()
-        image_stacked, label_stacked = iterator.get_next()
 
-        return iterator, image_stacked, label_stacked
+        return iterator

@@ -33,7 +33,7 @@ def _bytes_feature(value):
 
 
 def to_tfrecords(image_list, label_list, reader, tfrecords_name):
-    print("Start converting")
+    print("Start converting", tfrecords_name)
     options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
     writer = tf.python_io.TFRecordWriter(path=tfrecords_name, options=options)
 
@@ -44,6 +44,7 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
         string_set = tf.train.Example(features=tf.train.Features(feature={
             'height': _int64_feature(image.shape[0]),
             'width': _int64_feature(image.shape[1]),
+            'channel': _int64_feature(image.shape[2]),
             'image': _bytes_feature(image.tostring()),
             'label': _bytes_feature(label.tostring()),
             'mean': _float_feature(image.mean().astype(np.float32)),
@@ -68,13 +69,13 @@ def main(train_dir, eval_dir, out_dir):
     # label 목록을 어디서 봐야 하는지 몰라서 일단 비움
     def reader(image_path, label_path):
         image = Image.open(image_path)
-        image = np.array(image).astype(np.int64)
-        label = label_path
+        image = np.array(image).astype(np.int32)
+        label = label_path.astype(np.int32)
 
         return image, label
 
-    train_out_path = os.path.join(out_dir, 'train_dataset.tfrecord')
-    eval_out_path = os.path.join(out_dir, 'eval_dataset.tfrecord')
+    train_out_path = os.path.join(out_dir, 'train_dataset.tfrecord.gz')
+    eval_out_path = os.path.join(out_dir, 'eval_dataset.tfrecord.gz')
 
     to_tfrecords(train_data_list, train_label_list, reader, train_out_path)
     to_tfrecords(eval_data_list, eval_label_list, reader, eval_out_path)
