@@ -8,7 +8,7 @@ from PIL import Image
 from scipy.io import loadmat
 import tensorflow as tf
 
-from .utils import progress_bar
+from utils import progress_bar
 
 
 def _int64_feature(value):
@@ -37,7 +37,7 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
     options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
     writer = tf.python_io.TFRecordWriter(path=tfrecords_name, options=options)
 
-    for img_n, image_path, label_path in enumerate(zip(image_list, label_list)):
+    for img_n, (image_path, label_path) in enumerate(zip(image_list, label_list)):
         image, label = reader(image_path, label_path)
         filename = os.path.basename(image_path)
 
