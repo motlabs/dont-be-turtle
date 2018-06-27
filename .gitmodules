@@ -7,6 +7,3 @@
 [submodule "mobile_apps/ios"]
 	path = mobile_apps/ios
 	url = https://github.com/motlabs/mot-ios-tensorflow
-[submodule "tfmodules/tf-cnn-model"]
-	path = tfmodules/tf-cnn-model
-	url = https://github.com/jwkanggist/tf-cnn-model
