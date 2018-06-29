@@ -84,54 +84,51 @@ def get_layer(ch_in,
 class LayerEndpointName(object):
 
     # for unittest
-    def __init__(self,layer_type,input_shape,output_shape):
+    def __init__(self,layer_type,
+                 input_shape,
+                 output_shape,
+                 conv_type='residual',
+                 deconv_type='nearest_neighbor_unpool'):
 
         if layer_type is 'hourglass':
 
             '''
-                unittest LayerTestConfig setting
-                self.conv_type           = 'residual'
-                self.deconv_type         = 'nearest_neighbor_unpool'
-                self.pooling_type        = 'maxpool'
+                unittest LayerTestConfig configuration
     
-                self.conv_kernel_size           = 3
                 self.pooling_factor             = 2
-    
                 self.num_of_stacking            = 4
                 self.num_of_convseq_atbottom    = 3
     
-                self.input_output_width         = 64
-                self.input_output_height        = 64
             '''
 
             self.name_list = [
                     'unittest0/hourglass0_in',
-                    'unittest0/hourglass0/hg_conv0/residual_in',
-                    'unittest0/hourglass0/hg_conv0/residual_out',
+                    'unittest0/hourglass0/hg_conv0/'+ conv_type +'_in',
+                    'unittest0/hourglass0/hg_conv0/'+ conv_type +'_out',
                     'hg_conv_maxpool0',
-                    'unittest0/hourglass0/hg_conv1/residual_in',
-                    'unittest0/hourglass0/hg_conv1/residual_out',
+                    'unittest0/hourglass0/hg_conv1/'+ conv_type +'_in',
+                    'unittest0/hourglass0/hg_conv1/'+ conv_type +'_out',
                     'hg_conv_maxpool1',
-                    'unittest0/hourglass0/hg_conv2/residual_in',
-                    'unittest0/hourglass0/hg_conv2/residual_out',
+                    'unittest0/hourglass0/hg_conv2/'+ conv_type +'_in',
+                    'unittest0/hourglass0/hg_conv2/'+ conv_type +'_out',
                     'hg_conv_maxpool2',
-                    'unittest0/hourglass0/hg_conv3/residual_in',
-                    'unittest0/hourglass0/hg_conv3/residual_out',
+                    'unittest0/hourglass0/hg_conv3/'+ conv_type +'_in',
+                    'unittest0/hourglass0/hg_conv3/'+ conv_type +'_out',
                     'hg_conv_maxpool3',
                     'unittest0/hourglass0/hg_convseq0_in',
                     'unittest0/hourglass0/hg_convseq0_out',
                     'hg_deconv_shortcut_sum0',
-                    'unittest0/hourglass0/hg_deconv0/nearest_neighbor_unpool_in',
-                    'unittest0/hourglass0/hg_deconv0/nearest_neighbor_unpool_out',
+                    'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_in',
+                    'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_out',
                     'hg_deconv_shortcut_sum1',
-                    'unittest0/hourglass0/hg_deconv1/nearest_neighbor_unpool_in',
-                    'unittest0/hourglass0/hg_deconv1/nearest_neighbor_unpool_out',
+                    'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_in',
+                    'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_out',
                     'hg_deconv_shortcut_sum2',
-                    'unittest0/hourglass0/hg_deconv2/nearest_neighbor_unpool_in',
-                    'unittest0/hourglass0/hg_deconv2/nearest_neighbor_unpool_out',
+                    'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_in',
+                    'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_out',
                     'hg_deconv_shortcut_sum3',
-                    'unittest0/hourglass0/hg_deconv3/nearest_neighbor_unpool_in',
-                    'unittest0/hourglass0/hg_deconv3/nearest_neighbor_unpool_out',
+                    'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_in',
+                    'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_out',
                     'unittest0/hourglass0_out']
 
             input_shape_hg_conv0    = input_shape
@@ -190,7 +187,7 @@ class LayerTestConfig(object):
 
         # hourglass layer config
         # self.conv_type           = 'inceptionv2'
-        self.conv_type           = 'inverted_bottleneck'
+        # self.conv_type           = 'inverted_bottleneck'
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
         # self.conv_type           = 'residual'

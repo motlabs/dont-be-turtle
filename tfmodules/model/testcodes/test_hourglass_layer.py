@@ -70,6 +70,31 @@ class HourGlassLayerTest(tf.test.TestCase):
                                               layer_type    = TEST_LAYER_NAME,
                                               scope         = scope)
 
+
+        #----------------------------------------------------------
+        expected_output_shape   = input_shape
+        expected_midpoint   = LayerEndpointName(layer_type     =TEST_LAYER_NAME,
+                                                input_shape     = input_shape,
+                                                output_shape    = expected_output_shape,
+                                                conv_type       = layer_config.conv_type,
+                                                deconv_type     = layer_config.deconv_type)
+
+
+        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'0_in'
+        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'0_out'
+        self.assertTrue(expected_input_name in mid_points)
+        self.assertTrue(expected_output_name in mid_points)
+
+
+        print('----------------------------------------------')
+        print('[tfTest] run test_midpoint_name_shape()')
+        print('[tfTest] midpoint name and shape')
+        print('[tfTest] layer_name = %s' % TEST_LAYER_NAME)
+
+        for name, shape in six.iteritems(expected_midpoint.shape_dict):
+            print ('%s : shape = %s' % (name,shape))
+            self.assertListEqual(mid_points[name].get_shape().as_list(),shape)
+
         # tensorboard graph summary =============
         now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         tb_logdir_path = getcwd() + '/tf_logs'
@@ -107,26 +132,6 @@ class HourGlassLayerTest(tf.test.TestCase):
                                  logdir=savedir,
                                  name=pbtxtfilename,as_text=True)
 
-        #----------------------------------------------------------
-        expected_output_shape   = input_shape
-        expected_midpoint   = LayerEndpointName(layer_type     =TEST_LAYER_NAME,
-                                                input_shape     = input_shape,
-                                                output_shape    = expected_output_shape)
-
-        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'0_in'
-        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'0_out'
-        self.assertTrue(expected_input_name in mid_points)
-        self.assertTrue(expected_output_name in mid_points)
-
-
-        print('----------------------------------------------')
-        print('[tfTest] run test_midpoint_name_shape()')
-        print('[tfTest] midpoint name and shape')
-        print('[tfTest] layer_name = %s' % TEST_LAYER_NAME)
-
-        for name, shape in six.iteritems(expected_midpoint.shape_dict):
-            print ('%s : shape = %s' % (name,shape))
-            self.assertListEqual(mid_points[name].get_shape().as_list(),shape)
 
 
 
