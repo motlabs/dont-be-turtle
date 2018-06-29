@@ -12,12 +12,26 @@
 # limitations under the License.
 # ===================================================================================
 # -*- coding: utf-8 -*-
+# ! /usr/bin/env python
+'''
+    filename: path_manager.py
+    description: this module include all path information on this proj
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+    - Author : jaewook Kang @ 20180613
+
+'''
+
+from os import getcwd
 
 
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
+PROJ_HOME               = getcwd()
+TF_MODULE_DIR           = PROJ_HOME              + '/tfmodules'
+TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
+TF_LAYER_TEST_DIR       = TF_MODEL_DIR           + '/testcodes'
+
+TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
+TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
+EXPORT_DIR              = PROJ_HOME              + '/exportfiles'
+TENSORBOARD_DIR         = EXPORT_DIR             + '/tf_logs'
+
 
