@@ -20,10 +20,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-import sys
-
-from path_manager import TF_CNN_MODULE_DIR
-sys.path.insert(0,TF_CNN_MODULE_DIR)
+import numpy as np
 
 from tf_conv_module import get_inception_v2_module
 from tf_conv_module import get_separable_conv2d_module
@@ -32,7 +29,7 @@ from tf_conv_module import get_inverted_bottleneck_module
 from tf_conv_module import get_residual_module
 
 from tf_deconv_module import get_nearest_neighbor_unpool2d_module
-from tf_deconv_module import get_transconv_unpool_module
+from tf_deconv_module import get_transconv_unpool2d_module
 
 
 
@@ -48,7 +45,7 @@ class inception_conv_chout_num(object):
 
 
 
-def get_hourglass_conv_layer(ch_in,
+def get_hourglass_conv_module(ch_in,
                              ch_out_num,
                              model_config,
                              layer_index=0,
@@ -60,8 +57,10 @@ def get_hourglass_conv_layer(ch_in,
     scope       = scope + str(layer_index)
     net         = ch_in
     end_points  = {}
+    inception_chout_num_list = inception_conv_chout_num()
+    ch_in_num = ch_in.get_shape().as_list()[3]
 
-    with tf.name_scope(name=scope,default_name='hg_conv',values=[ch_in]):
+    with tf.variable_scope(name_or_scope=scope,default_name='hg_conv',values=[ch_in]):
 
         if conv_type is 'residual':
             net,end_points = get_residual_module(ch_in         = net,
@@ -74,7 +73,7 @@ def get_hourglass_conv_layer(ch_in,
         elif conv_type is 'inceptionv2':
 
             net,end_points = get_inception_v2_module(ch_in                     = net,
-                                                      inception_conv_chout_num  = inception_conv_chout_num,
+                                                      inception_conv_chout_num  = inception_chout_num_list,
                                                       model_config              = model_config,
                                                       stride                    = stride,
                                                       scope                     = conv_type)
@@ -99,9 +98,10 @@ def get_hourglass_conv_layer(ch_in,
 
         elif conv_type is 'inverted_bottleneck':
 
+            expand_ch_num = np.floor( ch_in_num *1.5)
             net,end_points = get_inverted_bottleneck_module(ch_in         = net,
                                                              ch_out_num    = ch_out_num,
-                                                             expand_ch_num = tf.floor(ch_in*1.2),
+                                                             expand_ch_num = expand_ch_num,
                                                              model_config  = model_config,
                                                              kernel_size   = kernel_size,
                                                              stride        = stride,
@@ -110,7 +110,7 @@ def get_hourglass_conv_layer(ch_in,
     return net,end_points
 
 
-def get_hourglass_deconv_layer(ch_in,
+def get_hourglass_deconv_module(ch_in,
                                unpool_rate,
                                deconv_type,
                                model_config=None,
@@ -121,14 +121,14 @@ def get_hourglass_deconv_layer(ch_in,
     net         = ch_in
     end_points  = {}
 
-    with tf.name_scope(name=scope,default_name='hg_deconv',values=[ch_in]):
+    with tf.variable_scope(name_or_scope=scope,default_name='hg_deconv',values=[ch_in]):
 
         if deconv_type is 'nearest_neighbor_unpool':
             net,end_points= get_nearest_neighbor_unpool2d_module(inputs=net,
                                                                  unpool_rate=unpool_rate,
                                                                  scope = deconv_type)
         elif deconv_type is 'conv2dtrans_unpool':
-            net,end_points = get_transconv_unpool_module(inputs=net,
+            net,end_points = get_transconv_unpool2d_module(inputs=net,
                                                           unpool_rate = unpool_rate,
                                                           model_config=model_config,
                                                           scope= deconv_type)
@@ -151,7 +151,7 @@ def get_conv2d_seq(ch_in,
     with tf.variable_scope(name_or_scope=scope,default_name='conv2d_seq',values=[ch_in]) as sc:
         scope = 'conv2d_seq'
 
-        endpoint_collection = sc.orignal_name_scope + '_end_points'
+        endpoint_collection = sc.original_name_scope + '_end_points'
         with slim.arg_scope([slim.conv2d],
                             kernel_size         = kernel_size,
                             weights_initializer = model_config.weights_initializer,
@@ -161,7 +161,7 @@ def get_conv2d_seq(ch_in,
                             normalizer_fn       = model_config.normalizer_fn,
                             padding             = 'SAME',
                             stride              = 1,
-                            activation          = None,
+                            activation_fn       = None,
                             outputs_collections = endpoint_collection):
 
             with slim.arg_scope([model_config.normalizer_fn],
@@ -181,6 +181,7 @@ def get_conv2d_seq(ch_in,
             endpoint_collection, clear_collection=True)
 
     end_points[sc.name + '_out'] = net
+    end_points[sc.name + '_in'] = ch_in
 
 
     return net, end_points
