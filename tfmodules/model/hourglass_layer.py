@@ -31,15 +31,15 @@ from hourglass_module import get_conv2d_seq
 
 def get_hourglass_layer(ch_in,
                         model_config,
-                        stride              = 1,
-                        conv_kernel_size    = 3,
-                        conv_type           ='residual',
-                        deconv_type         ='nearest_neighbor_unpool',
-                        num_of_stacking   = 4,
-                        num_of_convseq      = 3,
-                        pooling_rate        = 2,
-                        layer_index         = 0,
-                        scope               = None):
+                        stride                      = 1,
+                        conv_kernel_size            = 3,
+                        conv_type                   ='residual',
+                        deconv_type                 ='nearest_neighbor_unpool',
+                        num_of_stacking             = 4,
+                        num_of_convseq_atbottom     = 3,
+                        pooling_rate                = 2,
+                        layer_index                 = 0,
+                        scope                       = None):
 
     scope   = scope + str(layer_index)
     net     = ch_in
@@ -102,7 +102,7 @@ def get_hourglass_layer(ch_in,
 
         with slim.arg_scope([get_conv2d_seq],
                             ch_out_num      = ch_out_num_at_bottom,
-                            num_of_conv     = num_of_convseq,
+                            num_of_conv     = num_of_convseq_atbottom,
                             model_config    = model_config,
                             kernel_size     = conv_kernel_size):
 

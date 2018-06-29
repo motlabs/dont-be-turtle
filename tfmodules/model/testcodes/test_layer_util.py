@@ -58,13 +58,30 @@ def create_test_input(batchsize,heightsize,widthsize,channelnum):
 
 
 def get_layer(ch_in,
-              ch_out_num,
               layer_config,
               model_config,
               layer_index=0,
+              layer_type = 'hourglass',
               scope=None):
 
-    ## 여기 작성 필요
+    scope       = scope + str(layer_index)
+    ch_in_num   = ch_in.get_shape().as_list()[3]
+    net         = ch_in
+
+    with tf.variable_scope(name_or_scope=scope, default_name='test_layer',values=[ch_in]):
+
+        if layer_type == 'hourglass':
+            net, end_points = get_hourglass_layer(ch_in                 =net,
+                                                model_config            =model_config,
+                                                stride                  =layer_config.stride,
+                                                conv_kernel_size        =layer_config.conv_kernel_size,
+                                                conv_type               =layer_config.conv_type,
+                                                deconv_type             =layer_config.deconv_type,
+                                                num_of_stacking         =layer_config.num_of_stacking,
+                                                num_of_convseq_atbottom =layer_config.num_of_convseq_atbottom,
+                                                pooling_rate            =layer_config.pooling_rate,
+                                                layer_index             =layer_index,
+                                                scope=layer_type)
 
 
     return net, end_points
@@ -103,21 +120,20 @@ class LayerTestConfig(object):
 
     def __init__(self):
 
-        # common
-        self.depth_multiplier   = 1.0
-        self.resol_multiplier   = 1.0
-
-        self.is_trainable       = True
-        self.dtype              = tf.float32
-
         # hourglass layer config
         self.conv_type           = 'residual'
         self.deconv_type         = 'nearest_neighbor_unpool'
+
         self.conv_kernel_size    = 3
-        self.stride              = 1
-        self.num_of_stacking     = 4
-        self.num_of_convseq      = 3
         self.pooling_rate        = 2
+
+        self.stride                     = 1
+        self.num_of_stacking            = 4
+        self.num_of_convseq_atbottom    = 3
+
+        self.input_output_width         = 64
+        self.input_output_height        = 64
+
 
 
 
@@ -125,6 +141,15 @@ class LayerTestConfig(object):
 class ModelTestConfig(object):
 
     def __init__(self):
+
+
+        # common
+        self.depth_multiplier   = 1.0
+        self.resol_multiplier   = 1.0
+
+        self.is_trainable       = True
+        self.dtype              = tf.float32
+
         # for convolution layers
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
         self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)

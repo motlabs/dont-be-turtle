@@ -45,7 +45,31 @@ class HourGlassModuleTest(tf.test.TestCase):
 
         ch_in_num       = 256
         ch_out_num      = 256
-        model_config    = ModelConfig()
+        batch_size      = None
+        model_config    = ModelTestConfig()
+        layer_config    = LayerTestConfig()
+        scope           = 'unittest'
+
+        input_shape     = [batch_size,
+                           model_config.input_output_height,
+                           model_config.input_output_width,
+                           ch_in_num]
+        inputs = create_test_input(batchsize    =input_shape[0],
+                                   heightsize   =layer_config.input_output_width,
+                                   widthsize    =layer_config.input_output_height,
+                                   channelnum   =input_shape[3])
+
+        layer_out, mid_points = get_layer(ch_in         = inputs,
+                                          layer_config  = layer_config,
+                                          model_config  = model_config,
+                                          layer_index   = 0,
+                                          layer_type    = 'hourglass',
+                                          scope         = scope)
+
+
+        expected_midpoint   = LayerEndpointName
+
+
 
 
 
