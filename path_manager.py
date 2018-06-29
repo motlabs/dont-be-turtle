@@ -24,8 +24,7 @@
 from os import getcwd
 
 
-
-PROJ_HOME = getcwd()
+PROJ_HOME               = getcwd()
 TF_MODULE_DIR           = PROJ_HOME              + '/tfmodules'
 TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
 TF_LAYER_TEST_DIR       = TF_MODEL_DIR           + '/testcodes'
