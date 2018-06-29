@@ -18,15 +18,8 @@ from __future__ import print_function
 
 
 import numpy as np
-import sys
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-
-from path_manager import TF_MODEL_DIR
-from path_manager import TF_LAYER_TEST_DIR
-
-sys.path.insert(0,TF_MODEL_DIR)
-sys.path.insert(0,TF_LAYER_TEST_DIR)
 
 from hourglass_layer import get_hourglass_layer
 # from reception_layer import get_reception_layer
@@ -67,19 +60,20 @@ def get_layer(ch_in,
     scope       = scope + str(layer_index)
     ch_in_num   = ch_in.get_shape().as_list()[3]
     net         = ch_in
+    end_points  = {}
 
     with tf.variable_scope(name_or_scope=scope, default_name='test_layer',values=[ch_in]):
 
         if layer_type == 'hourglass':
             net, end_points = get_hourglass_layer(ch_in                 =net,
                                                 model_config            =model_config,
-                                                stride                  =layer_config.stride,
+                                                pooling_factor          =layer_config.pooling_factor,
                                                 conv_kernel_size        =layer_config.conv_kernel_size,
+                                                pooling_type            =layer_config.pooling_type,
                                                 conv_type               =layer_config.conv_type,
                                                 deconv_type             =layer_config.deconv_type,
                                                 num_of_stacking         =layer_config.num_of_stacking,
                                                 num_of_convseq_atbottom =layer_config.num_of_convseq_atbottom,
-                                                pooling_rate            =layer_config.pooling_rate,
                                                 layer_index             =layer_index,
                                                 scope=layer_type)
 
@@ -89,29 +83,103 @@ def get_layer(ch_in,
 
 class LayerEndpointName(object):
 
-    def __init__(self,input_shape,output_shape):
+    # for unittest
+    def __init__(self,layer_type,input_shape,output_shape):
 
-        self.name_list = ['unittest0/inceptionv2/inceptionv2_net1_conv1x1',
-                         'unittest0/inceptionv2/inceptionv2_net1_conv3x3_1',
-                         'unittest0/inceptionv2/inceptionv2_net1_conv3x3_2',
-                         'unittest0/inceptionv2/inceptionv2_net2_conv1x1',
-                         'unittest0/inceptionv2/inceptionv2_net2_conv3x3',
-                         'unittest0/inceptionv2/inceptionv2_net3_maxpool3x3',
-                         'unittest0/inceptionv2/inceptionv2_net3_conv1x1',
-                         'inceptionv2/inceptionv2_concat',
-                         'unittest0/inceptionv2_out']
+        if layer_type is 'hourglass':
 
-        self.shape_dict = {
-                            self.name_list[0]:[input_shape[0],  input_shape[1], input_shape[2],     chnum_list.net1[0]],
-                            self.name_list[1]:[input_shape[0],  input_shape[1], input_shape[2],     chnum_list.net1[1]],
-                            self.name_list[2]:[output_shape[0], output_shape[1],output_shape[2],    chnum_list.net1[2]],
-                            self.name_list[3]:[input_shape[0],  input_shape[1], input_shape[2],     chnum_list.net2[0]],
-                            self.name_list[4]:[output_shape[0], output_shape[1],output_shape[2],    chnum_list.net2[1]],
-                            self.name_list[5]:[output_shape[0], output_shape[1],output_shape[2],    input_shape[3]],
-                            self.name_list[6]:[output_shape[0], output_shape[1],output_shape[2],    chnum_list.net3[0]],
-                            self.name_list[7]:output_shape,
-                            self.name_list[8]:output_shape,
-                            }
+            '''
+                unittest LayerTestConfig setting
+                self.conv_type           = 'residual'
+                self.deconv_type         = 'nearest_neighbor_unpool'
+                self.pooling_type        = 'maxpool'
+    
+                self.conv_kernel_size           = 3
+                self.pooling_factor             = 2
+    
+                self.num_of_stacking            = 4
+                self.num_of_convseq_atbottom    = 3
+    
+                self.input_output_width         = 64
+                self.input_output_height        = 64
+            '''
+
+            self.name_list = [
+                    'unittest0/hourglass0_in',
+                    'unittest0/hourglass0/hg_conv0/residual_in',
+                    'unittest0/hourglass0/hg_conv0/residual_out',
+                    'hg_conv_maxpool0',
+                    'unittest0/hourglass0/hg_conv1/residual_in',
+                    'unittest0/hourglass0/hg_conv1/residual_out',
+                    'hg_conv_maxpool1',
+                    'unittest0/hourglass0/hg_conv2/residual_in',
+                    'unittest0/hourglass0/hg_conv2/residual_out',
+                    'hg_conv_maxpool2',
+                    'unittest0/hourglass0/hg_conv3/residual_in',
+                    'unittest0/hourglass0/hg_conv3/residual_out',
+                    'hg_conv_maxpool3',
+                    'unittest0/hourglass0/hg_convseq0_in',
+                    'unittest0/hourglass0/hg_convseq0_out',
+                    'hg_deconv_shortcut_sum0',
+                    'unittest0/hourglass0/hg_deconv0/nearest_neighbor_unpool_in',
+                    'unittest0/hourglass0/hg_deconv0/nearest_neighbor_unpool_out',
+                    'hg_deconv_shortcut_sum1',
+                    'unittest0/hourglass0/hg_deconv1/nearest_neighbor_unpool_in',
+                    'unittest0/hourglass0/hg_deconv1/nearest_neighbor_unpool_out',
+                    'hg_deconv_shortcut_sum2',
+                    'unittest0/hourglass0/hg_deconv2/nearest_neighbor_unpool_in',
+                    'unittest0/hourglass0/hg_deconv2/nearest_neighbor_unpool_out',
+                    'hg_deconv_shortcut_sum3',
+                    'unittest0/hourglass0/hg_deconv3/nearest_neighbor_unpool_in',
+                    'unittest0/hourglass0/hg_deconv3/nearest_neighbor_unpool_out',
+                    'unittest0/hourglass0_out']
+
+            input_shape_hg_conv0    = input_shape
+            input_shape_hg_conv1    = [input_shape[0],input_shape[1]/2, input_shape[2]/2,input_shape[3]]
+            input_shape_hg_conv2    = [input_shape[0],input_shape[1]/4, input_shape[2]/4,input_shape[3]]
+            input_shape_hg_conv3    = [input_shape[0],input_shape[1]/8, input_shape[2]/8,input_shape[3]]
+            input_shape_hg_convseq  = [input_shape[0],input_shape[1]/16,input_shape[2]/16,input_shape[3]]
+            input_shape_hg_deconv0  = [input_shape[0],input_shape[1]/8, input_shape[2]/8,input_shape[3]]
+            input_shape_hg_deconv1  = [input_shape[0],input_shape[1]/4, input_shape[2]/4,input_shape[3]]
+            input_shape_hg_deconv2  = [input_shape[0],input_shape[1]/2, input_shape[2]/2,input_shape[3]]
+            input_shape_hg_deconv3  = output_shape
+
+            self.shape_dict = {\
+                                self.name_list[0]:input_shape,
+                                self.name_list[1]:input_shape_hg_conv0,
+                                self.name_list[2]:input_shape_hg_conv0,
+                                self.name_list[3]:input_shape_hg_conv1,
+                                self.name_list[4]:input_shape_hg_conv1,
+                                self.name_list[5]:input_shape_hg_conv1,
+                                self.name_list[6]:input_shape_hg_conv2,
+                                self.name_list[7]:input_shape_hg_conv2,
+                                self.name_list[8]:input_shape_hg_conv2,
+                                self.name_list[9]:input_shape_hg_conv3,
+                                self.name_list[10]:input_shape_hg_conv3,
+                                self.name_list[11]:input_shape_hg_conv3,
+                                self.name_list[12]:input_shape_hg_convseq,
+                                self.name_list[13]:input_shape_hg_convseq,
+                                self.name_list[14]:input_shape_hg_convseq,
+                                self.name_list[15]:input_shape_hg_convseq,
+                                self.name_list[16]:input_shape_hg_convseq,
+                                self.name_list[17]:input_shape_hg_deconv0,
+                                self.name_list[18]:input_shape_hg_deconv0,
+                                self.name_list[19]:input_shape_hg_deconv0,
+                                self.name_list[20]:input_shape_hg_deconv1,
+                                self.name_list[21]:input_shape_hg_deconv1,
+                                self.name_list[22]:input_shape_hg_deconv1,
+                                self.name_list[23]:input_shape_hg_deconv2,
+                                self.name_list[24]: input_shape_hg_deconv2,
+                                self.name_list[25]: input_shape_hg_deconv2,
+                                self.name_list[26]: input_shape_hg_deconv3,
+                                self.name_list[27]: output_shape}
+
+        # elif layer_type is 'reception':
+        #
+        # elif layer_type is 'supervision':
+        #
+        # elif layer_tyupe is 'output':
+        #
 
 
 
@@ -121,20 +189,24 @@ class LayerTestConfig(object):
     def __init__(self):
 
         # hourglass layer config
-        self.conv_type           = 'residual'
+        # self.conv_type           = 'inceptionv2'
+        self.conv_type           = 'inverted_bottleneck'
+        # self.conv_type           = 'linear_bottleneck'
+        # self.conv_type           = 'separable_conv2d'
+        # self.conv_type           = 'residual'
+
         self.deconv_type         = 'nearest_neighbor_unpool'
+        self.pooling_type        = 'maxpool'
+        # self.pooling_type        = 'convpool'
 
         self.conv_kernel_size    = 3
-        self.pooling_rate        = 2
+        self.pooling_factor        = 2
 
-        self.stride                     = 1
         self.num_of_stacking            = 4
         self.num_of_convseq_atbottom    = 3
 
         self.input_output_width         = 64
         self.input_output_height        = 64
-
-
 
 
 
