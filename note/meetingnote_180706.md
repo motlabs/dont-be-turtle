@@ -77,7 +77,7 @@
 케이스
 - 1. 여러 사람일 때:  pose에서 주는 좌표 confidence 레벨로 거르기
 - 2. 아무도 없을 때:  pose에서 주는 좌표 confidence 레벨로 거르기
-- 3. 잘 못 찾았을 때(특정 좌표가 없을때):  pose에서 주는 좌표 confidence 레벨로 거르기 
+- 3. 잘 못 찾았을 때(특정 part 없을때):  pose에서 주는 좌표 confidence 레벨로 거르기 
 - 4. 좋은 자세 일 때: 바른 자세
 - 5. 나쁜 자세 일 때: 거북목 자세
 - 6. 기타 자세 일 때(4개의 part가 다 주어지는 경우): pose에서 주는 좌표 confidence 레벨로 거르기 
@@ -104,6 +104,8 @@ classification group
 - TF r1.9가 릴리즈 되는데로 tf.contrib.lite.TocoConvertor()사용해보기 
 - 기타 TF 모델 meta parameter에 추가 할 것들
     - output layer stacking config
+    - hg layer stacking config
+    
 
 ## 다음 미팅
 - 지훈님께서 7/11 (수)에 제주도에 오심
