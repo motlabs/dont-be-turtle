@@ -46,6 +46,7 @@
 
 ## Issues
 - 데이터 input pipeline 은 tfrecord --> augmentation --> data_loader의 순서임
+    - data augmentation시 randomness를 포기 한다면 augmentation 이후에 tfrecord로 저장해 놓는것이 좋을 것이라는 구글 엔지니어(Sourabh)의 코멘트
 - 모바일 동영상의 smooth한 동작을 위해서는 25fps정도 필요함 확인 (40ms inference time)
     - 현재 구글 픽셀폰에서 2.5fps, 400ms (우리 모델 아님)
 - 연구 이슈
