@@ -29,7 +29,7 @@
 #### 3) 첫번째 프로토 타입 TF model tflite 변환에 실패 
 - 현재 r1.8의 `toco_converter`에 slim.batch_norm 변환에 문제가 있는걸로 판명되어 r1.9를 기다르는중 
 
-#### 4) Google Cloud Platform을 처음 사용해 보는 데 진입 장벽이 좀 있음
+#### 4) Google Cloud Platform에 어느정도 익숙해
 - resnet example로 수행 
 - [repo로 정리](https://github.com/jwkanggist/tpu-resnet-tutorial)
 
@@ -45,8 +45,9 @@
 
 
 ## Issues
-- 데이터 input pipeline 은 tfrecord --> augmentation --> data_loader의 순서임
+- 데이터 input pipeline 은 `tfrecord --> augmentation --> data_loader`의 순서임
     - data augmentation시 randomness를 포기 한다면 augmentation 이후에 tfrecord로 저장해 놓는것이 좋을 것이라는 구글 엔지니어(Sourabh)의 코멘트
+    - step 마다 data augmentation의 randomness가 필요하고 그렇기 때문에 위의 구조 그대로 가는 것이 좋음
 - 모바일 동영상의 smooth한 동작을 위해서는 25fps정도 필요함 확인 (40ms inference time)
     - 현재 구글 픽셀폰에서 2.5fps, 400ms (우리 모델 아님)
 - 연구 이슈
@@ -57,21 +58,52 @@
 2) 하나의 single hourglass안에서의 레이어의 개수와
 전체 hg layer stacking의 개수는 다르게 영향 할 것이고 각각 어떻케 다른 역할을 하는지 알아야 한다. 
 
+—> stacked hourglass는 전체 이미지의 맥락을 이해하는 것을 도와준다. 
 —> stacked hourglass 의 개수는 중간 heatmap의 정도를 보고 판단할 수 있다.
-—> hourglass모델안에서의 레이어의 개수는 추출하고자하는 part의  scale에 연관되어 있다. 작은 part를 추출하려고 할수록 레이어의 개수를 늘려야 한다. 
 
-3) 계산량을 줄여야 한다
---> quantization (1/4)
---> channel 수 줄이기
---> hourglass layer수 줄이기
---> ~sparse 1x1 conv?~
+—> hourglass모델 안에서의 레이어의 개수는 추출하고자하는 part의  scale에 연관되어 있다. 
+다양한 스케일을 다룰 수 록 할수록 레이어의 개수를 늘려야 한다. 
+즉 추상화 문제
+
+3) output 레이어는 1x1 conv를 stacking해서 구성한다. 
+-> 관련 논문을 좀 더 살펴본다. 
+-> 일단 2 레이어를 stacking하는 것으로 시작한다. 
+
+4) 거북목 classification 케이스
+거북목 classifier는 pose estimation에서 아래를 넘겨 받는다. 
+- 각 part의 est 좌표: head, neck, Rsholder, Lsholder
+- 각 part 의 confidance level: 각 heatmap의 argmax값
+
+케이스
+- 1. 여러 사람일 때:  pose에서 주는 좌표 confidence 레벨로 거르기
+- 2. 아무도 없을 때:  pose에서 주는 좌표 confidence 레벨로 거르기
+- 3. 잘 못 찾았을 때(특정 좌표가 없을때):  pose에서 주는 좌표 confidence 레벨로 거르기 
+- 4. 좋은 자세 일 때: 바른 자세
+- 5. 나쁜 자세 일 때: 거북목 자세
+- 6. 기타 자세 일 때(4개의 part가 다 주어지는 경우): pose에서 주는 좌표 confidence 레벨로 거르기 
+
+classification group
+- None: 1,2,3,6 
+- GOOD: 4
+- BAD: 5
+
+5) 계산량을 줄여야 한다
+-> quantization (1/4)
+-> channel 수 줄이기
+-> hourglass layer수 줄이기
+-> ~sparse 1x1 conv?~
+
 ```
+- 데이터 한번 훈련해보고 데이터 셋의 다양성이 부족하면 추가 수집한다. 
 
 ## TODO (이번주)
 - end to end training 코드 완성
 - 훈련해보기 
 - 유투브 영상으로 데이터 셋 만들기
 - pose estimation benchmark 지표 조사
+- TF r1.9가 릴리즈 되는데로 tf.contrib.lite.TocoConvertor()사용해보기 
+- 기타 TF 모델 meta parameter에 추가 할 것들
+    - output layer stacking config
 
 ## 다음 미팅
-- 
+- 지훈님께서 7/11 (수)에 제주도에 오심
