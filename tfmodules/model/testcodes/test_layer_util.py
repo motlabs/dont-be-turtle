@@ -418,5 +418,6 @@ class ModelTestConfig(object):
 
         self.hg_config          = HourGlassTestConfig()
         self.sv_config          = SupervisionTestConfig()
+        self.rc_config          = ReceptionTestConfig()
         self.out_config         = OutputTestConfig()
 

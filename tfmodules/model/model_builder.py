@@ -12,3 +12,22 @@
 # limitations under the License.
 # ===================================================================================
 # -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import tensorflow as tf
+import tensorflow.contrib.slim as slim
+
+
+from hourglass_layer    import get_hourglass_layer
+from reception_layer    import get_reception_layer
+from supervision_layer  import get_supervision_layer
+from output_layer       import get_output_layer
+from model_config       import ModelConfig
+
+def get_model(ch_in):
+
+
+    

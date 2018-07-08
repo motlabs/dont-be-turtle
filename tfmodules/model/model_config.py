@@ -22,23 +22,47 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 
-class ModelConfig(object):
+
+class ConvModuleConfig(object):
 
     def __init__(self):
 
-        # common
-        self.depth_multiplier   = 1.0
-        self.resol_multiplier   = 1.0
+        # for convolution modules===================
+        # self.conv_type           = 'inceptionv2'
+        # self.conv_type           = 'inverted_bottleneck'
+        # self.conv_type           = 'linear_bottleneck'
+        # self.conv_type           = 'separable_conv2d'
+        self.conv_type              = 'residual'
+        self.kernel_size            = 3
 
-        self.is_trainable       = True
-        self.dtype              = tf.float32
 
-        # 1) for convolution layers
-        self.weights_initializer = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.biases_initializer  = slim.init_ops.zeros_initializer()
-        self.normalizer_fn      = slim.batch_norm
-        self.activation_fn      = tf.nn.relu6
+        self.is_trainable = True
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay = 0.999
+        self.batch_norm_fused = True
+
+
+
+
+class DeconvModuleConfig(object):
+    def __init__(self):
+
+        # for deconvolution modules====================
+        self.deconv_type                = 'nearest_neighbor_unpool'
+
+        # for unpooling
+        self.is_trainable = True
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
 
         # batch_norm
         self.batch_norm_decay   = 0.999
@@ -46,13 +70,144 @@ class ModelConfig(object):
 
 
 
-        # 2) for deconvolutional layer
-        self.unpool_weights_initializer = tf.contrib.layers.xavier_initializer()
-        self.unpool_weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.unpool_biases_initializer  = slim.init_ops.zeros_initializer()
-        self.unpool_normalizer_fn      = slim.batch_norm
-        self.unpool_activation_fn      = tf.nn.relu6
+
+class ConvSeqModuleConfig(object):
+
+    def __init__(self):
+
+        self.num_of_conv         = 3
+        self.kernel_size         = 3
+        self.is_trainable        = True
+
+
+        self.weights_initializer = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer  = slim.init_ops.zeros_initializer()
+        self.normalizer_fn       = slim.batch_norm
+        self.activation_fn       = tf.nn.relu6
 
         # batch_norm
-        self.unpool_batch_norm_decay   = 0.999
-        self.unpool_batch_norm_fused   = True
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+class HourGlassConfig(object):
+
+    def __init__(self):
+
+        # hourglass layer config
+
+        self.num_of_stacking            = 4
+        self.input_output_width         = 64
+        self.input_output_height        = 64
+        self.num_of_channels_out        = 256
+        self.is_trainable               = True
+
+        self.conv_config    = ConvModuleConfig()
+        self.deconv_config  = DeconvModuleConfig()
+        self.convseq_config = ConvSeqModuleConfig()
+
+
+        self.pooling_type           = 'maxpool'
+        # self.pooling_type         = 'convpool'
+        self.pooling_factor         = 2
+
+
+
+
+class SupervisionConfig(object):
+
+    def __init__(self):
+
+        self.lossfn_enable          = False
+        self.input_output_width     = 64
+        self.input_output_height    = 64
+        self.num_of_channels_out    = 256
+
+        self.num_of_1st1x1conv_ch   = 256
+        self.num_of_heatmaps        = 4
+        self.is_trainable           = True
+
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+
+class ReceptionConfig(object):
+
+    def __init__(self):
+        self.input_width     = 256
+        self.input_height    = 256
+
+        self.output_width           = 64
+        self.output_height          = 64
+        self.num_of_channels_out    = 256
+        self.is_trainable           = True
+
+        # the kernel_size of the first conv block
+        self.kernel_size            = 7
+
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+        self.conv_config    = ConvModuleConfig()
+
+
+
+
+class OutputConfig(object):
+
+    def __init__(self):
+        self.input_width            = 64
+        self.input_height           = 64
+        self.num_of_channels_out    = 4
+
+        self.dim_reduct_ratio              = 1
+        self.num_stacking_1x1conv          = 2
+        self.is_trainable                  = True
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+
+class ModelConfig(object):
+
+    def __init__(self):
+        # common
+        self.depth_multiplier   = 1.0
+        self.resol_multiplier   = 1.0
+
+        self.dtype              = tf.float32
+
+        self.hg_config          = HourGlassConfig()
+        self.sv_config          = SupervisionConfig()
+        self.rc_config          = ReceptionConfig()
+        self.out_config         = OutputConfig()
+
