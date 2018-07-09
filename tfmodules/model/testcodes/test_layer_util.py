@@ -21,10 +21,10 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from hourglass_layer import get_hourglass_layer
-# from reception_layer import get_reception_layer
-# from spervision_layer import get_supervision_layer
-# from output_layer import get_output_layer
+from hourglass_layer    import get_hourglass_layer
+from reception_layer    import get_reception_layer
+from supervision_layer  import get_supervision_layer
+from output_layer       import get_output_layer
 
 
 # where we adopt the NHWC format.
@@ -51,7 +51,6 @@ def create_test_input(batchsize,heightsize,widthsize,channelnum):
 
 
 def get_layer(ch_in,
-              layer_config,
               model_config,
               layer_index=0,
               layer_type = 'hourglass',
@@ -61,24 +60,39 @@ def get_layer(ch_in,
     ch_in_num   = ch_in.get_shape().as_list()[3]
     net         = ch_in
     end_points  = {}
+    heatmaps_out = None
 
     with tf.variable_scope(name_or_scope=scope, default_name='test_layer',values=[ch_in]):
 
         if layer_type == 'hourglass':
             net, end_points = get_hourglass_layer(ch_in                 =net,
-                                                model_config            =model_config,
-                                                pooling_factor          =layer_config.pooling_factor,
-                                                conv_kernel_size        =layer_config.conv_kernel_size,
-                                                pooling_type            =layer_config.pooling_type,
-                                                conv_type               =layer_config.conv_type,
-                                                deconv_type             =layer_config.deconv_type,
-                                                num_of_stacking         =layer_config.num_of_stacking,
-                                                num_of_convseq_atbottom =layer_config.num_of_convseq_atbottom,
-                                                layer_index             =layer_index,
-                                                scope=layer_type)
+                                                  model_config          =model_config,
+                                                  layer_index           =layer_index,
+                                                  scope=layer_type)
+
+        elif layer_type is 'reception':
+
+            net, end_points = get_reception_layer(ch_in         = net,
+                                                  model_config  = model_config,
+                                                  scope         = layer_type)
+
+        elif layer_type is 'supervision':
+
+            net, end_points, heatmaps_out = get_supervision_layer(ch_in                 =net,
+                                                                  model_config          =model_config,
+                                                                  layer_index           =layer_index,
+                                                                  scope                 =layer_type)
+
+        elif layer_type is 'output':
+
+            net, end_points = get_output_layer(ch_in            = net,
+                                               model_config     = model_config,
+                                               scope            = layer_type)
 
 
-    return net, end_points
+    return net, end_points,heatmaps_out
+
+
 
 
 class LayerEndpointName(object):
@@ -115,8 +129,8 @@ class LayerEndpointName(object):
                     'unittest0/hourglass0/hg_conv3/'+ conv_type +'_in',
                     'unittest0/hourglass0/hg_conv3/'+ conv_type +'_out',
                     'hg_conv_maxpool3',
-                    'unittest0/hourglass0/hg_convseq0_in',
-                    'unittest0/hourglass0/hg_convseq0_out',
+                    'unittest0/hourglass0/hg_convseq_in',
+                    'unittest0/hourglass0/hg_convseq_out',
                     'hg_deconv_shortcut_sum0',
                     'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_in',
                     'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_out',
@@ -171,55 +185,143 @@ class LayerEndpointName(object):
                                 self.name_list[26]: input_shape_hg_deconv3,
                                 self.name_list[27]: output_shape}
 
-        # elif layer_type is 'reception':
-        #
-        # elif layer_type is 'supervision':
-        #
-        # elif layer_tyupe is 'output':
-        #
+        elif layer_type is 'reception':
+            self.name_list  = ['unittest0/reception_in',
+                               'unittest0/reception/reception_conv7x7_out',
+                               'unittest0/reception/reception_conv7x7_batchnorm_out',
+                               'unittest0/reception/reception_maxpool3x3_out',
+                               'unittest0/reception_out']
+
+            input_shape_receptconv = [input_shape[0],input_shape[1]/2, input_shape[2]/2,output_shape[3]]
+            input_shape_maxpool    = input_shape_receptconv
+
+            self.shape_dict = {self.name_list[0]:input_shape,
+                               self.name_list[1]:input_shape_receptconv,
+                               self.name_list[2]:input_shape_maxpool,
+                               self.name_list[3]:output_shape,
+                               self.name_list[4]:output_shape}
+
+
+        elif layer_type is 'supervision':
+            self.name_list = ['unittest0/supervision0_in',
+                              'unittest0/supervision0/supervision0_conv1x1_0',
+                              'unittest0/supervision0/supervision0_conv1x1_1',
+                              'unittest0/supervision0/supervision0_conv1x1_heapmatgen_out',
+                              'unittest0/supervision0/supervision0_conv1x1_heatmapexp',
+                              'unittest0/supervision0_out']
+
+            self.shape_dict = {self.name_list[0]:input_shape,
+                               self.name_list[1]:input_shape,
+                               self.name_list[2]:input_shape,
+                               self.name_list[3]:[input_shape[0],input_shape[1],input_shape[2],4],
+                               self.name_list[4]:input_shape,
+                               self.name_list[5]:output_shape}
+        elif layer_type is 'output':
+
+            self.name_list = [  'unittest0/output_in',
+                                'unittest0/output/output_conv1x1_0',
+                                'unittest0/output/output_conv1x1_0/BatchNorm',
+                                'unittest0/output/output_conv1x1_out',
+                                'unittest0/output/output_conv1x1_out/BatchNorm',
+                                'unittest0/output_out']
+
+            self.shape_dict = {
+                                self.name_list[0]:input_shape,
+                                self.name_list[1]:input_shape,
+                                self.name_list[2]:input_shape,
+                                self.name_list[3]:output_shape,
+                                self.name_list[4]:output_shape,
+                                self.name_list[5]:output_shape
+                                }
+
+
+class ModelEndpointName(object):
+
+    # for unittest
+    def __init__(self,
+                 input_shape,
+                 output_shape,
+                 hg_ch_num):
+
+
+        self.name_list = ['model_in',
+                         'model/reception/reception_in',
+                         'model/reception/reception_out',
+                         'model/stacked_hg/hourglass0_in',
+                         'model/stacked_hg/hourglass0_out',
+                         'model/stacked_hg/supervision0_in',
+                         'model/stacked_hg/supervision0/supervision0_conv1x1_heapmatgen_out',
+                         'model/stacked_hg/supervision0_out',
+                         'model/stacked_hg/hourglass1_in',
+                         'model/stacked_hg/hourglass1_out',
+                         'model/stacked_hg/supervision1_in',
+                         'model/stacked_hg/supervision1/supervision1_conv1x1_heapmatgen_out',
+                         'model/stacked_hg/supervision1_out',
+                         'model/output/output_in',
+                         'model/output/output_out',
+                         'model_out']
+
+        hg_shape = [input_shape[0],input_shape[1]/4,input_shape[2]/4,hg_ch_num]
+
+        self.shape_dict = {
+            self.name_list[0]: input_shape,
+            self.name_list[1]: input_shape,
+            self.name_list[2]: hg_shape,
+            self.name_list[3]: hg_shape,
+            self.name_list[4]: hg_shape,
+            self.name_list[5]: hg_shape,
+            self.name_list[6]: output_shape,
+            self.name_list[7]: hg_shape,
+            self.name_list[8]: hg_shape,
+            self.name_list[9]: hg_shape,
+            self.name_list[10]: hg_shape,
+            self.name_list[11]: output_shape,
+            self.name_list[12]: hg_shape,
+            self.name_list[13]: hg_shape,
+            self.name_list[14]: output_shape,
+            self.name_list[15]: output_shape
+        }
 
 
 
 
-class LayerTestConfig(object):
+class ConvModuleConfig(object):
 
     def __init__(self):
 
-        # hourglass layer config
+        # for convolution modules===================
         # self.conv_type           = 'inceptionv2'
         # self.conv_type           = 'inverted_bottleneck'
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
-        # self.conv_type           = 'residual'
-
-        self.deconv_type         = 'nearest_neighbor_unpool'
-        self.pooling_type        = 'maxpool'
-        # self.pooling_type        = 'convpool'
-
-        self.conv_kernel_size    = 3
-        self.pooling_factor        = 2
-
-        self.num_of_stacking            = 4
-        self.num_of_convseq_atbottom    = 3
-
-        self.input_output_width         = 64
-        self.input_output_height        = 64
+        self.conv_type              = 'residual'
+        self.kernel_size            = 3
 
 
+        self.is_trainable = True
+        self.weights_initializer = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer = slim.init_ops.zeros_initializer()
+        self.normalizer_fn = slim.batch_norm
+        self.activation_fn = tf.nn.relu6
 
-class ModelTestConfig(object):
+        # batch_norm
+        self.batch_norm_decay = 0.999
+        self.batch_norm_fused = True
 
+
+
+
+
+
+class DeconvModuleConfig(object):
     def __init__(self):
 
+        # for deconvolution modules====================
+        self.deconv_type                = 'nearest_neighbor_unpool'
 
-        # common
-        self.depth_multiplier   = 1.0
-        self.resol_multiplier   = 1.0
-
-        self.is_trainable       = True
-        self.dtype              = tf.float32
-
-        # for convolution layers
+        # for unpooling
+        self.is_trainable = True
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
         self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer  = slim.init_ops.zeros_initializer()
@@ -231,13 +333,153 @@ class ModelTestConfig(object):
         self.batch_norm_fused   = True
 
 
-        # for deconvolution layers
-        self.unpool_weights_initializer = tf.contrib.layers.xavier_initializer()
-        self.unpool_weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.unpool_biases_initializer  = slim.init_ops.zeros_initializer()
-        self.unpool_normalizer_fn      = slim.batch_norm
-        self.unpool_activation_fn      = tf.nn.relu6
+
+
+
+
+class ConvSeqModuleConfig(object):
+
+    def __init__(self):
+
+        self.num_of_conv         = 3
+        self.is_trainable        = True
+        self.kernel_size            = 3
+
+
+        self.weights_initializer = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer  = slim.init_ops.zeros_initializer()
+        self.normalizer_fn      = slim.batch_norm
+        self.activation_fn      = tf.nn.relu6
 
         # batch_norm
-        self.unpool_batch_norm_decay   = 0.999
-        self.unpool_batch_norm_fused   = True
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+
+
+
+class HourGlassTestConfig(object):
+
+    def __init__(self):
+
+        # hourglass layer config
+
+        self.num_of_stacking            = 4
+        self.input_output_width         = 64
+        self.input_output_height        = 64
+        self.num_of_channels_out        = 256
+        self.is_trainable               = True
+
+        self.conv_config    = ConvModuleConfig()
+        self.deconv_config  = DeconvModuleConfig()
+        self.convseq_config = ConvSeqModuleConfig()
+
+
+        self.pooling_type           = 'maxpool'
+        # self.pooling_type        = 'convpool'
+        self.pooling_factor         = 2
+
+
+
+
+
+class SupervisionTestConfig(object):
+
+    def __init__(self):
+
+        self.lossfn_enable          = False
+        self.input_output_width     = 64
+        self.input_output_height    = 64
+        self.num_of_channels_out    = 256
+
+        self.num_of_1st1x1conv_ch   = 256
+        self.num_of_heatmaps        = 4
+        self.is_trainable           = True
+
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+
+
+class ReceptionTestConfig(object):
+
+    def __init__(self):
+        self.input_width     = 256
+        self.input_height    = 256
+
+        self.output_width     = 64
+        self.output_height    = 64
+        self.num_of_channels_out    = 256
+        self.is_trainable           = True
+
+        # the kernel_size of the first conv block
+        self.kernel_size            = 7
+
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+        self.conv_config    = ConvModuleConfig()
+
+
+
+
+
+class OutputTestConfig(object):
+
+    def __init__(self):
+        self.input_width     = 64
+        self.input_height    = 64
+        self.num_of_channels_out    = 4
+
+        self.dim_reduct_ratio              = 1
+        self.num_stacking_1x1conv          = 2
+        self.is_trainable                  = True
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
+
+class ModelTestConfig(object):
+
+    def __init__(self):
+        # common
+        self.depth_multiplier   = 1.0
+        self.resol_multiplier   = 1.0
+
+        self.dtype              = tf.float32
+
+        self.hg_config          = HourGlassTestConfig()
+        self.sv_config          = SupervisionTestConfig()
+        self.rc_config          = ReceptionTestConfig()
+        self.out_config         = OutputTestConfig()
+

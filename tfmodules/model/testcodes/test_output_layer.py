@@ -31,12 +31,11 @@ print ('getcwd() = %s' % getcwd())
 from test_layer_util  import create_test_input
 from test_layer_util  import get_layer
 from test_layer_util  import LayerEndpointName
-from test_layer_util  import HourGlassTestConfig
+from test_layer_util  import OutputTestConfig
 
 # where we adopt the NHWC format.
 
-class HourGlassLayerTest(tf.test.TestCase):
-
+class OutputLayerTest(tf.test.TestCase):
 
 
 
@@ -48,20 +47,20 @@ class HourGlassLayerTest(tf.test.TestCase):
 
         ch_in_num       = 256
         batch_size      = None
-        model_config    = HourGlassTestConfig()
+        model_config    = OutputTestConfig()
         scope           = 'unittest'
-        TEST_LAYER_NAME = 'hourglass'
+        TEST_LAYER_NAME = 'output'
 
         input_shape     = [batch_size,
-                           model_config.input_output_height,
-                           model_config.input_output_width,
+                           model_config.input_height,
+                           model_config.input_width,
                            ch_in_num]
 
         module_graph = tf.Graph()
         with module_graph.as_default():
             inputs = create_test_input(batchsize    =input_shape[0],
-                                       heightsize   =model_config.input_output_width,
-                                       widthsize    =model_config.input_output_height,
+                                       heightsize   =model_config.input_height,
+                                       widthsize    =model_config.input_width,
                                        channelnum   =input_shape[3])
 
             layer_out, mid_points,_ = get_layer(ch_in         = inputs,
@@ -72,16 +71,18 @@ class HourGlassLayerTest(tf.test.TestCase):
 
 
         #----------------------------------------------------------
-        expected_output_shape   = input_shape
+        expected_output_shape   = [batch_size,
+                                    model_config.input_height,
+                                    model_config.input_width,
+                                    model_config.num_of_channels_out]
+
         expected_midpoint   = LayerEndpointName(layer_type     =TEST_LAYER_NAME,
                                                 input_shape     = input_shape,
-                                                output_shape    = expected_output_shape,
-                                                conv_type       = model_config.conv_config.conv_type,
-                                                deconv_type     = model_config.deconv_config.deconv_type)
+                                                output_shape    = expected_output_shape)
 
 
-        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'0_in'
-        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'0_out'
+        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'_in'
+        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'_out'
         self.assertTrue(expected_input_name in mid_points)
         self.assertTrue(expected_output_name in mid_points)
 
@@ -115,13 +116,9 @@ class HourGlassLayerTest(tf.test.TestCase):
         if not tf.gfile.Exists(savedir):
             tf.gfile.MakeDirs(savedir)
 
-        pbfilename      = TEST_LAYER_NAME + '_'         + \
-                          model_config.conv_config.conv_type + '_'  + \
-                          model_config.deconv_config.deconv_type + '.pb'
+        pbfilename      = TEST_LAYER_NAME + '.pb'
 
-        pbtxtfilename   = TEST_LAYER_NAME + '_'         + \
-                          model_config.conv_config.conv_type + '_'  + \
-                          model_config.deconv_config.deconv_type + '.pbtxt'
+        pbtxtfilename   = TEST_LAYER_NAME + '.pbtxt'
 
         with self.test_session(graph=module_graph) as sess:
             print("TF graph_def is saved in pb at %s" % savedir + pbfilename)
@@ -144,13 +141,13 @@ class HourGlassLayerTest(tf.test.TestCase):
         '''
 
         ch_in_num       = 256
-        model_config    = HourGlassTestConfig()
+        model_config    = OutputTestConfig()
         scope           = 'unittest'
-        TEST_LAYER_NAME = 'hourglass'
+        TEST_LAYER_NAME = 'output'
 
         input_shape     = [None,
-                           model_config.input_output_height,
-                           model_config.input_output_width,
+                           model_config.input_height,
+                           model_config.input_width,
                            ch_in_num]
 
         batch_size      = 1
@@ -167,12 +164,14 @@ class HourGlassLayerTest(tf.test.TestCase):
                                           scope         = scope)
 
 
-
         input_shape[0]          = batch_size
-        expected_output_shape   = input_shape
+        expected_output_shape   = [batch_size,
+                                    model_config.input_height,
+                                    model_config.input_width,
+                                    model_config.num_of_channels_out]
 
-        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'0_in'
-        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'0_out'
+        expected_input_name = 'unittest0/'+TEST_LAYER_NAME+'_in'
+        expected_output_name = 'unittest0/'+TEST_LAYER_NAME+'_out'
 
         self.assertTrue(expected_input_name in mid_points)
         self.assertTrue(expected_output_name in mid_points)
