@@ -189,7 +189,6 @@ class LayerEndpointName(object):
             self.name_list  = ['unittest0/reception_in',
                                'unittest0/reception/reception_conv7x7_out',
                                'unittest0/reception/reception_conv7x7_batchnorm_out',
-                               'reception_receptconv_out',
                                'unittest0/reception/reception_maxpool3x3_out',
                                'unittest0/reception_out']
 
@@ -198,10 +197,9 @@ class LayerEndpointName(object):
 
             self.shape_dict = {self.name_list[0]:input_shape,
                                self.name_list[1]:input_shape_receptconv,
-                               self.name_list[2]:input_shape_receptconv,
-                               self.name_list[3]:input_shape_maxpool,
-                               self.name_list[4]:output_shape,
-                               self.name_list[5]:output_shape}
+                               self.name_list[2]:input_shape_maxpool,
+                               self.name_list[3]:output_shape,
+                               self.name_list[4]:output_shape}
 
 
         elif layer_type is 'supervision':
@@ -236,6 +234,57 @@ class LayerEndpointName(object):
                                 self.name_list[5]:output_shape
                                 }
 
+
+class ModelEndpointName(object):
+
+    # for unittest
+    def __init__(self,
+                 input_shape,
+                 output_shape,
+                 hg_ch_num):
+
+
+        self.name_list = ['model_in',
+                         'model/reception/reception_in',
+                         'model/reception/reception_out',
+                         'model/stacked_hg/hourglass0_in',
+                         'model/stacked_hg/hourglass0_out',
+                         'model/stacked_hg/supervision0_in',
+                         'model/stacked_hg/supervision0/supervision0_conv1x1_heapmatgen_out',
+                         'model/stacked_hg/supervision0_out',
+                         'model/stacked_hg/hourglass1_in',
+                         'model/stacked_hg/hourglass1_out',
+                         'model/stacked_hg/supervision1_in',
+                         'model/stacked_hg/supervision1/supervision1_conv1x1_heapmatgen_out',
+                         'model/stacked_hg/supervision1_out',
+                         'model/output/output_in',
+                         'model/output/output_out',
+                         'model_out']
+
+        hg_shape = [input_shape[0],input_shape[1]/4,input_shape[2]/4,hg_ch_num]
+
+        self.shape_dict = {
+            self.name_list[0]: input_shape,
+            self.name_list[1]: input_shape,
+            self.name_list[2]: hg_shape,
+            self.name_list[3]: hg_shape,
+            self.name_list[4]: hg_shape,
+            self.name_list[5]: hg_shape,
+            self.name_list[6]: output_shape,
+            self.name_list[7]: hg_shape,
+            self.name_list[8]: hg_shape,
+            self.name_list[9]: hg_shape,
+            self.name_list[10]: hg_shape,
+            self.name_list[11]: output_shape,
+            self.name_list[12]: hg_shape,
+            self.name_list[13]: hg_shape,
+            self.name_list[14]: output_shape,
+            self.name_list[15]: output_shape
+        }
+
+
+
+
 class ConvModuleConfig(object):
 
     def __init__(self):
@@ -263,6 +312,8 @@ class ConvModuleConfig(object):
 
 
 
+
+
 class DeconvModuleConfig(object):
     def __init__(self):
 
@@ -280,6 +331,8 @@ class DeconvModuleConfig(object):
         # batch_norm
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
+
+
 
 
 
@@ -306,6 +359,8 @@ class ConvSeqModuleConfig(object):
 
 
 
+
+
 class HourGlassTestConfig(object):
 
     def __init__(self):
@@ -326,6 +381,7 @@ class HourGlassTestConfig(object):
         self.pooling_type           = 'maxpool'
         # self.pooling_type        = 'convpool'
         self.pooling_factor         = 2
+
 
 
 
@@ -355,6 +411,9 @@ class SupervisionTestConfig(object):
         self.batch_norm_fused   = True
 
 
+
+
+
 class ReceptionTestConfig(object):
 
     def __init__(self):
@@ -381,6 +440,7 @@ class ReceptionTestConfig(object):
         self.batch_norm_fused   = True
 
         self.conv_config    = ConvModuleConfig()
+
 
 
 
