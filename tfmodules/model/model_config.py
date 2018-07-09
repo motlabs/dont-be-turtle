@@ -22,17 +22,17 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 import numpy as np
 
+DEFAULT_CHANNEL_NUM     = 256.0
+DEFAULT_INPUT_RESOL     = 256.0
+DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / 4.0
+NUM_OF_BODY_PART        = 4
 
 class ConvModuleConfig(object):
 
-    def __init__(self):
+    def __init__(self,conv_type='residual'):
 
         # for convolution modules===================
-        # self.conv_type           = 'inceptionv2'
-        # self.conv_type           = 'inverted_bottleneck'
-        # self.conv_type           = 'linear_bottleneck'
-        # self.conv_type           = 'separable_conv2d'
-        self.conv_type              = 'residual'
+        self.conv_type              = conv_type
         self.kernel_size            = 3
 
 
@@ -51,10 +51,10 @@ class ConvModuleConfig(object):
 
 
 class DeconvModuleConfig(object):
-    def __init__(self):
+    def __init__(self,deconv_type='nearest_neighbor_unpool'):
 
         # for deconvolution modules====================
-        self.deconv_type                = 'nearest_neighbor_unpool'
+        self.deconv_type                = deconv_type
 
         # for unpooling
         self.is_trainable = True
@@ -92,68 +92,16 @@ class ConvSeqModuleConfig(object):
 
 
 
-class HourGlassConfig(object):
-
-    def __init__(self,depth_multiplier, resol_multiplier):
-
-        # hourglass layer config
-
-        self.num_of_stacking            = 4
-        self.input_output_width         = np.floor(64.0 * resol_multiplier)
-        self.input_output_height        = np.floor(64.0 * resol_multiplier)
-
-        self.num_of_channels_out        = np.floor(256.0 * depth_multiplier)
-        self.is_trainable               = True
-
-        self.conv_config    = ConvModuleConfig()
-        self.deconv_config  = DeconvModuleConfig()
-        self.convseq_config = ConvSeqModuleConfig()
-
-
-        self.pooling_type           = 'maxpool'
-        # self.pooling_type         = 'convpool'
-        self.pooling_factor         = 2
-
-
-
-
-class SupervisionConfig(object):
-
-    def __init__(self,depth_multiplier, resol_multiplier):
-
-        self.lossfn_enable          = False
-        self.input_output_width     = np.floor(64.0 * resol_multiplier)
-        self.input_output_height    = np.floor(64.0 * resol_multiplier)
-
-        self.num_of_channels_out    = np.floor(256.0 * depth_multiplier)
-        self.num_of_1st1x1conv_ch   = np.floor(256.0 * depth_multiplier)
-        self.num_of_heatmaps        = 4
-
-        self.is_trainable           = True
-
-
-        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.biases_initializer     = slim.init_ops.zeros_initializer()
-        self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
-
-        # batch_norm
-        self.batch_norm_decay   = 0.999
-        self.batch_norm_fused   = True
-
-
-
 
 class ReceptionConfig(object):
 
     def __init__(self,depth_multiplier, resol_multiplier):
-        self.input_width     = np.floor(256.0 * resol_multiplier)
-        self.input_height    = np.floor(256.0 * resol_multiplier)
+        self.input_height    = np.floor(DEFAULT_INPUT_RESOL * resol_multiplier)
+        self.input_width     = np.floor(DEFAULT_INPUT_RESOL * resol_multiplier)
 
         self.output_width           = np.floor(self.input_width / 4.0)
         self.output_height          = np.floor(self.input_height / 4.0)
-        self.num_of_channels_out    = np.floor(256.0 * depth_multiplier)
+        self.num_of_channels_out    = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
 
         self.is_trainable           = True
 
@@ -171,7 +119,68 @@ class ReceptionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        self.conv_config    = ConvModuleConfig()
+        self.conv_config    = ConvModuleConfig(conv_type='linear_bottleneck')
+
+
+
+
+
+class HourGlassConfig(object):
+
+    def __init__(self,depth_multiplier, resol_multiplier):
+
+        # hourglass layer config
+
+        self.num_of_stacking            = 4 # shold be less than or equal to 4
+        self.input_output_height        = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_output_width         = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.num_of_channels_out        = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.is_trainable               = True
+
+
+        # self.conv_type           = 'inceptionv2'
+        # self.conv_type           = 'inverted_bottleneck'
+        # self.conv_type           = 'linear_bottleneck'
+        # self.conv_type           = 'separable_conv2d'
+        self.conv_config    = ConvModuleConfig(conv_type='inverted_bottleneck')
+        self.deconv_config  = DeconvModuleConfig(deconv_type='nearest_neighbor_unpool')
+        self.convseq_config = ConvSeqModuleConfig()
+
+        self.pooling_type           = 'maxpool'
+        # self.pooling_type         = 'convpool'
+        self.pooling_factor         = 2
+
+
+
+
+
+class SupervisionConfig(object):
+
+    def __init__(self,depth_multiplier, resol_multiplier):
+
+        self.input_output_height    = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_output_width     = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+
+        self.num_of_channels_out    = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.num_of_1st1x1conv_ch   = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.num_of_heatmaps        = 4
+
+        self.is_trainable           = True
+        self.lossfn_enable          = False
+
+
+        self.weights_initializer    = tf.contrib.layers.xavier_initializer()
+        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
+
+        # batch_norm
+        self.batch_norm_decay   = 0.999
+        self.batch_norm_fused   = True
+
+
+
 
 
 
@@ -179,9 +188,9 @@ class ReceptionConfig(object):
 class OutputConfig(object):
 
     def __init__(self, resol_multiplier):
-        self.input_width            = np.floor(64.0 * resol_multiplier)
-        self.input_height           = np.floor(64.0 * resol_multiplier)
-        self.num_of_channels_out    = 4
+        self.input_height           = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_width            = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.num_of_channels_out    = NUM_OF_BODY_PART
 
         self.dim_reduct_ratio              = 1
         self.num_stacking_1x1conv          = 2
@@ -213,5 +222,5 @@ class ModelConfig(object):
         self.hg_config          = HourGlassConfig   (self.depth_multiplier, self.resol_multiplier)
         self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
         self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
-        self.out_config         = OutputConfig      (self.depth_multiplier, self.resol_multiplier)
+        self.out_config         = OutputConfig      (self.depth_multiplier)
 
