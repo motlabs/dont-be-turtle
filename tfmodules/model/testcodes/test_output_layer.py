@@ -63,7 +63,7 @@ class OutputLayerTest(tf.test.TestCase):
                                        widthsize    =model_config.input_width,
                                        channelnum   =input_shape[3])
 
-            layer_out, mid_points = get_layer(ch_in         = inputs,
+            layer_out, mid_points,_ = get_layer(ch_in         = inputs,
                                               model_config  = model_config,
                                               layer_index   = 0,
                                               layer_type    = TEST_LAYER_NAME,
@@ -157,7 +157,7 @@ class OutputLayerTest(tf.test.TestCase):
                                    widthsize    =input_shape[2],
                                    channelnum   =input_shape[3])
 
-        layer_out, mid_points = get_layer(ch_in         = inputs,
+        layer_out, mid_points,_ = get_layer(ch_in         = inputs,
                                           model_config  = model_config,
                                           layer_index   = 0,
                                           layer_type    = TEST_LAYER_NAME,

@@ -60,6 +60,7 @@ def get_layer(ch_in,
     ch_in_num   = ch_in.get_shape().as_list()[3]
     net         = ch_in
     end_points  = {}
+    heatmaps_out = None
 
     with tf.variable_scope(name_or_scope=scope, default_name='test_layer',values=[ch_in]):
 
@@ -68,6 +69,7 @@ def get_layer(ch_in,
                                                   model_config          =model_config,
                                                   layer_index           =layer_index,
                                                   scope=layer_type)
+
         elif layer_type is 'reception':
 
             net, end_points = get_reception_layer(ch_in         = net,
@@ -76,10 +78,10 @@ def get_layer(ch_in,
 
         elif layer_type is 'supervision':
 
-            net, end_points = get_supervision_layer(ch_in                 =net,
-                                                    model_config          =model_config,
-                                                    layer_index           =layer_index,
-                                                    scope                 =layer_type)
+            net, end_points, heatmaps_out = get_supervision_layer(ch_in                 =net,
+                                                                  model_config          =model_config,
+                                                                  layer_index           =layer_index,
+                                                                  scope                 =layer_type)
 
         elif layer_type is 'output':
 
@@ -88,7 +90,7 @@ def get_layer(ch_in,
                                                scope            = layer_type)
 
 
-    return net, end_points
+    return net, end_points,heatmaps_out
 
 
 

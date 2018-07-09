@@ -63,11 +63,11 @@ class SupervisionLayerTest(tf.test.TestCase):
                                        widthsize    =model_config.input_output_width,
                                        channelnum   =input_shape[3])
 
-            layer_out, mid_points = get_layer(ch_in         = inputs,
-                                              model_config  = model_config,
-                                              layer_index   = 0,
-                                              layer_type    = TEST_LAYER_NAME,
-                                              scope         = scope)
+            layer_out, mid_points,heatmaps_out = get_layer(ch_in         = inputs,
+                                                          model_config  = model_config,
+                                                          layer_index   = 0,
+                                                          layer_type    = TEST_LAYER_NAME,
+                                                          scope         = scope)
 
 
         #----------------------------------------------------------
@@ -157,11 +157,11 @@ class SupervisionLayerTest(tf.test.TestCase):
                                    widthsize    =input_shape[2],
                                    channelnum   =input_shape[3])
 
-        layer_out, mid_points = get_layer(ch_in         = inputs,
-                                          model_config  = model_config,
-                                          layer_index   = 0,
-                                          layer_type    = TEST_LAYER_NAME,
-                                          scope         = scope)
+        layer_out, mid_points,heatmaps_out = get_layer(ch_in         = inputs,
+                                                      model_config  = model_config,
+                                                      layer_index   = 0,
+                                                      layer_type    = TEST_LAYER_NAME,
+                                                      scope         = scope)
 
 
         input_shape[0]          = batch_size
