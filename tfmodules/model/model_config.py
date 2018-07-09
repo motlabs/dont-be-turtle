@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-
+import numpy as np
 
 
 class ConvModuleConfig(object):
@@ -94,14 +94,15 @@ class ConvSeqModuleConfig(object):
 
 class HourGlassConfig(object):
 
-    def __init__(self):
+    def __init__(self,depth_multiplier, resol_multiplier):
 
         # hourglass layer config
 
         self.num_of_stacking            = 4
-        self.input_output_width         = 64
-        self.input_output_height        = 64
-        self.num_of_channels_out        = 256
+        self.input_output_width         = np.floor(64.0 * resol_multiplier)
+        self.input_output_height        = np.floor(64.0 * resol_multiplier)
+
+        self.num_of_channels_out        = np.floor(256.0 * depth_multiplier)
         self.is_trainable               = True
 
         self.conv_config    = ConvModuleConfig()
@@ -118,15 +119,16 @@ class HourGlassConfig(object):
 
 class SupervisionConfig(object):
 
-    def __init__(self):
+    def __init__(self,depth_multiplier, resol_multiplier):
 
         self.lossfn_enable          = False
-        self.input_output_width     = 64
-        self.input_output_height    = 64
-        self.num_of_channels_out    = 256
+        self.input_output_width     = np.floor(64.0 * resol_multiplier)
+        self.input_output_height    = np.floor(64.0 * resol_multiplier)
 
-        self.num_of_1st1x1conv_ch   = 256
+        self.num_of_channels_out    = np.floor(256.0 * depth_multiplier)
+        self.num_of_1st1x1conv_ch   = np.floor(256.0 * depth_multiplier)
         self.num_of_heatmaps        = 4
+
         self.is_trainable           = True
 
 
@@ -145,13 +147,14 @@ class SupervisionConfig(object):
 
 class ReceptionConfig(object):
 
-    def __init__(self):
-        self.input_width     = 256
-        self.input_height    = 256
+    def __init__(self,depth_multiplier, resol_multiplier):
+        self.input_width     = np.floor(256.0 * resol_multiplier)
+        self.input_height    = np.floor(256.0 * resol_multiplier)
 
-        self.output_width           = 64
-        self.output_height          = 64
-        self.num_of_channels_out    = 256
+        self.output_width           = np.floor(self.input_width / 4.0)
+        self.output_height          = np.floor(self.input_height / 4.0)
+        self.num_of_channels_out    = np.floor(256.0 * depth_multiplier)
+
         self.is_trainable           = True
 
         # the kernel_size of the first conv block
@@ -175,9 +178,9 @@ class ReceptionConfig(object):
 
 class OutputConfig(object):
 
-    def __init__(self):
-        self.input_width            = 64
-        self.input_height           = 64
+    def __init__(self, resol_multiplier):
+        self.input_width            = np.floor(64.0 * resol_multiplier)
+        self.input_height           = np.floor(64.0 * resol_multiplier)
         self.num_of_channels_out    = 4
 
         self.dim_reduct_ratio              = 1
@@ -201,13 +204,14 @@ class ModelConfig(object):
 
     def __init__(self):
         # common
-        self.depth_multiplier   = 1.0
-        self.resol_multiplier   = 1.0
+        self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
+        self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
+        self.num_of_hgstacking  = 2
 
         self.dtype              = tf.float32
 
-        self.hg_config          = HourGlassConfig()
-        self.sv_config          = SupervisionConfig()
-        self.rc_config          = ReceptionConfig()
-        self.out_config         = OutputConfig()
+        self.hg_config          = HourGlassConfig   (self.depth_multiplier, self.resol_multiplier)
+        self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
+        self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
+        self.out_config         = OutputConfig      (self.depth_multiplier, self.resol_multiplier)
 
