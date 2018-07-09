@@ -25,8 +25,6 @@ def get_supervision_layer(ch_in,
                           model_config,
                           layer_index=0,
                           scope=None):
-
-
     '''
     ch_in (64x64x256) --> 1x1 conv (64x64x??)
 
@@ -82,19 +80,22 @@ def get_supervision_layer(ch_in,
                                   num_outputs   = model_config.num_of_channels_out,
                                   scope         = scope + '_conv1x1_1')
 
+                # Convert end_points_collection into a dictionary of end_points.
+                end_points = slim.utils.convert_collection_to_dict(
+                    endpoint_collection, clear_collection=True)
+
         # combine heatmap expansion to the original data path
         out = tf.add(x = out,
                      y = heatmaps_expansion,
-                     name = sc.name + '_out')
+                     name = sc.name + '_add_heatmapexp')
+        end_points[sc.name + '_add_heatmapexp']    = out
 
-        # Convert end_points_collection into a dictionary of end_points.
-        end_points = slim.utils.convert_collection_to_dict(
-            endpoint_collection, clear_collection=True)
+        out = tf.identity(input=out,name=sc.name + '_out')
 
-        end_points[sc.name + '_out'] = out
-        end_points[sc.name + '_in'] = ch_in
+        end_points[sc.name + '_out']    = out
+        end_points[sc.name + '_in']     = ch_in
 
-    return out, end_points
+    return out, end_points, heatmaps_out
 
 
 

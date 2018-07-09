@@ -43,8 +43,6 @@ class inception_conv_chout_num(object):
 
 
 
-
-
 def get_hourglass_conv_module(ch_in,
                              ch_out_num,
                              model_config,

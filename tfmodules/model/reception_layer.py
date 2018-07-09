@@ -23,8 +23,6 @@ import tensorflow.contrib.slim as slim
 from hourglass_module import get_hourglass_conv_module
 
 
-
-
 def get_reception_layer(ch_in,
                         model_config,
                         scope=None):
@@ -59,6 +57,7 @@ def get_reception_layer(ch_in,
             # receptive convolutional block
             net, receptconv_end_points = get_hourglass_conv_module(ch_in        = net,
                                                                    ch_out_num   = model_config.num_of_channels_out,
+                                                                   stride       = 1,
                                                                    model_config = model_config.conv_config,
                                                                    scope        = scope + '_receptconv')
             net = tf.identity(input = net,

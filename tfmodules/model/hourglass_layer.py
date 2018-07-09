@@ -21,10 +21,10 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 
-
 from hourglass_module import get_hourglass_conv_module
 from hourglass_module import get_hourglass_deconv_module
 from hourglass_module import get_conv2d_seq
+
 
 
 def get_hourglass_layer(ch_in,
@@ -71,7 +71,7 @@ def get_hourglass_layer(ch_in,
             # max pooling when only stride < 2 where stride is an integer
             if model_config.pooling_type is 'maxpool':
                 net = slim.max_pool2d(inputs=net,
-                                      kernel_size=[3,3],
+                                      kernel_size= [3,3],
                                       stride     = model_config.pooling_factor,
                                       padding    = 'SAME',
                                       scope      = scope + '_maxpool' + str(conv_index))
@@ -94,8 +94,8 @@ def get_hourglass_layer(ch_in,
 
         scope = 'hg_convseq'
         net,convseq_end_points= get_conv2d_seq(ch_in        = net,
-                                               ch_out_num   =ch_out_num_at_bottom,
-                                               model_config =model_config.convseq_config,
+                                               ch_out_num   = ch_out_num_at_bottom,
+                                               model_config = model_config.convseq_config,
                                                scope        = scope)
         end_points.update(convseq_end_points)
 
@@ -117,11 +117,11 @@ def get_hourglass_layer(ch_in,
             end_points[scope + '_shortcut_sum' + str(deconv_index)] = net
 
             # 2) unpooling
-            net,deconv_end_points = get_hourglass_deconv_module(ch_in = net,
-                                                                unpool_rate = model_config.pooling_factor,
-                                                               model_config = model_config.deconv_config,
-                                                               layer_index  = deconv_index,
-                                                               scope=scope)
+            net,deconv_end_points = get_hourglass_deconv_module(ch_in           = net,
+                                                                unpool_rate     = model_config.pooling_factor,
+                                                                model_config    = model_config.deconv_config,
+                                                                layer_index     = deconv_index,
+                                                                scope           = scope)
             # 3) end point update
             end_points.update(deconv_end_points)
 
