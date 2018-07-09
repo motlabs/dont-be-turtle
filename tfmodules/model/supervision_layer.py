@@ -87,10 +87,7 @@ def get_supervision_layer(ch_in,
         # combine heatmap expansion to the original data path
         out = tf.add(x = out,
                      y = heatmaps_expansion,
-                     name = sc.name + '_add_heatmapexp')
-        end_points[sc.name + '_add_heatmapexp']    = out
-
-        out = tf.identity(input=out,name=sc.name + '_out')
+                     name = sc.name + '_out')
 
         end_points[sc.name + '_out']    = out
         end_points[sc.name + '_in']     = ch_in

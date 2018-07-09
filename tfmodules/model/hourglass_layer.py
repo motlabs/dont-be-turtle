@@ -60,7 +60,7 @@ def get_hourglass_layer(ch_in,
 
             net_shape   = net.get_shape().as_list()
             ch_out_num  = net_shape[3]
-            print ('[hglayer] conv_index = %s'% conv_index)
+            # print ('[hglayer] conv_index = %s'% conv_index)
             net,conv_end_points = get_hourglass_conv_module(ch_in       = net,
                                                            ch_out_num   = ch_out_num,
                                                            stride       = stride,
@@ -108,7 +108,7 @@ def get_hourglass_layer(ch_in,
 
         scope = 'hg_deconv'
         for deconv_index in range(0, model_config.num_of_stacking):
-            print ('[hglayer] deconv_index = %s'% deconv_index)
+            # print ('[hglayer] deconv_index = %s'% deconv_index)
 
             # 1) elementwise sum for shortcut connection
             net = tf.add(x=net,

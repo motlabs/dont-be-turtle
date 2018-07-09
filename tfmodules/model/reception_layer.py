@@ -60,9 +60,6 @@ def get_reception_layer(ch_in,
                                                                    stride       = 1,
                                                                    model_config = model_config.conv_config,
                                                                    scope        = scope + '_receptconv')
-            net = tf.identity(input = net,
-                              name  = scope + '_receptconv_out')
-            receptconv_end_points[scope + '_receptconv_out'] = net
 
             # max pooling
             net =  slim.max_pool2d(inputs           =net,
