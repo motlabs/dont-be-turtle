@@ -11,7 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===================================================================================
-# -*- coding: utf-8 -*-#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+#! /usr/bin/env python
+
 '''
     filename: trainer.py
     description: this is a trainer class in the dont-be-turtle project
@@ -20,6 +22,7 @@
     created at 2018 06 13
 
 '''
+
 import argparse
 import tensorflow as tf
 

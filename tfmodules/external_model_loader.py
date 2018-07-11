@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===================================================================================
-# -*- coding: utf-8 -*-#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# ! /usr/bin/env python
+
 '''
-    filename: model_loader.py
+    filename: externel_model_loader.py
     description: this module is for loading model and ckpt from
         - model :
             - opt1: .pb

@@ -1,12 +1,9 @@
-[submodule "mobile_apps/tflite_convert_examples"]
-	path = mobile_apps/tflite_convert_examples
-	url = https://github.com/jwkanggist/tensorflowlite
 [submodule "mobile_apps/android"]
 	path = mobile_apps/android
 	url = https://github.com/motlabs/mot-android-tensorflow
 [submodule "mobile_apps/ios"]
 	path = mobile_apps/ios
 	url = https://github.com/motlabs/mot-ios-tensorflow
-[submodule "tfmodules/tf-cnn-model"]
-	path = tfmodules/tf-cnn-model
+[submodule "tfmodules/model/tf-cnn-model"]
+	path = tfmodules/model/tf-cnn-model
 	url = https://github.com/jwkanggist/tf-cnn-model

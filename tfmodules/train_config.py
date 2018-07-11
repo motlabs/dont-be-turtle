@@ -19,7 +19,6 @@
 
 '''
 import tensorflow as tf
-import path_manager
 
 TRAININGSET_SIZE     = 5000
 VALIDATIONSET_SIZE   = 1000
