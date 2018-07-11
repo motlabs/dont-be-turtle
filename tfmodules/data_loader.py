@@ -1,4 +1,4 @@
-# Copyright 2018 Jaewook Kang (jwkang10@gmail.com)
+# Copyright 2018 Jaewook Kang and JoonHo Lee ({jwkang10, junhoning}@gmail.com)
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,7 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===================================================================================
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+
 '''
     filename: data_loader.py
     description: this module undertakes the below items:
@@ -26,130 +28,71 @@
     - Author : Junho Lee and Jaewook Kang @ 2018 June
 
 '''
-
+from glob import glob
 import numpy as np
 
-class DataSet(object):
+import tensorflow as tf
+
+# from . import preprocessor
+
+# preprocess_fn 안에 전처리 함수들을 한번에 묶어서 담을 예정
+# preprocess_fn = preprocessor
+
+
+class DataSet:
     '''
-        A class for dataset including (input, label)
-    '''
-    def __init__(self,input_data=None,label=None,batchsize=1, is_shuffle=False):
+    dataset = Dataset(batch_size=32)
+    train_image, train_label, eval_iterator = dataset.input_data(train_files, True)
+    eval_image, eval_label, eval_iterator = dataset.input_data(eval_files, False)
 
+    ...
 
-        self._np_input_data = input_data
-        self._np_label      = label
-
-        self._curr_batch_index   = 0
-        self.batchsize      = batchsize
-        self._is_shuffle    = is_shuffle
-
-
-    def reset(self):
-
-        self._np_input_data     = np.empty(shape=[0,0])
-        self._np_label          = np.empty(shape=[0,0])
-        self._curr_batch_index  = 0
-
-
-    def set_batchsize(self,batch_size):
-        self.batchsize  = batch_size
-
-
-    def set_dataset(self, input_data,label):
-
-        self._np_input_data = input_data
-        self._np_label      = label
-
-
-
-
-    def merge_dataset(self, np_add_dataset):
-
-
-
-
-    def slice_dataset(self, slice_index):
-
-
-
-
-    def get_batch(self):
-
-
-        # This method returns a batch of a dataset by batch index.
-        # ------------------------------
-
-
-        return np_curr_batch_data, np_curr_batch_label
-
-
-
-
-    def shuffle_dataset(self):
-
-        # This method shuffles an entire dataset
-        #-----------------------------------------
-
-
-        return np_shuffled_dataset
-
-
-
-
-class Dataloader(object):
-    '''
-         A class downloading, extracting and spliting raw dataset to prepare
-         numpy data set.
+    with tf.Session() as sess:
+        sess.run(train_iterator.initializer)
+        image, label = sess.run([self.image_stacked, self.label_stacked])
 
     '''
-    def __init__(self, train_url,test_url,work_dir):
-        self._train_url     = train_url
-        self._test_url      = test_url
-        self._working_dir   = work_dir
 
-        self._np_train_inputdata   = np.empty(shape=[0,0])
-        self._np_valid_inputdata   = np.empty(shape=[0,0])
-        self._np_test_inputdata    = np.empty(shape=[0,0])
+    def __init__(self, batch_size):
+        self.batch_size = batch_size
 
-        self._np_train_label       = np.empty(shape=[0,0])
-        self._np_valid_label       = np.empty(shape=[0,0])
-        self._np_test_label        = np.empty(shape=[0,0])
+    def input_data(self, filenames, is_training):
+        compression_type = 'ZLIB' if filenames.split('.')[-1] == 'zlib' else 'GZIP'
+        dataset = tf.data.TFRecordDataset([filenames], compression_type=compression_type)
 
-        self.train_filename = ''
-        self.test_filename  = ''
+        def parser(record):
+            keys_to_features = {
+                "height": tf.FixedLenFeature((), tf.int64, default_value=0),
+                "width": tf.FixedLenFeature((), tf.int64, default_value=0),
+                "channel": tf.FixedLenFeature((), tf.int64, default_value=3),
+                "image": tf.FixedLenFeature((), tf.string, default_value=""),
+                "label": tf.FixedLenFeature((), tf.string, default_value="")
+            }
+            parsed = tf.parse_single_example(record, keys_to_features)
 
-        self.trainset   = DataSet()
-        self.validset   = DataSet()
-        self.testset    = DataSet()
+            # get the original image shape
+            height = parsed['height']
+            width = parsed['width']
+            channel = parsed['channel']
+            img_shape = tf.stack([height, width, channel])
 
+            # reshape images
+            image = tf.decode_raw(parsed['image'], tf.int32)
+            image = tf.cast(image, tf.float32)
+            image = tf.reshape(image, img_shape)
 
-    def reset(self):
+            # temporarily decode label
+            label = tf.decode_raw(parsed['label'], tf.int32)
+            label = tf.cast(label, tf.float32)
 
+            return image, label
 
-    def download_from_url(self, datatype):
+        dataset = dataset.map(parser)
+        dataset = dataset.repeat()
+        if is_training:
+            dataset = dataset.shuffle(buffer_size=(100))  # int(len(filenames) * 0.4) + 3 * self.batch_size)
+        dataset = dataset.batch(self.batch_size)
 
+        iterator = dataset.make_initializable_iterator()
 
-    def extract_data_from_file(self,datatype):
-
-
-
-    def extract_lable_from_filename(self,datatype):
-
-
-
-    def get_np_data(self,datatype):
-
-
-    def get_np_label(self,datatype):
-
-
-    def merge_external_data(self,np_external_data,datatype):
-
-
-
-
-
-
-
-
-
+        return iterator

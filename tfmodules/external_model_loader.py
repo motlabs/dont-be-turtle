@@ -1,4 +1,4 @@
-# Copyright 2018 Jaewook Kang (jwkang10@gmail.com)
+# Copyright 2018 Jaewook Kang and JoonHo Lee ({jwkang10, junhoning}@gmail.com)
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,7 +12,8 @@
 # limitations under the License.
 # ===================================================================================
 # -*- coding: utf-8 -*-
-#! /usr/bin/env python
+# ! /usr/bin/env python
+
 '''
     filename: externel_model_loader.py
     description: this module is for loading model and ckpt from
