@@ -115,7 +115,7 @@ class ModelTest(tf.test.TestCase):
         if not tf.gfile.Exists(savedir):
             tf.gfile.MakeDirs(savedir)
 
-        pbfilename      = 'model_'+ model_config.hg_config.conv_config.conv_type + '.py'
+        pbfilename      = 'model_'+ model_config.hg_config.conv_config.conv_type + '.pb'
         pbtxtfilename   = 'model_'+ model_config.hg_config.conv_config.conv_type + '.pbtxt'
 
         with self.test_session(graph=module_graph) as sess:
