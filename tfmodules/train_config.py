@@ -17,32 +17,33 @@
 import tensorflow as tf
 from absl import flags
 
-TRAININGSET_SIZE     = 5000
-VALIDATIONSET_SIZE   = 1000
-TESTSET_SIZE         = 1000
+from path_manager import DATASET_DIR
+from path_manager import EXPORT_MODEL
+from path_manager import EXPORT_SAVEMODEL_DIR
 
+
+TRAININGSET_SIZE     = 2000
+VALIDATIONSET_SIZE   = 200
+# TESTSET_SIZE         = 100
+
+BATCH_SIZE           = 1024
+
+GCP_PROJ_NAME = 'ordinal-virtue-208004'
+GCE_ZONE = 'us-central1-f'
 
 class TrainConfig(object):
     def __init__(self):
 
         # self.is_learning_rate_decay = True
         # self.learning_rate_decay_rate =0.99
-        self.opt_fn             =
-        self.heatmap_loss_fn    = tf.nn.l2_loss
+        self.opt_fn             = tf.train.RMSPropOptimizer
         self.occlusion_loss_fn  = tf.nn.softmax_cross_entropy_with_logits_v2
+        self.heatmap_loss_fn    = tf.nn.l2_loss
         self.activation_fn_pose = tf.nn.relu
 
-        self.training_epochs    = 100
-        self.batch_size         = 1000
-
-        # the number of step between evaluation
+        self.tf_data_type   = tf.float32
         self.display_step   = 5
-        self.total_batch    = int(TRAININGSET_SIZE / self.batch_size)
-        self.tf_data_type       = tf.float32
 
-        # for ground true heatmap generation
-        self.std        = 1
-        self.dist_type  = 'gaussian'
 
 
 class PreprocessingConfig(object):
@@ -57,8 +58,9 @@ class PreprocessingConfig(object):
         # which has an input as pose coordinate
         self.is_label_coordinate_norm   = False
 
-
-
+        # for ground true heatmap generation
+        self.heatmap_std        = 1
+        self.heatmap_pdf_type          = 'gaussian'
 
 #-----------------------------------------------
 # Learning rate schedule
@@ -85,24 +87,25 @@ flags.DEFINE_string(
     help='The Cloud TPU to use for training. This should be either the name '
     'used when creating the Cloud TPU, or a grpc://ip.address.of.tpu:8470 url.')
 
+
 flags.DEFINE_string(
-    'gcp_project', default=None,
+    'gcp_project', default=GCP_PROJ_NAME,
     help='Project name for the Cloud TPU-enabled project. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
 flags.DEFINE_string(
-    'tpu_zone', default=None,
+    'tpu_zone', default=GCE_ZONE,
     help='GCE zone where the Cloud TPU is located in. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
 # Model specific flags
 flags.DEFINE_string(
-    'data_dir', default=None,
+    'data_dir', default=DATASET_DIR,
     help=('The directory where the input data is stored. Please see'
           ' the README.md for the expected data format.'))
 
 flags.DEFINE_string(
-    'model_dir', default=None,
+    'model_dir', default=EXPORT_MODEL,
     help=('The directory where the model and training/evaluation summaries are'
           ' stored.'))
 
@@ -119,22 +122,20 @@ flags.DEFINE_integer(
           ' should be adjusted according to the --train_batch_size flag.'))
 
 flags.DEFINE_integer(
-    'train_batch_size', default=1024, help='Batch size for training.')
+    'train_batch_size', default=BATCH_SIZE, help='Batch size for training.')
 
 flags.DEFINE_integer(
-    'eval_batch_size', default=1024, help='Batch size for evaluation.')
+    'eval_batch_size', default=BATCH_SIZE, help='Batch size for evaluation.')
 
 flags.DEFINE_integer(
-    'num_train_images', default=1281167, help='Size of training data set.')
+    'num_train_images', default=TRAININGSET_SIZE, help='Size of training data set.')
 
 flags.DEFINE_integer(
-    'num_eval_images', default=50000, help='Size of evaluation data set.')
+    'num_eval_images', default=VALIDATIONSET_SIZE, help='Size of evaluation data set.')
+
 
 flags.DEFINE_integer(
-    'num_label_classes', default=1000, help='Number of classes, at least 2')
-
-flags.DEFINE_integer(
-    'steps_per_eval', default=5000,
+    'steps_per_eval', default=1000,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'
@@ -171,8 +172,8 @@ flags.DEFINE_string(
     'data_format', default='channels_last',
     help=('A flag to override the data format used in the model. The value'
           ' is either channels_first or channels_last. To run the network on'
-          ' CPU or TPU, channels_last should be used. For GPU, channels_first'
-          ' will improve performance.'))
+          ' CPU or TPU, channels_last should be used. (NHWC) '
+          'For GPU, channels_first will improve performance. (NCHW)'))
 
 # TODO(chrisying): remove this flag once --transpose_tpu_infeed flag is enabled
 
@@ -190,7 +191,7 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'export_dir',
-    default=None,
+    default=EXPORT_SAVEMODEL_DIR,
     help=('The directory where the exported SavedModel will be stored.'))
 
 flags.DEFINE_string(
@@ -198,7 +199,7 @@ flags.DEFINE_string(
     help=('Precision to use; one of: {bfloat16, float32}'))
 
 flags.DEFINE_float(
-    'base_learning_rate', default=0.1,
+    'base_learning_rate', default=2.5e-4,
     help=('Base learning rate when train batch size is 256.'))
 
 flags.DEFINE_float(
@@ -211,6 +212,9 @@ flags.DEFINE_float(
 
 
 
-
+flags.DEFINE_float(
+    'pck_threshold', default=0.2,
+    help=('Threshold to measure percentage for correct keypoints')
+)
 
 
