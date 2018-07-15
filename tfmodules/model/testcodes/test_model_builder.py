@@ -25,11 +25,15 @@ import tensorflow as tf
 sys.path.insert(0,getcwd())
 sys.path.insert(0,getcwd()+'/..')
 sys.path.insert(0,getcwd()+'/../tf-cnn-model')
+sys.path.insert(0,getcwd()+'/../tf-cnn-model/testcodes/tflite_convertor')
 
 print ('getcwd() = %s' % getcwd())
 
 from test_layer_util  import create_test_input
 from test_layer_util  import ModelEndpointName
+
+from test_layer_util  import save_pb_ckpt
+from test_layer_util  import convert_to_frozen_pb
 
 from model_builder    import get_model
 from model_config     import ModelConfig
