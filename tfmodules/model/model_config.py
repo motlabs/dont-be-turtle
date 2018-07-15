@@ -27,6 +27,9 @@ DEFAULT_INPUT_RESOL     = 256.0
 DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / 4.0
 NUM_OF_BODY_PART        = 4
 
+
+
+
 class ConvModuleConfig(object):
 
     def __init__(self,conv_type='residual'):

@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from os import getcwd
 
 import numpy as np
 import tensorflow as tf
@@ -25,9 +26,72 @@ from hourglass_layer    import get_hourglass_layer
 from reception_layer    import get_reception_layer
 from supervision_layer  import get_supervision_layer
 from output_layer       import get_output_layer
+from tflite_convertor import TFliteConvertor
 
 
 # where we adopt the NHWC format.
+
+
+def save_pb_ckpt(module_name,init,sess,ckpt_saver):
+    print('------------------------------------------------')
+    print('[tfTest] write pb files')
+    pbsavedir = getcwd() + '/pb_files/'
+    if not tf.gfile.Exists(pbsavedir):
+        tf.gfile.MakeDirs(pbsavedir)
+
+    ckptsavedir = pbsavedir + '/ckpt/'
+    if not tf.gfile.Exists(ckptsavedir):
+        tf.gfile.MakeDirs(ckptsavedir)
+
+    pbfilename = module_name + '.pb'
+    pbtxtfilename = module_name + '.pbtxt'
+    ckptfilename = module_name + '.ckpt'
+
+    sess.run(init)
+    print("TF graph_def is saved in pb at %s" % pbsavedir + pbfilename)
+    print("TF ckpt saved: %s" % ckptsavedir + ckptfilename)
+
+    tf.train.write_graph(graph_or_graph_def=sess.graph_def,
+                         logdir=pbsavedir,
+                         name=pbfilename,
+                         as_text=False)
+
+    tf.train.write_graph(graph_or_graph_def=sess.graph_def,
+                         logdir=pbsavedir,
+                         name=pbtxtfilename,
+                         as_text=True)
+
+    ckpt_saver.save(sess=sess,
+                    save_path=ckptsavedir + ckptfilename)
+
+    print('[tftest] pb and ckpt are generated successful')
+
+    return pbsavedir,pbfilename,ckptfilename
+
+
+
+
+def convert_to_frozen_pb(module_name,pbsavedir,pbfilename,ckptfilename,output_node_name,input_shape):
+    print('------------------------------------------------')
+    print('[tfTest] frozen pb conversion')
+
+    tflitedir = getcwd() + '/tflite_files/'
+    if not tf.gfile.Exists(tflitedir):
+        tf.gfile.MakeDirs(tflitedir)
+    tflitefilename      = module_name + '.tflite'
+    tflite_convertor    = TFliteConvertor()
+
+    #output_node_name = 'unittest0/' + module_name + '/' + expected_output_name
+
+    # converting to frozen graph
+    tflite_convertor.set_config_for_frozen_graph(input_dir_path=pbsavedir,
+                                                 input_pb_name=pbfilename,
+                                                 input_ckpt_name='ckpt/' + ckptfilename,
+                                                 output_dir_path=pbsavedir,
+                                                 output_node_names=output_node_name)
+    tflite_convertor.convert_to_frozen_graph()
+    print('[tftest] frozen graph is successfully generated.')
+
 
 
 def create_test_input(batchsize,heightsize,widthsize,channelnum):
