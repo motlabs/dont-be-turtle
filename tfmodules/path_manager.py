@@ -22,12 +22,13 @@
 '''
 
 from os import getcwd
+from os import chdir
 
-# PROJ_HOME               = getcwd()
-# TF_MODULE_DIR           = PROJ_HOME              + '/tfmodules'
+# move to project home directory
+chdir('..')
 
-TF_MODULE_DIR           = getcwd()
-PROJ_HOME               = TF_MODULE_DIR + '/..'
+PROJ_HOME               = getcwd()
+TF_MODULE_DIR           = PROJ_HOME              + '/tfmodules'
 
 # tf module related directory
 TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
@@ -43,7 +44,7 @@ TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
 
 # data path
-DATASET_DIR         = TF_MODULE_DIR + '/../dataset'
+DATASET_DIR         = PROJ_HOME + '/dataset'
 TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 
