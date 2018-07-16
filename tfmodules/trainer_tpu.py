@@ -19,12 +19,31 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
+import time
+import os
+
+from absl import flags
+import absl.logging as _logging  # pylint: disable=unused-import
+import tensorflow as tf
+
+
 # directory path addition
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import DATASET_DIR
 from path_manager import EXPORT_DIR
-from path_namager import TENSORBOARD_DIR
+from path_manager import TENSORBOARD_DIR
+from path_manager import TF_CNN_MODULE_DIR
+
+# PATH INSERSION
+sys.path.insert(0,TF_MODULE_DIR)
+sys.path.insert(0,TF_MODEL_DIR)
+sys.path.insert(0,TF_CNN_MODULE_DIR)
+sys.path.insert(0,DATASET_DIR)
+sys.path.insert(0,EXPORT_DIR)
+sys.path.insert(0,TENSORBOARD_DIR)
+
 
 # custom python packages
 
@@ -42,12 +61,6 @@ from train_config  import MEAN_RGB
 from train_config  import STDDEV_RGB
 from train_config  import FLAGS
 
-import sys
-import time
-import os
-
-import absl.logging as _logging  # pylint: disable=unused-import
-import tensorflow as tf
 
 
 from tensorflow.contrib import summary
@@ -58,12 +71,6 @@ from tensorflow.contrib.tpu.python.tpu import tpu_optimizer
 from tensorflow.contrib.training.python.training import evaluation
 from tensorflow.python.estimator import estimator
 
-# PATH INSERSION
-sys.path.insert(TF_MODULE_DIR)
-sys.path.insert(TF_MODEL_DIR)
-sys.path.insert(DATASET_DIR)
-sys.path.insert(EXPORT_DIR)
-sys.path.insert(TENSORBOARD_DIR)
 
 # config instance generation
 train_config = TrainConfig()
@@ -175,6 +182,7 @@ def get_heatmap_activation(logits,scope=None):
 
 
 
+
 def get_loss_heatmap(pred_heatmap_list,
                      label_heatmap_list,
                      scope=None):
@@ -216,7 +224,7 @@ def get_loss_heatmap(pred_heatmap_list,
 
 
 
-def metric_fn(label_heatmap_list, logits_heatmap_list):
+def metric_fn(labels, logits):
     """Evaluation metric function. Evaluates accuracy.
 
     This function is executed on the CPU and should not directly reference
@@ -229,23 +237,23 @@ def metric_fn(label_heatmap_list, logits_heatmap_list):
     element in the tuple passed to `eval_metrics`.
 
     Args:
-    labels: `Tensor` with shape `[batch]`.
-    logits: `Tensor` with shape `[batch, num_classes]`.
+    labels: `Tensor` of labels_heatmap_list
+    logits: `Tensor` of logits_heatmap_list
 
     Returns:
     A dict of the metrics to return from evaluation.
     """
 
     # get predicted coordinate
-    pred_head       = argmax_2d(logits_heatmap_list[0])
-    pred_neck       = argmax_2d(logits_heatmap_list[1])
-    pred_rshoulder  = argmax_2d(logits_heatmap_list[2])
-    pred_lshoulder  = argmax_2d(logits_heatmap_list[3])
+    pred_head       = argmax_2d(logits[0])
+    pred_neck       = argmax_2d(logits[1])
+    pred_rshoulder  = argmax_2d(logits[2])
+    pred_lshoulder  = argmax_2d(logits[3])
 
-    label_head      = argmax_2d(label_heatmap_list[0])
-    label_neck      = argmax_2d(label_heatmap_list[1])
-    label_rshoulder = argmax_2d(label_heatmap_list[2])
-    label_lshoulder = argmax_2d(label_heatmap_list[3])
+    label_head      = argmax_2d(labels[0])
+    label_neck      = argmax_2d(labels[1])
+    label_rshoulder = argmax_2d(labels[2])
+    label_lshoulder = argmax_2d(labels[3])
 
     # error distance measure
     head_neck_dist = tf.nn.l2_loss(t=label_head - label_neck).sqrt()
@@ -265,6 +273,8 @@ def metric_fn(label_heatmap_list, logits_heatmap_list):
     pck = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='pck@' + str(FLAGS.pck_threshold))
 
     return {'pck': pck}
+
+
 
 
 def host_call_fn(gs, loss, lr, ce):
@@ -305,18 +315,21 @@ def host_call_fn(gs, loss, lr, ce):
 
 
 def model_fn(features,
-             label_heatmap_list,
-             label_occluded=None,
-             mode=tf.estimator.ModeKeys.TRAIN):
+             labels,
+             mode,
+             params):
     """
     The model_fn for dontbeturtle model to be used with TPUEstimator.
 
     Args:
-        features:   `Tensor` of batched input images <MxMx3>.
-        label_heatmap_list:
-        label_heatmap_list =
-                        [labels_head, label_neck, label_rshoulder, label_lshoulder]
-                        where each elem has shape <NxNx1>
+        features:   `Tensor` of batched input images <batchNum x M x M x 3>.
+        labels: labels_heatmap_list
+        labels =
+                        [ [labels_head],
+                          [label_neck],
+                          [label_rshoulder],
+                          [label_lshoulder] ]
+                        where has shape <batchNum N x N x 4>
 
         mode:       one of `tf.estimator.ModeKeys.
                     {
@@ -342,6 +355,13 @@ def model_fn(features,
     # Normalize the image to zero mean and unit variance.
     features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
     features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+
+    # set input_shape
+    features.set_shape(features.get_shape().merge_with(
+        tf.TensorShape([None,
+                        model_config.input_height,
+                        model_config.input_width,
+                        None])))
 
 
     # Model building ============================
@@ -383,6 +403,7 @@ def model_fn(features,
         logits_out_heatmap, \
         logits_mid_heatmap, \
         end_points = build_network()
+
     #--------------------------------------------------------
     # mode == prediction case manipulation ===================
     # [[[ here need to change ]]] -----
@@ -413,7 +434,7 @@ def model_fn(features,
     # heatmap loss
     total_out_losssum, out_loss_list = \
         get_loss_heatmap(pred_heatmap_list  = act_out_heatmap_list,
-                         label_heatmap_list = label_heatmap_list,
+                         label_heatmap_list = labels,
                          scope='loss_out')
 
     # occlusion loss
@@ -422,6 +443,7 @@ def model_fn(features,
     act_mid_heatmap_list    = []
     logits_mid_heatmap_list = []
     mid_loss_list           = []
+
     total_mid_losssum       = []
     total_mid_losssum_acc   = 0.0
 
@@ -435,7 +457,7 @@ def model_fn(features,
         # heatmap loss
         total_mid_losssum[stacked_hg_index],mid_loss_list[stacked_hg_index] =\
             get_loss_heatmap(pred_heatmap_list  = act_mid_heatmap_list[stacked_hg_index],
-                             label_heatmap_list = label_heatmap_list,
+                             label_heatmap_list = labels,
                              scope='loss_mid_' + str(stacked_hg_index))
 
         total_mid_losssum_acc += total_mid_losssum[stacked_hg_index]
@@ -501,7 +523,7 @@ def model_fn(features,
         train_op = None
 
     # if mode == tf.estimator.ModeKeys.EVAL:
-    metrics = (metric_fn, [label_heatmap_list, logits_out_heatmap_list])
+    metrics = (metric_fn, [labels, logits_out_heatmap_list])
 
 
     return tpu_estimator.TPUEstimatorSpec(
@@ -516,33 +538,61 @@ def model_fn(features,
 
 
 def main(unused_argv):
-    tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
-                FLAGS.tpu,
-                zone=FLAGS.tpu_zone,
-                project=FLAGS.gcp_project)
 
-    config = tpu_config.RunConfig(
-                cluster                     =tpu_cluster_resolver,
-                model_dir                   =FLAGS.model_dir,
-                save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
-                tpu_config                  =tpu_config.TPUConfig(
-                iterations_per_loop         =FLAGS.iterations_per_loop,
-                num_shards                  =FLAGS.num_cores,
-                per_host_input_for_training =tpu_config.InputPipelineConfig.PER_HOST_V2))  # pylint: disable=line-too-long
 
-    dontbeturtle_estimator = tpu_estimator.TPUEstimator(
-                use_tpu         =FLAGS.use_tpu,
-                model_dir       =FLAGS.model_dir,
-                model_fn        =model_fn,
-                config          =config,
-                train_batch_size=FLAGS.train_batch_size,
-                eval_batch_size =FLAGS.eval_batch_size,
-                export_to_tpu   =False)
+    if FLAGS.use_tpu == True:
+        # for TPU use
+        tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
+                    FLAGS.tpu,
+                    zone=FLAGS.tpu_zone,
+                    project=FLAGS.gcp_project)
 
-    assert FLAGS.precision == 'bfloat16' or FLAGS.precision == 'float32', (
-      'Invalid value for --precision flag; must be bfloat16 or float32.')
-    tf.logging.info('Precision: %s', FLAGS.precision)
-    use_bfloat16 = FLAGS.precision == 'bfloat16'
+        # TPU  config
+        config = tpu_config.RunConfig(
+                    cluster                     =tpu_cluster_resolver,
+                    model_dir                   =FLAGS.model_dir,
+                    save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
+                    tpu_config                  =tpu_config.TPUConfig(
+                    iterations_per_loop         =FLAGS.iterations_per_loop,
+                    num_shards                  =FLAGS.num_cores,
+                    per_host_input_for_training =tpu_config.InputPipelineConfig.PER_HOST_V2))  # pylint: disable=line-too-long
+
+        dontbeturtle_estimator = tpu_estimator.TPUEstimator(
+                    use_tpu         =FLAGS.use_tpu,
+                    model_dir       =FLAGS.model_dir,
+                    model_fn        =model_fn,
+                    config          =config,
+                    train_batch_size=FLAGS.train_batch_size,
+                    eval_batch_size =FLAGS.eval_batch_size,
+                    export_to_tpu   =False)
+
+        assert FLAGS.precision == 'bfloat16' or FLAGS.precision == 'float32', \
+        ('Invalid value for --precision flag; must be bfloat16 or float32.')
+        tf.logging.info('Precision: %s', FLAGS.precision)
+        use_bfloat16 = (FLAGS.precision == 'bfloat16')
+    else:
+        # for CPU or GPU use
+        config = tf.estimator.RunConfig(
+                    model_dir                       =FLAGS.model_dir,
+                    tf_random_seed                  =None,
+                    save_summary_steps              =100,
+                    save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
+                    session_config                  =None,
+                    keep_checkpoint_max             =5,
+                    keep_checkpoint_every_n_hours   =10000,
+                    log_step_count_steps            =100,
+                    train_distribute                =None,
+                    device_fn                       =None)
+
+        dontbeturtle_estimator  = tf.estimator.Estimator(
+                    model_dir          = FLAGS.model_dir,
+                    model_fn           = model_fn,
+                    config             = config,
+                    params             = None,
+                    warm_start_from    = None)
+
+        use_bfloat16 = False
+
 
 
     '''
@@ -550,12 +600,12 @@ def main(unused_argv):
     # Input pipelines are slightly different (with regards to shuffling and
     # preprocessing) between training and evaluation.
     '''
-    # imagenet_train, imagenet_eval = \
-    #     [imagenet_input.ImageNetInput(
-    #     is_training=is_training,
-    #     data_dir=FLAGS.data_dir,
-    #     transpose_input=FLAGS.transpose_input,
-    #     use_bfloat16=use_bfloat16) for is_training in [True, False]]
+    dataset_train, dataset_eval = \
+        [data_loader_tpu.DataSetInput(
+        is_training     =is_training,
+        data_dir        =FLAGS.data_dir,
+        transpose_input =FLAGS.transpose_input,
+        use_bfloat16    =use_bfloat16) for is_training in [True, False]]
 
 
 
@@ -570,7 +620,7 @@ def main(unused_argv):
             try:
                 start_timestamp = time.time()  # This time will include compilation time
                 eval_results = dontbeturtle_estimator.evaluate(
-                    input_fn        =imagenet_eval.input_fn,
+                    input_fn        =dataset_eval.input_fn,
                     steps           =eval_steps,
                     checkpoint_path =ckpt)
 
@@ -596,15 +646,17 @@ def main(unused_argv):
     else:   # FLAGS.mode == 'train' or FLAGS.mode == 'train_and_eval'
         current_step = estimator._load_global_step_from_checkpoint_dir(FLAGS.model_dir)  # pylint: disable=protected-access,line-too-long
         batchnum_per_epoch = FLAGS.num_train_images / FLAGS.train_batch_size
+
         tf.logging.info('Training for %d steps (%.2f epochs in total). Current'
                         ' step %d.' % (FLAGS.train_steps,
                                        FLAGS.train_steps / batchnum_per_epoch,
                                        current_step))
 
         start_timestamp = time.time()  # This time will include compilation time
+
         if FLAGS.mode == 'train':
             dontbeturtle_estimator.train(
-                input_fn    =imagenet_train.input_fn,
+                input_fn    =dataset_train.input_fn,
                 max_steps   =FLAGS.train_steps)
 
         else:
@@ -615,7 +667,7 @@ def main(unused_argv):
                 next_checkpoint = min(current_step + FLAGS.steps_per_eval,
                                       FLAGS.train_steps)
                 dontbeturtle_estimator.train(
-                    input_fn    =imagenet_train.input_fn,
+                    input_fn    =dataset_train.input_fn,
                     max_steps   =next_checkpoint)
 
                 current_step = next_checkpoint
@@ -625,7 +677,7 @@ def main(unused_argv):
                 # may be consistently excluded modulo the batch size.
                 tf.logging.info('Starting to evaluate.')
                 eval_results = dontbeturtle_estimator.evaluate(
-                    input_fn    =imagenet_eval.input_fn,
+                    input_fn    =dataset_eval.input_fn,
                     steps       =FLAGS.num_eval_images // FLAGS.eval_batch_size)
 
                 tf.logging.info('Eval results: %s' % eval_results)
@@ -640,7 +692,7 @@ def main(unused_argv):
             tf.logging.info('Starting to export model.')
             dontbeturtle_estimator.export_savedmodel(
                 export_dir_base             =FLAGS.export_dir,
-                serving_input_receiver_fn   =imagenet_input.image_serving_input_fn)
+                serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
