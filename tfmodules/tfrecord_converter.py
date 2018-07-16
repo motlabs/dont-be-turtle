@@ -54,10 +54,10 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
     options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
     writer = tf.python_io.TFRecordWriter(path=tfrecords_name, options=options)
 
-
     for img_n, (image_path, label_path) in enumerate(zip(image_list, label_list)):
         image, label = reader(image_path, label_path)
         filename = os.path.basename(image_path)
+
 
         string_set = tf.train.Example\
             (
@@ -72,14 +72,14 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                         '''
                             /* label json format */
                             {
-                                "image_path": "/Users/jwkangmacpro2/SourceCodes/dont-be-turtle-pose-annotation-tool/images_for_annotation/lsp_dataset_original/images/im0004.jpg", 
-                                "head": [550.0049944506104, 386.2047724750277, 0.0], 
-                                "Rshoulder": [493.74750277469474, 416.89067702552717, 0.0], 
-                                "Lshoulder": [518.4667036625972, 423.7097669256381, 1.0], 
+                                "image_path": "/Users/jwkangmacpro2/SourceCodes/dont-be-turtle-pose-annotation-tool/images_for_annotation/lsp_dataset_original/images/im0004.jpg",
+                                "head": [550.0049944506104, 386.2047724750277, 0.0],
+                                "Rshoulder": [493.74750277469474, 416.89067702552717, 0.0],
+                                "Lshoulder": [518.4667036625972, 423.7097669256381, 1.0],
                                 "neck": [522.7286348501664, 409.2192008879023, 0.0]
                             }
                             where values of annotation are casted from float32 to int32
-                        
+
                         '''
                         'label_head'        : _bytes_feature(np.array(label['head'],
                                                                       dtype=np.int32).tostring()),
@@ -91,7 +91,7 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                                                                       dtype=np.int32).tostring()),
                         'mean'              : _float_feature(image.mean().astype(np.float32)),
                         'std'               : _float_feature(image.std().astype(np.float32)),
-                        'filename'          : _bytes_feature(str.encode(filename)),
+                        'filename'          : _bytes_feature(filename),
                     }
                 )
             )
@@ -120,8 +120,9 @@ def main(train_dir, eval_dir, out_dir):
 
         return image, label
 
-    train_out_path  = os.path.join(out_dir, 'train_dataset.tfrecord.gz')
-    eval_out_path   = os.path.join(out_dir, 'eval_dataset.tfrecord.gz')
+    train_out_path  = os.path.join(out_dir, 'train-dataset.tfrecord.gz')
+    eval_out_path   = os.path.join(out_dir, 'eval-dataset.tfrecord.gz')
+
 
     to_tfrecords(train_data_list,   train_label_list,   reader, train_out_path)
     to_tfrecords(eval_data_list,    eval_label_list,    reader, eval_out_path)
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--train-data-dir',
         # default = '../dataset/traintest/lsp/',
-        default='../dataset/traintest/lsp/',
+        default='../dataset/train/lsp/',
         help='training data',
         nargs='+',
         required=False
@@ -142,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--eval-data-dir',
         # default='../dataset/evaltest/collected_data/',
-        default='../dataset/evaltest/collected_data/',
+        default='../dataset/eval/collected_data/',
         help='evaluation data',
         nargs='+',
         required=False
