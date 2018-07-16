@@ -23,13 +23,14 @@ from path_manager import EXPORT_SAVEMODEL_DIR
 
 
 TRAININGSET_SIZE     = 2000
-VALIDATIONSET_SIZE   = 200
+VALIDATIONSET_SIZE   = 216
 # TESTSET_SIZE         = 100
 
-BATCH_SIZE           = 1024
+BATCH_SIZE           = 32
 
-GCP_PROJ_NAME = 'ordinal-virtue-208004'
-GCE_ZONE = 'us-central1-f'
+GCP_PROJ_NAME           = 'ordinal-virtue-208004'
+GCE_TPU_ZONE            = 'us-central1-f'
+DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
 
 class TrainConfig(object):
     def __init__(self):
@@ -76,14 +77,14 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
 
 # Cloud TPU Cluster Resolvers
 flags.DEFINE_string(
-    'tpu', default=None,
+    'tpu', default=DEFAULT_GCP_TPU_NAME,
     help='The Cloud TPU to use for training. This should be either the name '
     'used when creating the Cloud TPU, or a grpc://ip.address.of.tpu:8470 url.')
 
@@ -94,7 +95,7 @@ flags.DEFINE_string(
     'will attempt to automatically detect the GCE project from metadata.')
 
 flags.DEFINE_string(
-    'tpu_zone', default=GCE_ZONE,
+    'tpu_zone', default=GCE_TPU_ZONE,
     help='GCE zone where the Cloud TPU is located in. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
@@ -112,7 +113,7 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train_and_eval',
+    'mode', default='train',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
@@ -180,7 +181,7 @@ flags.DEFINE_string(
 # by default for TPU, which is from Google codes
 
 flags.DEFINE_bool(
-    'transpose_input', default=True,
+    'transpose_input', default=False,
     help=('Use TPU double transpose optimization',
         'This is a weird optimization'
         'to match the shape of the tensor with the device layout. '
