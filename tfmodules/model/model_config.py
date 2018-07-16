@@ -216,6 +216,9 @@ class ModelConfig(object):
 
     def __init__(self):
         # common
+        self.input_height   = DEFAULT_INPUT_RESOL
+        self.input_width    = DEFAULT_INPUT_RESOL
+
         self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_hgstacking  = 2
@@ -227,4 +230,5 @@ class ModelConfig(object):
         self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
         self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
         self.out_config         = OutputConfig      (self.depth_multiplier)
+
 
