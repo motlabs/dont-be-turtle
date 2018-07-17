@@ -44,19 +44,22 @@ def image_serving_input_fn():
     """Serving input fn for raw images.
     """
 
-    def _preprocess_image(image_bytes):
+    def _preprocess_image(image_bytes,label_coord_byte):
         """Preprocess a single raw image."""
         image = preprocessor.preprocess_image(
-            image_bytes=image_bytes, is_training=False)
+            image_bytes=image_bytes,
+            label_coord=label_coord,
+            is_training=False)
 
         return image
 
     image_bytes_list = tf.placeholder(shape=[None],
                                       dtype=tf.string)
+    label_coord      = tf.placeholder(shape=[None],dtype=tf.string)
 
-    # [[[[the below part]]]]
-    images = tf.map_fn(_preprocess_image,
-                       image_bytes_list,
+
+    images = tf.map_fn(fn=_preprocess_image,
+                       elems=(image_bytes_list, label_coord),
                        back_prop=False,
                        dtype=tf.float32)
 
@@ -164,46 +167,41 @@ class DataSetInput(object):
                 tf.FixedLenFeature((), tf.string, default_value="")
         }
 
-        # here code has bug (180716)
         parsed = tf.parse_single_example(serialized =value,
                                          features   =keys_to_features)
-
+        # images
         image_bytes = tf.reshape(parsed['image'], shape=[])
 
-        # here need to change
-        # image = self.image_preprocessing_fn(
-        #     image_bytes=image_bytes,
-        #     is_training=self.is_training,
-        #     use_bfloat16=self.use_bfloat16)
+        # labels
+        label_head_bytes        = tf.reshape(parsed['label_head'], shape=[])
+        label_neck_bytes        = tf.reshape(parsed['label_neck'], shape=[])
+        label_Rshoulder_bytes   = tf.reshape(parsed['label_Rshoulder'], shape=[])
+        label_Lshoulder_bytes   = tf.reshape(parsed['label_Lshoulder'], shape=[])
 
+        label_bytes_list = [label_head_bytes,
+                            label_neck_bytes,
+                            label_Rshoulder_bytes,
+                            label_Lshoulder_bytes]
 
         # get the original image shape
         height      = parsed['height']
         width       = parsed['width']
         channel     = parsed['channel']
-        img_shape   = tf.stack([height, width, channel])
+        mean        = parsed['mean']
+        std         = parsed['std']
 
-        # reshape images
-        image   = tf.decode_raw(parsed['image'], tf.int32)
-        image   = tf.cast(image, tf.float32)
-        image   = tf.reshape(image, img_shape)
+        # preprocessing
+        image,labels = self.image_preprocessing_fn(
+                            image_bytes         =image_bytes,
+                            image_orig_height   =height,
+                            image_orig_width    =width,
+                            label_bytes_list    =label_bytes_list,
+                            is_training         =self.is_training,
+                            use_bfloat16        =self.use_bfloat16)
 
-        # label
-        label_head          = tf.decode_raw(parsed['label_head'],tf.int32)
-        label_head          = tf.cast(label_head, tf.float32)
 
-        label_neck          = tf.decode_raw(parsed['label_neck'],tf.int32)
-        label_neck          = tf.cast(label_neck, tf.float32)
+        return image, labels
 
-        label_Rshoulder     = tf.decode_raw(parsed['label_Rshoulder'],tf.int32)
-        label_Rshoulder     = tf.cast(label_Rshoulder,tf.float32)
-
-        label_Lshoulder     = tf.decode_raw(parsed['label_Lshoulder'],tf.int32)
-        label_Lshoulder     = tf.cast(label_Lshoulder,tf.float32)
-
-        # below codes must be modified after applying preprocessing
-        label = tf.stack([label_head,label_neck,label_Rshoulder,label_Lshoulder])
-        return image, label
 
 
 
@@ -262,7 +260,7 @@ class DataSetInput(object):
         # Read the data from disk in parallel
         dataset = dataset.apply(
             tf.contrib.data.parallel_interleave(
-                fetch_dataset, cycle_length=8, sloppy=True))
+                fetch_dataset, cycle_length=32, sloppy=True))
 
         # dataset elementwise shuffling
         # where buffer_size is the number of data elements
@@ -325,7 +323,7 @@ class DataSetInput(object):
 
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
-        # dataset = dataset.prefetch(32)     # Prefetch overlaps in-feed with training
+        dataset = dataset.prefetch(32)     # Prefetch overlaps in-feed with training
         tf.logging.info('Input dataset: %s', str(dataset))
         return dataset
 

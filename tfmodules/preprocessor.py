@@ -61,6 +61,9 @@ def distorted_bounding_box_crop(image_bytes,
         scope: Optional `str` for name scope.
         Returns:
         (cropped image `Tensor`, distorted bbox `Tensor`).
+
+        https://www.tensorflow.org/api_docs/python/tf/image/sample_distorted_bounding_box
+
   """
     with tf.name_scope(scope, 'distorted_bounding_box_crop', [image_bytes, bbox]):
         shape = tf.image.extract_jpeg_shape(image_bytes)
@@ -185,6 +188,27 @@ def _heatmap_generator(label_bytes,use_bfloat16,gaussian_ksize=10):
                      (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
 
     label_len   = labels.get_shape().as_list()[0]
+
+    def make_gaussian(size_h, size_w, fwhm=3, center=None):
+        """ Make a square gaussian kernel.
+        size is the length of a side of the square
+        fwhm is full-width-half-maximum, which
+        can be thought of as an effective radius.
+        """
+        if size_h > size_w:
+            size = size_h
+        else:
+            size = size_w
+
+        x = np.arange(0, size, 1, float)
+        y = x[:, np.newaxis]
+
+        x0 = center[0]
+        y0 = center[1]
+
+        temp = np.exp(-4 * np.log(2) * ((x - x0) ** 2 + (y - y0) ** 2) / fwhm ** 2)
+        return temp[:size_h, :size_w]
+
 
     if label_len < (DEFAULT_LABEL_LENGTH - 1):
 
