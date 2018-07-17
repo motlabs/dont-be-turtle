@@ -1,4 +1,4 @@
-# Copyright 2018 Jaewook Kang and JoonHo Lee ({jwkang10, junhoning}@gmail.com)
+# Copyright 2018 Jaewook Kang (jwkang10@gmail.com)
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,42 +14,6 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python
 
-'''
-    filename: preprocessor.py
-    description:
-    design doc: https://goo.gl/PTBBVe
-
-
-    - Author : Junho Lee and Jaewook Kang @ 2018 June
-        Scale:
-    목적: 사람과 스마트폰의 거리값은 다양할 수 있다는 UX반영
-    연산: 이미지를 확대하고 줄인다. (배율을 정할 필요 있음)
-
-    Rotation:
-    목적: 손목의 움직임에 따라서 다양한 각도로 촬영 될 수 있다는 UX반영
-    연산: 이미지의 각도를 조절한다.
-    -15,  -5, +5, +15 (deg)
-
-    Shifting
-    목적: 인물은 항상 사진의 중앙에 있지 않기 때문에 그 부분을 반영
-    연산: 이미지를 아래 조합으로 linear shift한다
-    Shift 정도는 어느정도로 해야하는가?
-    좌
-    우
-    좌상
-    좌하
-    우상
-    우하
-
-    Flip
-    목적:
-    이미지의 상하반전 : 스마트폰을 거꾸로 거치 할수 있다.
-    이미지의 좌우 반전: 데이터 셋이 2배가 된다.
-    연산: 이미지의 좌우 반전 and 이미지의 상하 반전
-
-'''
-
-
 
 from __future__ import absolute_import
 from __future__ import division
@@ -59,7 +23,12 @@ import tensorflow as tf
 import cv2
 import numpy as np
 
-IMAGE_SIZE = 256
+from model_config  import DEFAULT_INPUT_RESOL
+from model_config  import NUM_OF_BODY_PART
+from model_config  import DEFAULT_LABEL_LENGTH
+
+IMAGE_SIZE = np.int32(DEFAULT_INPUT_RESOL)
+
 CROP_PADDING = 32
 
 
@@ -95,23 +64,33 @@ def distorted_bounding_box_crop(image_bytes,
   """
     with tf.name_scope(scope, 'distorted_bounding_box_crop', [image_bytes, bbox]):
         shape = tf.image.extract_jpeg_shape(image_bytes)
+
         sample_distorted_bounding_box = tf.image.sample_distorted_bounding_box(
             shape,
-            bounding_boxes=bbox,
-            min_object_covered=min_object_covered,
-            aspect_ratio_range=aspect_ratio_range,
-            area_range=area_range,
-            max_attempts=max_attempts,
+            bounding_boxes      =bbox,
+            min_object_covered  =min_object_covered,
+            aspect_ratio_range  =aspect_ratio_range,
+            area_range          =area_range,
+            max_attempts        =max_attempts,
             use_image_if_no_bounding_boxes=True)
+
         bbox_begin, bbox_size, _ = sample_distorted_bounding_box
 
         # Crop the image to the specified bounding box.
-        offset_y, offset_x, _ = tf.unstack(bbox_begin)
-        target_height, target_width, _ = tf.unstack(bbox_size)
-        crop_window = tf.stack([offset_y, offset_x, target_height, target_width])
-        image = tf.image.decode_and_crop_jpeg(image_bytes, crop_window, channels=3)
+        offset_y, offset_x, _           = tf.unstack(bbox_begin)
+        target_height, target_width, _  = tf.unstack(bbox_size)
+        crop_window                     = tf.stack([offset_y,
+                                                    offset_x,
+                                                    target_height,
+                                                    target_width])
 
-        return image
+        image = tf.image.decode_and_crop_jpeg(image_bytes,
+                                              crop_window,
+                                              channels=3)
+
+    return image,crop_window
+
+
 
 
 def _at_least_x_are_equal(a, b, x):
@@ -121,54 +100,118 @@ def _at_least_x_are_equal(a, b, x):
     return tf.greater_equal(tf.reduce_sum(match), x)
 
 
+
+
 def _decode_and_random_crop(image_bytes):
-    """Make a random crop of IMAGE_SIZE."""
+    """Make a random crop of IMAGE_SIZE.
+        For training
+    """
     bbox = tf.constant([0.0, 0.0, 1.0, 1.0], dtype=tf.float32, shape=[1, 1, 4])
-    image = distorted_bounding_box_crop(
-      image_bytes,
-      bbox,
-      min_object_covered=0.1,
-      aspect_ratio_range=(3. / 4, 4. / 3.),
-      area_range=(0.08, 1.0),
-      max_attempts=10,
-      scope=None)
-    original_shape = tf.image.extract_jpeg_shape(image_bytes)
-    bad = _at_least_x_are_equal(original_shape, tf.shape(image), 3)
 
-    image = tf.cond(
-      bad,
-      lambda: _decode_and_center_crop(image_bytes),
-      lambda: tf.image.resize_bicubic([image],  # pylint: disable=g-long-lambda
-                                      [IMAGE_SIZE, IMAGE_SIZE])[0])
+    image,crop_window = distorted_bounding_box_crop(image_bytes,
+                                                    bbox,
+                                                    min_object_covered=0.1,
+                                                    aspect_ratio_range=(3. / 4, 4. / 3.),
+                                                    area_range=(0.08, 1.0),
+                                                    max_attempts=10,
+                                                    scope=None)
 
-    return image
+    original_shape  = tf.image.extract_jpeg_shape(image_bytes)
+    bad             = _at_least_x_are_equal(a=original_shape,
+                                            b=tf.shape(image),
+                                            x=3)
+
+    image = tf.cond(bad,
+                    lambda: _decode_and_center_crop(image_bytes),
+                    lambda: tf.image.resize_bicubic([image],  # pylint: disable=g-long-lambda
+                                                    [IMAGE_SIZE, IMAGE_SIZE])[0])
+
+    return image,crop_window
+
+
+
 
 
 def _decode_and_center_crop(image_bytes):
-    """Crops to center of image with padding then scales IMAGE_SIZE."""
-    shape = tf.image.extract_jpeg_shape(image_bytes)
-    image_height = shape[0]
-    image_width = shape[1]
+    """Crops to center of image with padding then scales IMAGE_SIZE.
+        For evaluation
+    """
 
+    shape           = tf.image.extract_jpeg_shape(image_bytes)
+    image_height    = shape[0]
+    image_width     = shape[1]
+
+    # we need to see the below codes
     padded_center_crop_size = tf.cast(
-      ((IMAGE_SIZE / (IMAGE_SIZE + CROP_PADDING)) *
-       tf.cast(tf.minimum(image_height, image_width), tf.float32)),
-      tf.int32)
+        ((IMAGE_SIZE / (IMAGE_SIZE + CROP_PADDING)) *
+        tf.cast(tf.minimum(image_height, image_width), tf.float32)),
+        tf.int32)
 
-    offset_height = ((image_height - padded_center_crop_size) + 1) // 2
-    offset_width = ((image_width - padded_center_crop_size) + 1) // 2
-    crop_window = tf.stack([offset_height, offset_width,
-                          padded_center_crop_size, padded_center_crop_size])
-    image = tf.image.decode_and_crop_jpeg(image_bytes, crop_window, channels=3)
-    image = tf.image.resize_bicubic([image], [IMAGE_SIZE, IMAGE_SIZE])[0]
+    offset_height   = ((image_height - padded_center_crop_size) + 1) // 2
+    offset_width    = ((image_width  - padded_center_crop_size) + 1) // 2
 
+    crop_window     = tf.stack([offset_height,
+                                offset_width,
+                                padded_center_crop_size,
+                                padded_center_crop_size])
+
+    image = tf.image.decode_and_crop_jpeg(image_bytes,
+                                          crop_window,
+                                          channels=3)
+
+    image = tf.image.resize_bicubic([image],
+                                    [IMAGE_SIZE, IMAGE_SIZE])[0]
     return image
+
+
 
 
 def _flip(image):
     """Random horizontal image flip."""
     image = tf.image.random_flip_left_right(image)
     return image
+
+
+# def _rotation(image):
+
+
+# under implementation
+def _heatmap_generator(label_bytes,use_bfloat16,gaussian_ksize=10):
+
+    labels = tf.decode_raw(bytes=label_bytes,
+                          out_type=tf.int32)
+
+    labels.set_shape(labels.get_shape().merge_with
+                     (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
+
+    label_len   = labels.get_shape().as_list()[0]
+
+    if label_len < (DEFAULT_LABEL_LENGTH - 1):
+
+        label_heatmap_orig = make_gaussian_heatmap()
+
+    #
+    #     for i in range(num_of_part):
+    #         val_annotation_featureMap_temp = (
+    #             make_gaussian(heatmap_height,
+    #                           heatmap_width,
+    #                           gaussian_ksize,
+    #                           (coor_labels[2 * i], coor_labels[2 * i + 1]))).astype(np.float32)
+    #
+    #         featureMap[:, :, i] = cv2.resize(val_annotation_featureMap_temp,
+    #                                          (heatmap_width,heatmap_height),
+    #                                          interpolation=cv2.INTER_CUBIC)
+
+    return 0
+
+    # elif length_of_labels == 0:
+    #     print('error : coor_labels length is 0. ')
+    #     raise ValueError
+    # else:
+    #     print('error : coor_labels length is odd number.')
+    #     raise ValueError
+
+
 
 
 def preprocess_for_train(image_bytes, use_bfloat16):
@@ -179,7 +222,9 @@ def preprocess_for_train(image_bytes, use_bfloat16):
     Returns:
     A preprocessed image `Tensor`.
     """
+    # here byte to tensor conversion
     image = _decode_and_random_crop(image_bytes)
+
     image = _flip(image)
     image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])
     image = tf.image.convert_image_dtype(
@@ -187,22 +232,31 @@ def preprocess_for_train(image_bytes, use_bfloat16):
     return image
 
 
+
+
 def preprocess_for_eval(image_bytes, use_bfloat16):
-  """Preprocesses the given image for evaluation.
-  Args:
+    """Preprocesses the given image for evaluation.
+    Args:
     image_bytes: `Tensor` representing an image binary of arbitrary size.
     use_bfloat16: `bool` for whether to use bfloat16.
-  Returns:
+    Returns:
     A preprocessed image `Tensor`.
-  """
-  image = _decode_and_center_crop(image_bytes)
-  image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])
-  image = tf.image.convert_image_dtype(
+    """
+    # here byte to tensor conversion
+    image = _decode_and_center_crop(image_bytes)
+    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])
+    image = tf.image.convert_image_dtype(
       image, dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
-  return image
+    return image
 
 
-def preprocess_image(image_bytes, is_training=False, use_bfloat16=False):
+
+def preprocess_image(image_bytes,
+                     label_bytes_list,
+                     image_orig_height,
+                     image_orig_width,
+                     is_training=False, use_bfloat16=False):
+
     """Preprocesses the given image.
     Args:
     image_bytes: `Tensor` representing an image binary of arbitrary size.
@@ -211,10 +265,41 @@ def preprocess_image(image_bytes, is_training=False, use_bfloat16=False):
     Returns:
     A preprocessed image `Tensor`.
     """
+    # label heatmap generation
+    label_heatmap_head = _heatmap_generator(label_bytes=label_bytes_list[0],
+                                            image_orig_height=image_orig_height,
+                                            image_orig_width =image_orig_width,
+                                            use_bfloat16=use_bfloat16,
+                                            gaussian_ksize=10)
+
+    # label_heatmap_neck = _heatmap_generator(label_bytes=label_bytes_list[1],
+    #                                         use_bfloat16=use_bfloat16,
+    #                                         gaussian_ksize=10)
+    #
+    # label_heatmap_Rshoudler = _heatmap_generator(label_bytes=label_bytes_list[2],
+    #                                             use_bfloat16=use_bfloat16,
+    #                                             gaussian_ksize=10)
+    #
+    # label_heatmap_Lshoulder = _heatmap_generator(label_bytes=label_bytes_list[3],
+    #                                             use_bfloat16=use_bfloat16,
+    #                                             gaussian_ksize=10)
+    #
+    # label_heatmap           = tf.stack([label_heatmap_head,
+    #                                     label_heatmap_neck,
+    #                                     label_heatmap_Rshoudler,
+    #                                     label_heatmap_Lshoulder])
+
+    # input image preprocessing
     if is_training:
-        return preprocess_for_train(image_bytes, use_bfloat16)
+        image =  preprocess_for_train(image_bytes, use_bfloat16)
     else:
-        return preprocess_for_eval(image_bytes, use_bfloat16)
+        image = preprocess_for_eval(image_bytes, use_bfloat16)
+
+
+    # return image, label_heatmap
+    return image
+
+
 
 
 
