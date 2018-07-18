@@ -639,7 +639,7 @@ def main(unused_argv):
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
 
-    if FLAGS.use_tpu == True:
+    if FLAGS.use_tpu:
         # for TPU use
         tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
                     FLAGS.tpu,

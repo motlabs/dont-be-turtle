@@ -79,3 +79,9 @@ freeline_project_description.json
 
 *.pb
 *.pbtxt
+
+*.ckpt*
+*.index
+*.meta
+
+*.tflite
