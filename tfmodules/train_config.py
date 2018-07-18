@@ -114,6 +114,11 @@ flags.DEFINE_string(
     help=('The directory where the tensorboard summary are stored')
 )
 
+flags.DEFINE_string(
+    'export_dir',
+    default=EXPORT_SAVEMODEL_DIR,
+    help=('The directory where the exported SavedModel will be stored.'))
+
 
 flags.DEFINE_string(
     'mode', default='train',
@@ -139,7 +144,7 @@ flags.DEFINE_integer(
 
 
 flags.DEFINE_integer(
-    'steps_per_eval', default=1000,
+    'steps_per_eval', default=10,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'
@@ -160,7 +165,7 @@ flags.DEFINE_bool(
           ' keep up with the TPU-side computation.'))
 
 flags.DEFINE_integer(
-    'iterations_per_loop', default=100,
+    'iterations_per_loop', default=10,
     help=('Number of steps to run on TPU before outfeeding metrics to the CPU.'
           ' If the number of iterations in the loop would exceed the number of'
           ' train steps, the loop will exit before reaching'
@@ -193,10 +198,6 @@ flags.DEFINE_bool(
         'but you can probably ignore this for the most part '
         'as it is only useful for squeezing out the last ounce of performance.'))
 
-flags.DEFINE_string(
-    'export_dir',
-    default=EXPORT_SAVEMODEL_DIR,
-    help=('The directory where the exported SavedModel will be stored.'))
 
 flags.DEFINE_string(
     'precision', default='float32',
@@ -206,14 +207,14 @@ flags.DEFINE_float(
     'base_learning_rate', default=2.5e-4,
     help=('Base learning rate when train batch size is 256.'))
 
-flags.DEFINE_float(
-    'momentum', default=0.9,
-    help=('Momentum parameter used in the MomentumOptimizer.'))
+# flags.DEFINE_float(
+#     'momentum', default=0.9,
+#     help=('Momentum parameter used in the MomentumOptimizer.'))
 
-flags.DEFINE_float(
-    'weight_decay', default=1e-4,
-    help=('Weight decay coefficiant for l2 regularization.'))
-
+# flags.DEFINE_float(
+#     'weight_decay', default=1e-4,
+#     help=('Weight decay coefficiant for l2 regularization.'))
+#
 
 
 flags.DEFINE_float(
