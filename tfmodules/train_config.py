@@ -27,11 +27,11 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 
-TRAININGSET_SIZE     = 6
-VALIDATIONSET_SIZE   = 216
+TRAININGSET_SIZE     = 16
+VALIDATIONSET_SIZE   = 16
 # TESTSET_SIZE         = 100
 
-BATCH_SIZE           = 6
+BATCH_SIZE           = 8*1
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -120,7 +120,7 @@ flags.DEFINE_string(
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
-    'train_steps', default=TRAININGSET_SIZE*8,
+    'train_steps', default=TRAININGSET_SIZE*BATCH_SIZE,
     help=('The number of steps to use for training. Default is 112603 steps'
           ' which is approximately 90 epochs at batch size 1024. This flag'
           ' should be adjusted according to the --train_batch_size flag.'))
