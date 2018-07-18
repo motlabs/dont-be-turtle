@@ -199,7 +199,7 @@ flags.DEFINE_string(
     help=('The directory where the exported SavedModel will be stored.'))
 
 flags.DEFINE_string(
-    'precision', default='bfloat16',
+    'precision', default='float32',
     help=('Precision to use; one of: {bfloat16, float32}'))
 
 flags.DEFINE_float(
