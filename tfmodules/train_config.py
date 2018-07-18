@@ -77,7 +77,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
@@ -99,6 +99,24 @@ flags.DEFINE_string(
     help='GCE zone where the Cloud TPU is located in. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
+
+# Model specific flags
+flags.DEFINE_string(
+    'data_bucket', default=DATASET_BUCKET,
+    help=('The gcloud bucket  where the input data is stored. Please see'
+          ' the README.md for the expected data format.'))
+
+
+flags.DEFINE_string(
+    'model_bucket', default=MODEL_BUCKET,
+    help=('The gcloud bucket  where the model and training/evaluation ckeckpoint are stored'))
+
+flags.DEFINE_string(
+    'tflogs_bucket', default=TENSORBOARD_BUCKET,
+    help=('The gcloud bucket where the tensorboard summary are stored')
+)
+
+
 # Model specific flags
 flags.DEFINE_string(
     'data_dir', default=DATASET_DIR,
@@ -113,6 +131,7 @@ flags.DEFINE_string(
     'tflogs_dir', default=EXPORT_TFLOG_DIR,
     help=('The directory where the tensorboard summary are stored')
 )
+
 
 flags.DEFINE_string(
     'export_dir',
@@ -155,14 +174,25 @@ flags.DEFINE_integer(
     default=None,
     help=(
         'Maximum seconds between checkpoints before evaluation terminates.'))
+#
+# flags.DEFINE_bool(
+#     'skip_host_call', default=False,
+#     help=('Skip the host_call which is executed every training step. This is'
+#           ' generally used for generating training summaries (train loss,'
+#           ' learning rate, etc...). When --skip_host_call=false, there could'
+#           ' be a performance drop if host_call function is slow and cannot'
+#           ' keep up with the TPU-side computation.'))
+
+
 
 flags.DEFINE_bool(
-    'skip_host_call', default=False,
+    'is_tensorboard_summary', default=True,
     help=('Skip the host_call which is executed every training step. This is'
           ' generally used for generating training summaries (train loss,'
           ' learning rate, etc...). When --skip_host_call=false, there could'
           ' be a performance drop if host_call function is slow and cannot'
           ' keep up with the TPU-side computation.'))
+
 
 flags.DEFINE_integer(
     'iterations_per_loop', default=10,

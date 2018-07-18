@@ -44,8 +44,6 @@ sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
 sys.path.insert(0,EXPORT_TFLOG_DIR)
 
-#
-
 
 # custom python packages
 
@@ -133,6 +131,8 @@ def argmax_2d(tensor):
 
 
 
+
+
 def get_heatmap_activation(logits,scope=None):
     '''
         get_heatmap_activation()
@@ -179,8 +179,6 @@ def get_heatmap_activation(logits,scope=None):
                                  act_heatmap_neck, \
                                  act_heatmap_rshoulder, \
                                  act_heatmap_lshoulder],axis=3)
-
-
     return act_heatmaps
 
 
@@ -207,22 +205,23 @@ def get_loss_heatmap(pred_heatmaps,
         written by Jaewook Kang 2018
     '''
 
-    ### 1) split logit to head, neck, Rshoulder, Lshoulder
-    pred_heatmap_head, \
-    pred_heatmap_neck, \
-    pred_heatmap_rshoulder, \
-    pred_heatmap_lshoulder = tf.split(pred_heatmaps,
-                                        num_or_size_splits=model_config.num_of_labels,
-                                        axis=3)
-    label_heatmap_head, \
-    label_heatmap_neck, \
-    label_heatmap_rshoulder, \
-    label_heatmap_lshoulder = tf.split(label_heatmaps,
-                                        num_or_size_splits=model_config.num_of_labels,
-                                        axis=3)
-
-
     with tf.name_scope(name=scope,default_name='loss_heatmap'):
+
+        ### 1) split logit to head, neck, Rshoulder, Lshoulder
+        pred_heatmap_head, \
+        pred_heatmap_neck, \
+        pred_heatmap_rshoulder, \
+        pred_heatmap_lshoulder = tf.split(pred_heatmaps,
+                                            num_or_size_splits=model_config.num_of_labels,
+                                            axis=3)
+        label_heatmap_head, \
+        label_heatmap_neck, \
+        label_heatmap_rshoulder, \
+        label_heatmap_lshoulder = tf.split(label_heatmaps,
+                                            num_or_size_splits=model_config.num_of_labels,
+                                            axis=3)
+
+
         ### 3) get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
         loss_head       = loss_fn(labels     =label_heatmap_head,
@@ -241,6 +240,8 @@ def get_loss_heatmap(pred_heatmaps,
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
 
     return total_losssum, loss_tensor
+
+
 
 
 
@@ -264,74 +265,78 @@ def metric_fn(labels, logits):
     Returns:
     A dict of the metrics to return from evaluation.
     """
-    logits_head,\
-    logits_neck,\
-    logits_rshoulder,\
-    logits_lshoulder = tf.split(logits,
-                                num_or_size_splits=model_config.num_of_labels,
-                                axis=3)
 
-    label_head, \
-    label_neck, \
-    label_rshoulder, \
-    label_lshoulder = tf.split(labels,
-                                num_or_size_splits=model_config.num_of_labels,
-                                axis=3)
+    with tf.name_scope('metric_fn',values=[labels, logits]):
+        logits_head,\
+        logits_neck,\
+        logits_rshoulder,\
+        logits_lshoulder = tf.split(logits,
+                                    num_or_size_splits=model_config.num_of_labels,
+                                    axis=3)
 
-    # get predicted coordinate
-    pred_head_xy       = argmax_2d(logits_head)
-    pred_neck_xy       = argmax_2d(logits_neck)
-    pred_rshoulder_xy  = argmax_2d(logits_rshoulder)
-    pred_lshoulder_xy  = argmax_2d(logits_lshoulder)
+        label_head, \
+        label_neck, \
+        label_rshoulder, \
+        label_lshoulder = tf.split(labels,
+                                    num_or_size_splits=model_config.num_of_labels,
+                                    axis=3)
 
-    label_head_xy      = argmax_2d(label_head)
-    label_neck_xy      = argmax_2d(label_neck)
-    label_rshoulder_xy = argmax_2d(label_rshoulder)
-    label_lshoulder_xy = argmax_2d(label_lshoulder)
+        # get predicted coordinate
+        pred_head_xy       = argmax_2d(logits_head)
+        pred_neck_xy       = argmax_2d(logits_neck)
+        pred_rshoulder_xy  = argmax_2d(logits_rshoulder)
+        pred_lshoulder_xy  = argmax_2d(logits_lshoulder)
 
-    # error distance measure
-    metric_err_fn                 = train_config.metric_fn
-    head_neck_dist, update_op     = metric_err_fn(labels=label_head_xy,
-                                                  predictions=label_neck_xy)
+        label_head_xy      = argmax_2d(label_head)
+        label_neck_xy      = argmax_2d(label_neck)
+        label_rshoulder_xy = argmax_2d(label_rshoulder)
+        label_lshoulder_xy = argmax_2d(label_lshoulder)
 
-    errdist_head,update_op_errdist_head             = metric_err_fn(labels=label_head_xy,
-                                                                    predictions=pred_head_xy)
-    errdist_neck,update_op_errdist_neck             = metric_err_fn(labels=label_neck_xy,
-                                                                    predictions= pred_neck_xy)
-    errdist_rshoulder, update_op_errdist_rshoulder  = metric_err_fn(labels=label_rshoulder_xy,
-                                                                    predictions= pred_rshoulder_xy)
-    errdist_lshoulder, update_op_errdist_lshoulder  = metric_err_fn(labels=label_lshoulder_xy,
-                                                                    predictions= pred_lshoulder_xy)
-    # percentage of correct keypoints
-    total_errdist = (errdist_head +\
-                    errdist_neck +\
-                    errdist_rshoulder +\
-                    errdist_lshoulder) / head_neck_dist
+        # error distance measure
+        metric_err_fn                 = train_config.metric_fn
+        head_neck_dist, update_op     = metric_err_fn(labels=label_head_xy,
+                                                      predictions=label_neck_xy)
 
-    pck =            tf.metrics.percentage_below(values=total_errdist,
-                                               threshold=FLAGS.pck_threshold,
-                                               name=    'pck_' + str(FLAGS.pck_threshold))
+        errdist_head,update_op_errdist_head             = metric_err_fn(labels=label_head_xy,
+                                                                        predictions=pred_head_xy)
+        errdist_neck,update_op_errdist_neck             = metric_err_fn(labels=label_neck_xy,
+                                                                        predictions= pred_neck_xy)
+        errdist_rshoulder, update_op_errdist_rshoulder  = metric_err_fn(labels=label_rshoulder_xy,
+                                                                        predictions= pred_rshoulder_xy)
+        errdist_lshoulder, update_op_errdist_lshoulder  = metric_err_fn(labels=label_lshoulder_xy,
+                                                                        predictions= pred_lshoulder_xy)
+        # percentage of correct keypoints
+        total_errdist = (errdist_head +\
+                        errdist_neck +\
+                        errdist_rshoulder +\
+                        errdist_lshoulder) / head_neck_dist
 
-    # form a dictionary
-    metric_dict = {
-                        'errdist_head': (errdist_head      / head_neck_dist,
-                                         update_op_errdist_head),
-                        'errdist_neck': (errdist_neck      / head_neck_dist,
-                                         update_op_errdist_neck),
-                        'errdist_rshoulder': (errdist_rshoulder / head_neck_dist,
-                                                update_op_errdist_rshoulder),
-                        'errdist_lshoulder': (errdist_lshoulder / head_neck_dist,
-                                                update_op_errdist_lshoulder),
-                        'pck': pck
-                    }
+        pck =            tf.metrics.percentage_below(values=total_errdist,
+                                                   threshold=FLAGS.pck_threshold,
+                                                   name=    'pck_' + str(FLAGS.pck_threshold))
+
+        # form a dictionary
+        metric_dict = {
+                            'errdist_head': (errdist_head      / head_neck_dist,
+                                             update_op_errdist_head),
+                            'errdist_neck': (errdist_neck      / head_neck_dist,
+                                             update_op_errdist_neck),
+                            'errdist_rshoulder': (errdist_rshoulder / head_neck_dist,
+                                                    update_op_errdist_rshoulder),
+                            'errdist_lshoulder': (errdist_lshoulder / head_neck_dist,
+                                                    update_op_errdist_lshoulder),
+                            'pck': pck
+                        }
 
     return metric_dict
 
 
 
 
+
+
 # def host_call_fn(global_step, loss, mid_loss_list, learning_rate, current_epoch):
-def host_call_fn(global_step, loss, learning_rate, current_epoch):
+def tb_summary_fn(global_step, loss, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -357,30 +362,34 @@ def host_call_fn(global_step, loss, learning_rate, current_epoch):
     Returns:
       List of summary ops to run on the CPU host.
     """
-    global_step = global_step[0]
 
-    ## create tflog dir
-    now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    tb_logdir_path = FLAGS.tflogs_dir
-    tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
+    with tf.name_scope(name='tb_summary',values=[global_step,
+                                                 loss,
+                                                 learning_rate,
+                                                 current_epoch]):
+        global_step = global_step[0]
+        ## create tflog dir
+        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        tb_logdir_path = FLAGS.tflogs_dir
+        tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
 
-    if not tf.gfile.Exists(tb_logdir_path):
-        tf.gfile.MakeDirs(tb_logdir_path)
-
-
-    with summary.create_file_writer(logdir=tb_logdir).as_default():
-        with summary.always_record_summaries():
-            summary.scalar('loss', loss[0], step=global_step)
-            # for n in range(0,model_config.num_of_hgstacking):
-            #     summary.scalar('mid_loss'+str(n), mid_loss_list[n][0], step=global_step)
-            #
-
-            summary.scalar('learning_rate', learning_rate[0], step=global_step)
-            summary.scalar('current_epoch', current_epoch[0], step=global_step)
+        if not tf.gfile.Exists(tb_logdir_path):
+            tf.gfile.MakeDirs(tb_logdir_path)
 
 
+        with summary.create_file_writer(logdir=tb_logdir).as_default():
+            with summary.always_record_summaries():
+                summary.scalar('loss', loss[0], step=global_step)
+                # for n in range(0,model_config.num_of_hgstacking):
+                #     summary.scalar('mid_loss'+str(n), mid_loss_list[n][0], step=global_step)
+                #
+
+                summary.scalar('learning_rate', learning_rate[0], step=global_step)
+                summary.scalar('current_epoch', current_epoch[0], step=global_step)
 
         return summary.all_summary_ops()
+
+
 
 
 
@@ -413,26 +422,30 @@ def model_fn(features,
         A `TPUEstimatorSpec` for the model
     """
 
+
     if isinstance(features, dict):
         features = features['feature']
-
     if FLAGS.data_format == 'channels_first':
         assert not FLAGS.transpose_input    # channels_first only for GPU
         features = tf.transpose(features, [0, 3, 1, 2])
-
     if FLAGS.transpose_input and mode != tf.estimator.ModeKeys.PREDICT:
         features = tf.transpose(features, [3, 0, 1, 2])  # HWCN to NHWC
 
-    # Normalize the image to zero mean and unit variance.
-    features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
-    features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
-    # set input_shape
-    features.set_shape(features.get_shape().merge_with(
-        tf.TensorShape([None,
-                        model_config.input_height,
-                        model_config.input_width,
-                        None])))
+
+
+    with tf.name_scope(name='feature_norm',values=[features]):
+        # Normalize the image to zero mean and unit variance.
+        features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
+        features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+
+        # set input_shape
+        features.set_shape(features.get_shape().merge_with(
+            tf.TensorShape([None,
+                            model_config.input_height,
+                            model_config.input_width,
+                            None])))
+
 
 
 
@@ -440,35 +453,38 @@ def model_fn(features,
     # This nested function allows us to avoid duplicating the logic which
     # builds the network, for different values of --precision.
     def build_network():
+        with tf.name_scope(name='build_network'):
+            ''' get model '''
+            out_heatmap, mid_heatmap, end_points\
+                = get_model(ch_in           = features,
+                            model_config    = model_config,
+                            scope           = 'model')
 
-        ''' get model '''
-        out_heatmap, mid_heatmap, end_points\
-            = get_model(ch_in           = features,
-                        model_config    = model_config,
-                        scope           = 'model')
+            '''specify is_trainable on model '''
+            if mode == tf.estimator.ModeKeys.TRAIN:
+                model_config.hg_config.is_trainable     = True
+                model_config.sv_config.is_trainable     = True
+                model_config.rc_config.is_trainable     = True
+                model_config.out_config.is_trainable    = True
+            elif (mode == tf.estimator.ModeKeys.EVAL) or \
+                    (mode == tf.estimator.ModeKeys.PREDICT):
+                 model_config.hg_config.is_trainable    = False
+                 model_config.sv_config.is_trainable    = False
+                 model_config.rc_config.is_trainable    = False
+                 model_config.out_config.is_trainable   = False
 
-        tf.logging.info('-----------------------------------------------------------')
-        tf.logging.info('[model_fn]  feature shape=%s' % features.get_shape().as_list())
-        tf.logging.info('[model_fn]  labels  shape=%s' % labels.get_shape().as_list())
-        tf.logging.info('[model_fn]  out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
+            tf.logging.info('-----------------------------------------------------------')
+            tf.logging.info('[model_fn]  feature shape=%s' % features.get_shape().as_list())
+            tf.logging.info('[model_fn]  labels  shape=%s' % labels.get_shape().as_list())
+            tf.logging.info('[model_fn]  out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
+            for n in range(0,model_config.num_of_hgstacking):
+                tf.logging.info('[model_fn]  mid_heatmap%d  shape=%s'
+                                % (n,mid_heatmap[n].get_shape().as_list()))
 
-        for n in range(0,model_config.num_of_hgstacking):
-            tf.logging.info('[model_fn]  mid_heatmap%d  shape=%s' % (n,
-                                                                     mid_heatmap[n].get_shape().as_list()))
-
-        '''specify is_trainable on model '''
-        if mode == tf.estimator.ModeKeys.TRAIN:
-            model_config.hg_config.is_trainable     = True
-            model_config.sv_config.is_trainable     = True
-            model_config.rc_config.is_trainable     = True
-            model_config.out_config.is_trainable    = True
-        elif (mode == tf.estimator.ModeKeys.EVAL) or \
-                (mode == tf.estimator.ModeKeys.PREDICT):
-             model_config.hg_config.is_trainable    = False
-             model_config.sv_config.is_trainable    = False
-             model_config.rc_config.is_trainable    = False
-             model_config.out_config.is_trainable   = False
         return out_heatmap, mid_heatmap,end_points
+
+
+
 
 
     if FLAGS.precision == 'bfloat16':
@@ -476,9 +492,7 @@ def model_fn(features,
             logits_out_heatmap, \
             logits_mid_heatmap, \
             end_points = build_network()
-
-        logits = tf.cast(logits_out_heatmap, tf.float32)
-
+            logits_out_heatmap = tf.cast(logits_out_heatmap, tf.float32)
     else:
         # FLAGS.precision == 'float32':
         logits_out_heatmap, \
@@ -505,54 +519,60 @@ def model_fn(features,
     #         })
     # -----------------------------
 
-    # training config ========================
-
     ### output layer ===
-    # heatmap activation of output layer out
-    act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
-                                              scope='out_heatmap')
-    # heatmap loss
-    total_out_losssum, loss_tensor = \
-        get_loss_heatmap(pred_heatmaps  = act_out_heatmaps,
-                         label_heatmaps = labels,
-                         scope='out_loss')
-
-    # occlusion loss
-
-    ### supervision layers ===
-    act_mid_heatmap_list    = []
-    mid_loss_list           = []
-    total_mid_losssum_list  = []
-    total_mid_losssum_acc   = 0.0
-
-    for stacked_hg_index in range(0,model_config.num_of_hgstacking):
-
-        # heatmap activation of supervision layer out
-        act_mid_heatmap_temp =\
-            get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
-                                   scope='mid_heatmap_' + str(stacked_hg_index))
-
+    with tf.name_scope(name='outlayer_post_proc',values=[logits_out_heatmap,labels]):
+        # heatmap activation of output layer out
+        act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
+                                                  scope='out_heatmap')
         # heatmap loss
-        total_mid_losssum_temp,mid_loss_temp =\
-            get_loss_heatmap(pred_heatmaps  = act_mid_heatmap_temp,
+        total_out_losssum, loss_tensor = \
+            get_loss_heatmap(pred_heatmaps  = act_out_heatmaps,
                              label_heatmaps = labels,
-                             scope='mid_loss_' + str(stacked_hg_index))
-
-        # collect loss and heatmap in list
-        act_mid_heatmap_list.append(act_mid_heatmap_temp)
-        mid_loss_list.append(mid_loss_temp)
-        total_mid_losssum_list.append(total_mid_losssum_temp)
-
-        total_mid_losssum_acc += total_mid_losssum_temp
-
-        # occlusion loss
+                             scope='out_loss')
 
 
-    # Collect weight regularizer loss =====
-    loss_regularizer = tf.losses.get_regularization_loss()
 
-    # sum up all losses =====
-    loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
+
+    ### middle layer ===
+    with tf.name_scope(name='midlayer_post_proc',values=[logits_mid_heatmap,
+                                                         labels]):
+        ### supervision layers ===
+        act_mid_heatmap_list    = []
+        mid_loss_list           = []
+        total_mid_losssum_list  = []
+        total_mid_losssum_acc   = 0.0
+
+        for stacked_hg_index in range(0,model_config.num_of_hgstacking):
+
+            # heatmap activation of supervision layer out
+            act_mid_heatmap_temp =\
+                get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
+                                       scope='mid_heatmap_' + str(stacked_hg_index))
+            # heatmap loss
+            total_mid_losssum_temp,mid_loss_temp =\
+                get_loss_heatmap(pred_heatmaps  = act_mid_heatmap_temp,
+                                 label_heatmaps = labels,
+                                 scope='mid_loss_' + str(stacked_hg_index))
+
+            # collect loss and heatmap in list
+            act_mid_heatmap_list.append(act_mid_heatmap_temp)
+            mid_loss_list.append(mid_loss_temp)
+            total_mid_losssum_list.append(total_mid_losssum_temp)
+            total_mid_losssum_acc += total_mid_losssum_temp
+
+
+
+
+
+    ### total loss ===
+    with tf.name_scope(name='total_loss',values=[total_out_losssum,
+                                                 total_mid_losssum_acc]):
+        # Collect weight regularizer loss =====
+        loss_regularizer = tf.losses.get_regularization_loss()
+        # sum up all losses =====
+        loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
+
+
 
 
     host_call = None
@@ -568,12 +588,12 @@ def model_fn(features,
                                                         name='RMSprop_opt')
 
 
+
         if FLAGS.use_tpu:
             # When using TPU, wrap the optimizer with CrossShardOptimizer which
             # handles synchronization details between different TPU cores. To the
             # user, this should look like regular synchronous training.
             optimizer = tpu_optimizer.CrossShardOptimizer(optimizer)
-
         '''
             # Batch normalization requires UPDATE_OPS to be added as a dependency to
             # the train operation.
@@ -584,27 +604,35 @@ def model_fn(features,
             train_op = optimizer.minimize(loss, global_step)
 
 
-        if not FLAGS.skip_host_call:
+
+
+
+        if not FLAGS.is_tensorboard_summary:
             # To log the loss, current learning rate, and epoch for Tensorboard, the
             # summary op needs to be run on the host CPU via host_call. host_call
             # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
-            gs_t    = tf.reshape(global_step, [1])
-            loss_t  = tf.reshape(loss, [1])
+            gs_t = tf.reshape(global_step, [1])
+            loss_t = tf.reshape(loss, [1])
 
             mid_loss_list_t = []
             # for n in range(0,model_config.num_of_hgstacking):
             #     mid_loss_list_t[n] = tf.reshape(mid_loss_list[n],[1])
 
-            lr_t    = tf.reshape(learning_rate, [1])
-            ce_t    = tf.reshape(current_epoch, [1])
+            lr_t = tf.reshape(learning_rate, [1])
+            ce_t = tf.reshape(current_epoch, [1])
 
-            # host_call = (host_call_fn, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
-            host_call = (host_call_fn, [gs_t, loss_t, lr_t, ce_t])
+            if FLAGS.use_tpu:
+                # host_call = (host_call_fn, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
+                host_call = (tb_summary_fn, [gs_t, loss_t, lr_t, ce_t])
+            else:
+                tb_summary_fn(gs_t, loss_t, lr_t, ce_t)
+
 
     else:
         train_op = None
+
 
 
 
@@ -628,11 +656,14 @@ def model_fn(features,
 
 
 
+
+
+
+
 def main(unused_argv):
 
     model_config.show_info()
     train_config.show_info()
-
 
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -693,8 +724,6 @@ def main(unused_argv):
                     warm_start_from    = None)
 
         use_bfloat16 = False
-
-
 
     '''
     # data loader
@@ -777,7 +806,7 @@ def main(unused_argv):
                 # Since evaluation happens in batches of --eval_batch_size, some images
                 # may be consistently excluded modulo the batch size.
                 tf.logging.info('Starting to evaluate.')
-                eval_results = dontbeturtle_estimator.evaluate(
+                eval_results    = dontbeturtle_estimator.evaluate(
                     input_fn    =dataset_eval.input_fn,
                     steps       =FLAGS.num_eval_images // FLAGS.eval_batch_size)
 
