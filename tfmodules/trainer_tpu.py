@@ -37,6 +37,8 @@ from path_manager import EXPORT_DIR
 from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
 
+from path_manager import TENSORBOARD_BUCKET
+
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
@@ -370,7 +372,12 @@ def tb_summary_fn(global_step, loss, learning_rate, current_epoch):
         global_step = global_step[0]
         ## create tflog dir
         now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        tb_logdir_path = FLAGS.tflogs_dir
+
+        if FLAGS.use_tpu:
+            tb_logdir_path = TENSORBOARD_BUCKET
+        else:
+            tb_logdir_path = FLAGS.tflogs_dir
+
         tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
 
         if not tf.gfile.Exists(tb_logdir_path):
