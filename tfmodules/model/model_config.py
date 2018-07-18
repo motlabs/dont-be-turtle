@@ -24,6 +24,8 @@ import numpy as np
 
 DEFAULT_CHANNEL_NUM     = 256.0
 DEFAULT_INPUT_RESOL     = 256.0
+DEFAULT_INPUT_CHNUM     = 3
+
 DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / 4.0
 DEFAULT_LABEL_LENGTH    = 3
 NUM_OF_BODY_PART        = 4
@@ -52,6 +54,15 @@ class ConvModuleConfig(object):
         self.batch_norm_fused = True
 
 
+    def show_info(self):
+
+        tf.logging.info('[conv_config] conv_type = %s' % self.conv_type)
+        tf.logging.info('[conv_config] kernel_size = %s' % self.kernel_size)
+        tf.logging.info('[conv_config] is_trainable = %s' % self.is_trainable)
+        # tf.logging.info('[conv_config] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[conv_config] act_fn = %s' % str(self.activation_fn))
+        tf.logging.info('[conv_config] batch_norm decay = %s' % self.batch_norm_decay)
+
 
 
 class DeconvModuleConfig(object):
@@ -71,6 +82,13 @@ class DeconvModuleConfig(object):
         # batch_norm
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
+
+    def show_info(self):
+        tf.logging.info('[deconv_config] conv_type = %s' % self.deconv_type)
+        tf.logging.info('[deconv_config] is_trainable = %s' % self.is_trainable)
+        # tf.logging.info('[conv_config] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[deconv_config] act_fn = %s' % str(self.activation_fn))
+        tf.logging.info('[deconv_config] batch_norm decay = %s' % self.batch_norm_decay)
 
 
 
@@ -123,8 +141,19 @@ class ReceptionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        self.conv_config    = ConvModuleConfig(conv_type='linear_bottleneck')
+        self.conv_type = 'linear_bottleneck'
+        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
 
+
+
+    def show_info(self):
+
+        tf.logging.info('------------------------')
+        tf.logging.info('[RecepLayer] is_trainable = %s' % self.is_trainable)
+        tf.logging.info('[RecepLayer] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[RecepLayer] act_fn = %s' % str(self.activation_fn))
+        tf.logging.info('[RecepLayer] batch_norm decay = %s' % self.batch_norm_decay)
+        self.conv_config.show_info()
 
 
 
@@ -146,13 +175,24 @@ class HourGlassConfig(object):
         # self.conv_type           = 'inverted_bottleneck'
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
-        self.conv_config    = ConvModuleConfig(conv_type='inverted_bottleneck')
-        self.deconv_config  = DeconvModuleConfig(deconv_type='nearest_neighbor_unpool')
+
+        self.conv_type = 'inverted_bottleneck'
+        self.deconv_type = 'nearest_neighbor_unpool'
+
+        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
+        self.deconv_config  = DeconvModuleConfig(deconv_type=self.deconv_type)
         self.convseq_config = ConvSeqModuleConfig()
 
         self.pooling_type           = 'maxpool'
         # self.pooling_type         = 'convpool'
         self.pooling_factor         = 2
+
+
+    def show_info(self):
+        tf.logging.info('------------------------')
+        tf.logging.info('[HGLayer] pooling_type = %s' % self.pooling_type)
+        self.conv_config.show_info()
+        self.deconv_config.show_info()
 
 
 
@@ -183,8 +223,12 @@ class SupervisionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-
-
+    def show_info(self):
+        tf.logging.info('------------------------')
+        tf.logging.info('[SuperLayer] is_trainable = %s' % self.is_trainable)
+        tf.logging.info('[SuperLayer] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[SuperLayer] act_fn = %s' % str(self.activation_fn))
+        tf.logging.info('[SuperLayer] batch_norm decay = %s' % self.batch_norm_decay)
 
 
 
@@ -210,6 +254,15 @@ class OutputConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
+    def show_info(self):
+        tf.logging.info('------------------------')
+        tf.logging.info('[OutputLayer] dim_reduct_ratio = %s' % self.dim_reduct_ratio)
+        tf.logging.info('[OutputLayer] num_stacking_1x1conv = %s' % self.num_stacking_1x1conv)
+        tf.logging.info('[OutputLayer] is_trainable = %s' % self.is_trainable)
+        tf.logging.info('[OutputLayer] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[OutputLayer] act_fn = %s' % str(self.activation_fn))
+        tf.logging.info('[OutputLayer] batch_norm decay = %s' % self.batch_norm_decay)
+
 
 
 
@@ -217,8 +270,9 @@ class ModelConfig(object):
 
     def __init__(self):
         # common
-        self.input_height   = DEFAULT_INPUT_RESOL
-        self.input_width    = DEFAULT_INPUT_RESOL
+        self.input_height       = DEFAULT_INPUT_RESOL
+        self.input_width        = DEFAULT_INPUT_RESOL
+        self.input_channel_num  = DEFAULT_INPUT_CHNUM
 
         self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
@@ -231,5 +285,18 @@ class ModelConfig(object):
         self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
         self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
         self.out_config         = OutputConfig      (self.depth_multiplier)
+
+
+    def show_info(self):
+        tf.logging.info('---------------------------------------')
+        tf.logging.info('[model_config] num of hg stacking = %s' % self.num_of_hgstacking)
+        tf.logging.info('[model_config] num of labels      = %s' % self.num_of_labels)
+        tf.logging.info('[model_config] depth multiplier = %s' % self.depth_multiplier)
+        tf.logging.info('[model_config] resol multiplier = %s' % self.resol_multiplier)
+
+        self.rc_config.show_info()
+        self.hg_config.show_info()
+        self.sv_config.show_info()
+        self.out_config.show_info()
 
 

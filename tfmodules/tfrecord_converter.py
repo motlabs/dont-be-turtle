@@ -68,7 +68,10 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                         'height'    : _int64_feature(image.shape[0]),
                         'width'     : _int64_feature(image.shape[1]),
                         'channel'   : _int64_feature(image.shape[2]),
+
+                        ''' image value has [0,255]'''
                         'image'     : _bytes_feature(image.tostring()),
+
                         '''
                             /* label json format */
                             {
@@ -103,8 +106,8 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
 
 
 def main(train_dir, eval_dir, out_dir):
-    train_data_list = glob(os.path.join(train_dir + 'images/', "*.*"))
-    eval_data_list = glob(os.path.join(eval_dir   + 'images/', "*.*"))
+    train_data_list = glob(os.path.join(train_dir + 'images/', "*.jp*"))
+    eval_data_list = glob(os.path.join(eval_dir   + 'images/', "*.jp*"))
 
 
     train_label_list = glob(os.path.join(train_dir + 'labels/', "*.json"))
@@ -133,8 +136,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--train-data-dir',
-        # default = '../dataset/traintest/lsp/',
-        default='../dataset/train/lsp/',
+        default = '../dataset/traintest/lsp/',
+        # default='../dataset/train/lsp/',
         help='training data',
         nargs='+',
         required=False
@@ -142,8 +145,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--eval-data-dir',
-        # default='../dataset/evaltest/collected_data/',
-        default='../dataset/eval/collected_data/',
+        default='../dataset/evaltest/collected_data/',
+        # default='../dataset/eval/collected_data/',
         help='evaluation data',
         nargs='+',
         required=False

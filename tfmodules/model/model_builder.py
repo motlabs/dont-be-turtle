@@ -41,11 +41,14 @@ def get_model(ch_in,model_config,scope=None):
     with tf.variable_scope(name_or_scope=scope,default_name='model',values=[ch_in]) as sc:
 
         scope = 'reception'
+        tf.logging.info('-----------------------------------------------------------')
+        tf.logging.info('[model_builder] model in shape=%s' % ch_in.get_shape().as_list() )
         with tf.variable_scope(name_or_scope=scope, default_name='reception', values=[net]):
             net,end_points_recept, _= get_layer(ch_in       = net,
                                                model_config = model_config.rc_config,
                                                layer_type   = scope)
             end_points.update(end_points_recept)
+        tf.logging.info('[model_builder] reception out shape=%s' % net.get_shape().as_list() )
 
 
         scope = 'stacked_hg'
@@ -60,6 +63,8 @@ def get_model(ch_in,model_config,scope=None):
                                                   layer_index    = stacking_index,
                                                   layer_type     = 'hourglass')
                 end_points.update(end_points_hg)
+                tf.logging.info('[model_builder] hourglass%d out shape=%s' % (stacking_index,
+                                                                         net.get_shape().as_list()))
 
                 # supervision layer
                 net, end_points_sv,heatmaps = get_layer(ch_in           = net,
@@ -67,6 +72,8 @@ def get_model(ch_in,model_config,scope=None):
                                                         layer_index     = stacking_index,
                                                         layer_type      = 'supervision')
                 end_points.update(end_points_sv)
+                tf.logging.info('[model_builder] supervision%d out shape=%s' % (stacking_index,
+                                                                         net.get_shape().as_list()))
 
                 # intermediate heatmap save
                 intermediate_heatmaps.append(heatmaps)
@@ -82,12 +89,12 @@ def get_model(ch_in,model_config,scope=None):
                                                model_config     = model_config.out_config,
                                                layer_type       = scope)
             end_points.update(end_point_out)
-
+            tf.logging.info('[model_builder] model out shape=%s' % net.get_shape().as_list())
+            tf.logging.info('-----------------------------------------------------------')
 
         out = tf.identity(input=net, name= sc.name + '_out')
         end_points[sc.name + '_out'] = out
         end_points[sc.name + '_in'] = ch_in
-
 
         return out, intermediate_heatmaps, end_points
 

@@ -20,50 +20,45 @@ from absl import flags
 from path_manager import DATASET_DIR
 from path_manager import EXPORT_MODEL
 from path_manager import EXPORT_SAVEMODEL_DIR
+from path_manager import EXPORT_TFLOG_DIR
 
-
-TRAININGSET_SIZE     = 2000
+TRAININGSET_SIZE     = 6
 VALIDATIONSET_SIZE   = 216
 # TESTSET_SIZE         = 100
 
-BATCH_SIZE           = 32
+BATCH_SIZE           = 6
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
+
 
 class TrainConfig(object):
     def __init__(self):
 
         # self.is_learning_rate_decay = True
         # self.learning_rate_decay_rate =0.99
-        self.opt_fn             = tf.train.RMSPropOptimizer
-        self.occlusion_loss_fn  = tf.nn.softmax_cross_entropy_with_logits_v2
-        self.heatmap_loss_fn    = tf.nn.l2_loss
-        self.activation_fn_pose = tf.nn.relu
+        self.opt_fn                 = tf.train.RMSPropOptimizer
+        self.occlusion_loss_fn      = tf.nn.softmax_cross_entropy_with_logits_v2
+        self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        self.metric_fn              = tf.metrics.root_mean_squared_error
+        self.activation_fn_pose     = tf.nn.relu
 
         self.tf_data_type   = tf.float32
         self.display_step   = 5
 
+    def show_info(self):
+        tf.logging.info('------------------------')
+        tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
+        tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
+        tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
+        tf.logging.info('[train_config] Use act_fn   : %s' % str(self.activation_fn_pose))
+        tf.logging.info('------------------------')
 
 
-class PreprocessingConfig(object):
 
-    def __init__(self):
-        # image pre-processing
-        self.is_random_crop             = False
-        self.is_scaling                 = False
-        self.is_flipping                = False
 
-        # this is when classification task
-        # which has an input as pose coordinate
-        self.is_label_coordinate_norm   = False
 
-        # for ground true heatmap generation
-        self.heatmap_std        = 1
-        self.heatmap_pdf_type          = 'gaussian'
-
-#-----------------------------------------------
 # Learning rate schedule
 LR_SCHEDULE = [
     # (multiplier, epoch to start) tuples
@@ -107,9 +102,12 @@ flags.DEFINE_string(
 
 flags.DEFINE_string(
     'model_dir', default=EXPORT_MODEL,
-    help=('The directory where the model and training/evaluation summaries are'
-          ' stored.'))
+    help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
+flags.DEFINE_string(
+    'tflogs_dir', default=EXPORT_TFLOG_DIR,
+    help=('The directory where the tensorboard summary are stored')
+)
 
 
 flags.DEFINE_string(
@@ -117,7 +115,7 @@ flags.DEFINE_string(
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
-    'train_steps', default=112603,
+    'train_steps', default=TRAININGSET_SIZE*8,
     help=('The number of steps to use for training. Default is 112603 steps'
           ' which is approximately 90 epochs at batch size 1024. This flag'
           ' should be adjusted according to the --train_batch_size flag.'))
@@ -218,4 +216,28 @@ flags.DEFINE_float(
     help=('Threshold to measure percentage for correct keypoints')
 )
 
+
+
+
+MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.
+MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.
+
+
+class PreprocessingConfig(object):
+
+    def __init__(self):
+        # image pre-processing
+        self.is_random_crop             = False
+        self.is_scaling                 = False
+        self.is_flipping                = False
+
+        # this is when classification task
+        # which has an input as pose coordinate
+        self.is_label_coordinate_norm   = False
+
+        # for ground true heatmap generation
+        self.heatmap_std        = 1
+        self.heatmap_pdf_type          = 'gaussian'
+
+#-----------------------------------------------
 

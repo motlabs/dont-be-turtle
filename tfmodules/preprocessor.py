@@ -20,220 +20,47 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import cv2
 import numpy as np
 
 from model_config  import DEFAULT_INPUT_RESOL
-from model_config  import NUM_OF_BODY_PART
+from model_config  import DEFAULT_INPUT_CHNUM
 from model_config  import DEFAULT_LABEL_LENGTH
+from model_config  import DEFAULT_HG_INOUT_RESOL
+
+from train_config  import MAX_AUGMENT_ROTATE_ANGLE_DEG
+from train_config  import MIN_AUGMENT_ROTATE_ANGLE_DEG
+
 
 IMAGE_SIZE = np.int32(DEFAULT_INPUT_RESOL)
 
-CROP_PADDING = 32
-
-
-
-def distorted_bounding_box_crop(image_bytes,
-                                bbox,
-                                min_object_covered=0.1,
-                                aspect_ratio_range=(0.75, 1.33),
-                                area_range=(0.05, 1.0),
-                                max_attempts=100,
-                                scope=None):
-    """Generates cropped_image using one of the bboxes randomly distorted.
-        See `tf.image.sample_distorted_bounding_box` for more documentation.
-        Args:
-        image_bytes: `Tensor` of binary image data.
-        bbox: `Tensor` of bounding boxes arranged `[1, num_boxes, coords]`
-            where each coordinate is [0, 1) and the coordinates are arranged
-            as `[ymin, xmin, ymax, xmax]`. If num_boxes is 0 then use the whole
-            image.
-        min_object_covered: An optional `float`. Defaults to `0.1`. The cropped
-            area of the image must contain at least this fraction of any bounding
-            box supplied.
-        aspect_ratio_range: An optional list of `float`s. The cropped area of the
-            image must have an aspect ratio = width / height within this range.
-        area_range: An optional list of `float`s. The cropped area of the image
-            must contain a fraction of the supplied image within in this range.
-        max_attempts: An optional `int`. Number of attempts at generating a cropped
-            region of the image of the specified constraints. After `max_attempts`
-            failures, return the entire image.
-        scope: Optional `str` for name scope.
-        Returns:
-        (cropped image `Tensor`, distorted bbox `Tensor`).
-
-        https://www.tensorflow.org/api_docs/python/tf/image/sample_distorted_bounding_box
-
-  """
-    with tf.name_scope(scope, 'distorted_bounding_box_crop', [image_bytes, bbox]):
-        shape = tf.image.extract_jpeg_shape(image_bytes)
-
-        sample_distorted_bounding_box = tf.image.sample_distorted_bounding_box(
-            shape,
-            bounding_boxes      =bbox,
-            min_object_covered  =min_object_covered,
-            aspect_ratio_range  =aspect_ratio_range,
-            area_range          =area_range,
-            max_attempts        =max_attempts,
-            use_image_if_no_bounding_boxes=True)
-
-        bbox_begin, bbox_size, _ = sample_distorted_bounding_box
-
-        # Crop the image to the specified bounding box.
-        offset_y, offset_x, _           = tf.unstack(bbox_begin)
-        target_height, target_width, _  = tf.unstack(bbox_size)
-        crop_window                     = tf.stack([offset_y,
-                                                    offset_x,
-                                                    target_height,
-                                                    target_width])
-
-        image = tf.image.decode_and_crop_jpeg(image_bytes,
-                                              crop_window,
-                                              channels=3)
-
-    return image,crop_window
-
-
-
-
-def _at_least_x_are_equal(a, b, x):
-    """At least `x` of `a` and `b` `Tensors` are equal."""
-    match = tf.equal(a, b)
-    match = tf.cast(match, tf.int32)
-    return tf.greater_equal(tf.reduce_sum(match), x)
-
-
-
-
-def _decode_and_random_crop(image_bytes):
-    """Make a random crop of IMAGE_SIZE.
-        For training
-    """
-    bbox = tf.constant([0.0, 0.0, 1.0, 1.0], dtype=tf.float32, shape=[1, 1, 4])
-
-    image,crop_window = distorted_bounding_box_crop(image_bytes,
-                                                    bbox,
-                                                    min_object_covered=0.1,
-                                                    aspect_ratio_range=(3. / 4, 4. / 3.),
-                                                    area_range=(0.08, 1.0),
-                                                    max_attempts=10,
-                                                    scope=None)
-
-    original_shape  = tf.image.extract_jpeg_shape(image_bytes)
-    bad             = _at_least_x_are_equal(a=original_shape,
-                                            b=tf.shape(image),
-                                            x=3)
-
-    image = tf.cond(bad,
-                    lambda: _decode_and_center_crop(image_bytes),
-                    lambda: tf.image.resize_bicubic([image],  # pylint: disable=g-long-lambda
-                                                    [IMAGE_SIZE, IMAGE_SIZE])[0])
-
-    return image,crop_window
-
-
-
-
-
-def _decode_and_center_crop(image_bytes):
-    """Crops to center of image with padding then scales IMAGE_SIZE.
-        For evaluation
-    """
-
-    shape           = tf.image.extract_jpeg_shape(image_bytes)
-    image_height    = shape[0]
-    image_width     = shape[1]
-
-    # we need to see the below codes
-    padded_center_crop_size = tf.cast(
-        ((IMAGE_SIZE / (IMAGE_SIZE + CROP_PADDING)) *
-        tf.cast(tf.minimum(image_height, image_width), tf.float32)),
-        tf.int32)
-
-    offset_height   = ((image_height - padded_center_crop_size) + 1) // 2
-    offset_width    = ((image_width  - padded_center_crop_size) + 1) // 2
-
-    crop_window     = tf.stack([offset_height,
-                                offset_width,
-                                padded_center_crop_size,
-                                padded_center_crop_size])
-
-    image = tf.image.decode_and_crop_jpeg(image_bytes,
-                                          crop_window,
-                                          channels=3)
-
-    image = tf.image.resize_bicubic([image],
-                                    [IMAGE_SIZE, IMAGE_SIZE])[0]
-    return image
-
-
+#CROP_PADDING = 32
 
 
 def _flip(image):
     """Random horizontal image flip."""
-    image = tf.image.random_flip_left_right(image)
-    return image
+    random_binary = np.random.randint(2)
+
+    if random_binary == 1:
+        is_flip = True
+        image   = tf.image.flip_left_right(image)
+    else:
+        is_flip = False
+
+    return image, is_flip
 
 
-# def _rotation(image):
 
+def _rotate(image):
 
-# under implementation
-def _heatmap_generator(label_bytes,use_bfloat16,gaussian_ksize=10):
+    # random angle (rad) geneartion
+    min_ang_rad     = MIN_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
+    max_ang_rad     = MAX_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
+    random_ang_rad  = np.random.uniform(min_ang_rad,max_ang_rad)
 
-    labels = tf.decode_raw(bytes=label_bytes,
-                          out_type=tf.int32)
-
-    labels.set_shape(labels.get_shape().merge_with
-                     (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
-
-    label_len   = labels.get_shape().as_list()[0]
-
-    def make_gaussian(size_h, size_w, fwhm=3, center=None):
-        """ Make a square gaussian kernel.
-        size is the length of a side of the square
-        fwhm is full-width-half-maximum, which
-        can be thought of as an effective radius.
-        """
-        if size_h > size_w:
-            size = size_h
-        else:
-            size = size_w
-
-        x = np.arange(0, size, 1, float)
-        y = x[:, np.newaxis]
-
-        x0 = center[0]
-        y0 = center[1]
-
-        temp = np.exp(-4 * np.log(2) * ((x - x0) ** 2 + (y - y0) ** 2) / fwhm ** 2)
-        return temp[:size_h, :size_w]
-
-
-    if label_len < (DEFAULT_LABEL_LENGTH - 1):
-
-        label_heatmap_orig = make_gaussian_heatmap()
-
-    #
-    #     for i in range(num_of_part):
-    #         val_annotation_featureMap_temp = (
-    #             make_gaussian(heatmap_height,
-    #                           heatmap_width,
-    #                           gaussian_ksize,
-    #                           (coor_labels[2 * i], coor_labels[2 * i + 1]))).astype(np.float32)
-    #
-    #         featureMap[:, :, i] = cv2.resize(val_annotation_featureMap_temp,
-    #                                          (heatmap_width,heatmap_height),
-    #                                          interpolation=cv2.INTER_CUBIC)
-
-    return 0
-
-    # elif length_of_labels == 0:
-    #     print('error : coor_labels length is 0. ')
-    #     raise ValueError
-    # else:
-    #     print('error : coor_labels length is odd number.')
-    #     raise ValueError
+    image = tf.contrib.image.rotate(images=image,
+                                    angles=random_ang_rad,
+                                    interpolation='BILINEAR')
+    return image, random_ang_rad
 
 
 
@@ -246,14 +73,29 @@ def preprocess_for_train(image_bytes, use_bfloat16):
     Returns:
     A preprocessed image `Tensor`.
     """
-    # here byte to tensor conversion
-    image = _decode_and_random_crop(image_bytes)
+    # In human pose estmation cropping is not used for possibility to lose body keypoints
+    # image = _decode_and_random_crop(image_bytes)
 
-    image = _flip(image)
-    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])
-    image = tf.image.convert_image_dtype(
-      image, dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
-    return image
+    # here byte to tensor conversion and resize
+    # the return has uint8 type
+    image = tf.image.decode_jpeg(contents=image_bytes,
+                                 channels=DEFAULT_INPUT_CHNUM)
+
+    image = tf.image.resize_bicubic(images=[image],
+                                    size=[IMAGE_SIZE, IMAGE_SIZE])
+
+    # augmentation
+    image, is_flip           = _flip(image = image)
+    image, random_ang_rad    = _rotate(image = image)
+
+    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
+
+    # here image value scale is converted to [0,255] to [0.0,1.0]
+    image = tf.image.convert_image_dtype(image=image,
+                                         dtype=tf.bfloat16 if use_bfloat16 else tf.float32,
+                                         saturate=True)
+
+    return image, is_flip, random_ang_rad
 
 
 
@@ -266,12 +108,116 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
     Returns:
     A preprocessed image `Tensor`.
     """
-    # here byte to tensor conversion
-    image = _decode_and_center_crop(image_bytes)
-    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])
-    image = tf.image.convert_image_dtype(
-      image, dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
+    # In human pose estimation linear shift like augmentation is not used
+    # image = _decode_and_center_crop(image_bytes)
+
+    # here byte to tensor conversion and resize
+    # the return has uint8 type
+    image = tf.image.decode_jpeg(contents=image_bytes,
+                                 channels=DEFAULT_INPUT_CHNUM)
+
+    image = tf.image.resize_bicubic(image=[image],
+                                    size =[IMAGE_SIZE,IMAGE_SIZE])
+
+    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
+
+    # here image value scale is converted to [0,255] to [0.0,1.0]
+    image = tf.image.convert_image_dtype(image=image,
+                                         dtype=tf.bfloat16 if use_bfloat16 else tf.float32,
+                                         saturate=True)
     return image
+
+
+
+
+
+def _heatmap_generator(label_bytes,
+                       image_orig_height,
+                       image_orig_width,
+                       is_flip,
+                       random_ang_rad,
+                       use_bfloat16,
+                       gaussian_ksize=10):
+
+    labels      = tf.decode_raw(bytes=label_bytes,
+                                out_type=tf.int64)
+
+    labels.set_shape(labels.get_shape().merge_with
+                     (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
+
+    label_len   = labels.get_shape().as_list()[0]
+
+    x0,y0,is_occlusion = tf.unstack(labels)
+
+    # reflection of aspect ratio by resizing to DEFAULT_INPUT_RESOL
+    aspect_ratio_height = DEFAULT_INPUT_RESOL / tf.cast(image_orig_height,dtype=tf.float32)
+    aspect_ratio_width  = DEFAULT_INPUT_RESOL / tf.cast(image_orig_width, dtype=tf.float32)
+
+    resized_x0 = tf.cast(x0,dtype=tf.float32) * aspect_ratio_width
+    resized_y0 = tf.cast(y0,dtype=tf.float32) * aspect_ratio_height
+
+    # reflection of left right flipping
+    if is_flip:
+        fliped_x0 = DEFAULT_INPUT_RESOL - resized_x0
+        fliped_y0 = DEFAULT_INPUT_RESOL - resized_y0
+    else:
+        fliped_x0 = resized_x0
+        fliped_y0 = resized_y0
+
+    # reflection of rotation
+    rotated_x0 = fliped_x0 * np.cos(random_ang_rad) - fliped_y0 * np.sin(random_ang_rad)
+    rotated_y0 = fliped_x0 * np.sin(random_ang_rad) + fliped_y0 * np.cos(random_ang_rad)
+
+    # max min bound regularization
+    rotated_x0 = tf.minimum(x=rotated_x0,y=0.)
+    rotated_y0 = tf.minimum(x=rotated_y0,y=0.)
+
+    rotated_x0 = tf.maximum(x=rotated_x0,y=DEFAULT_INPUT_RESOL)
+    rotated_y0 = tf.maximum(x=rotated_y0,y=DEFAULT_INPUT_RESOL)
+
+    # resizing by model to  DEFAULT_HG_INOUT_RESOL
+    aspect_ratio_by_model = DEFAULT_HG_INOUT_RESOL / DEFAULT_INPUT_RESOL
+
+    heatmap_x0 = rotated_x0 * aspect_ratio_by_model
+    heatmap_y0 = rotated_y0 * aspect_ratio_by_model
+
+    if label_len == DEFAULT_LABEL_LENGTH :
+        label_heatmap = make_gaussian_heatmap(size_h=DEFAULT_HG_INOUT_RESOL,
+                                              size_w=DEFAULT_HG_INOUT_RESOL,
+                                              fwhm  =gaussian_ksize,
+                                              x0    =heatmap_x0,
+                                              y0    =heatmap_y0)
+    else:
+        print('error : label length is improper. ')
+        raise ValueError
+
+    label_heatmap = tf.image.convert_image_dtype(image=label_heatmap,
+                                                 dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
+
+    return label_heatmap
+
+
+
+
+def make_gaussian_heatmap(size_h, size_w, x0,y0,fwhm=3):
+    """ Make a square gaussian kernel.
+    size is the length of a side of the square
+    fwhm is full-width-half-maximum, which
+    can be thought of as an effective radius.
+    """
+    if size_h > size_w:
+        size = size_h
+    else:
+        size = size_w
+
+    x = np.arange(0, size, 1, dtype=np.float32)
+    y = x[:, np.newaxis]
+
+    heatmap = tf.exp(-4. * tf.log(2.) * ((x - x0) ** 2. + (y - y0) ** 2.) \
+                     / fwhm ** 2.)
+
+    return heatmap
+
 
 
 
@@ -289,43 +235,203 @@ def preprocess_image(image_bytes,
     Returns:
     A preprocessed image `Tensor`.
     """
-    # label heatmap generation
-    label_heatmap_head = _heatmap_generator(label_bytes=label_bytes_list[0],
-                                            image_orig_height=image_orig_height,
-                                            image_orig_width =image_orig_width,
-                                            use_bfloat16=use_bfloat16,
-                                            gaussian_ksize=10)
 
-    # label_heatmap_neck = _heatmap_generator(label_bytes=label_bytes_list[1],
-    #                                         use_bfloat16=use_bfloat16,
-    #                                         gaussian_ksize=10)
-    #
-    # label_heatmap_Rshoudler = _heatmap_generator(label_bytes=label_bytes_list[2],
-    #                                             use_bfloat16=use_bfloat16,
-    #                                             gaussian_ksize=10)
-    #
-    # label_heatmap_Lshoulder = _heatmap_generator(label_bytes=label_bytes_list[3],
-    #                                             use_bfloat16=use_bfloat16,
-    #                                             gaussian_ksize=10)
-    #
-    # label_heatmap           = tf.stack([label_heatmap_head,
-    #                                     label_heatmap_neck,
-    #                                     label_heatmap_Rshoudler,
-    #                                     label_heatmap_Lshoulder])
 
     # input image preprocessing
     if is_training:
-        image =  preprocess_for_train(image_bytes, use_bfloat16)
+        image,is_flip,random_ang_rad =  preprocess_for_train(image_bytes=image_bytes,
+                                                             use_bfloat16=use_bfloat16)
     else:
-        image = preprocess_for_eval(image_bytes, use_bfloat16)
+        image = preprocess_for_eval(image_bytes=image_bytes,
+                                    use_bfloat16=use_bfloat16)
+        is_flip = False
+        random_ang_rad = 0.0
 
 
-    # return image, label_heatmap
-    return image
+    # label heatmap generation
+    label_heatmap_head = _heatmap_generator(label_bytes      =label_bytes_list[0],
+                                            image_orig_height=image_orig_height,
+                                            image_orig_width =image_orig_width,
+                                            is_flip          = is_flip,
+                                            random_ang_rad   = random_ang_rad,
+                                            use_bfloat16     =use_bfloat16,
+                                            gaussian_ksize=10)
+
+    label_heatmap_neck = _heatmap_generator(label_bytes      =label_bytes_list[1],
+                                            image_orig_height=image_orig_height,
+                                            image_orig_width =image_orig_width,
+                                            is_flip          = is_flip,
+                                            random_ang_rad   = random_ang_rad,
+                                            use_bfloat16     =use_bfloat16,
+                                            gaussian_ksize=10)
+
+    label_heatmap_Rshoulder = _heatmap_generator(label_bytes =label_bytes_list[2],
+                                                image_orig_height=image_orig_height,
+                                                image_orig_width =image_orig_width,
+                                                is_flip          = is_flip,
+                                                random_ang_rad   = random_ang_rad,
+                                                use_bfloat16     =use_bfloat16,
+                                                gaussian_ksize=10)
+
+    label_heatmap_Lshoulder = _heatmap_generator(label_bytes =label_bytes_list[3],
+                                                image_orig_height=image_orig_height,
+                                                image_orig_width =image_orig_width,
+                                                is_flip          = is_flip,
+                                                random_ang_rad   = random_ang_rad,
+                                                use_bfloat16     =use_bfloat16,
+                                                gaussian_ksize=10)
+
+
+    label_heatmap           = tf.stack([label_heatmap_head,
+                                        label_heatmap_neck,
+                                        label_heatmap_Rshoulder,
+                                        label_heatmap_Lshoulder],axis=2)
+
+    return image, label_heatmap
 
 
 
 
+
+## -----------------------------------------------------
+# # In human pose estmation cropping is not used
+# # for possibility to lose body keypoints
+## -----------------------------------------------------
+#
+# def distorted_bounding_box_crop(image_bytes,
+#                                 bbox,
+#                                 min_object_covered=0.1,
+#                                 aspect_ratio_range=(0.75, 1.33),
+#                                 area_range=(0.05, 1.0),
+#                                 max_attempts=100,
+#                                 scope=None):
+#     """Generates cropped_image using one of the bboxes randomly distorted.
+#         See `tf.image.sample_distorted_bounding_box` for more documentation.
+#         Args:
+#         image_bytes: `Tensor` of binary image data.
+#         bbox: `Tensor` of bounding boxes arranged `[1, num_boxes, coords]`
+#             where each coordinate is [0, 1) and the coordinates are arranged
+#             as `[ymin, xmin, ymax, xmax]`. If num_boxes is 0 then use the whole
+#             image.
+#         min_object_covered: An optional `float`. Defaults to `0.1`. The cropped
+#             area of the image must contain at least this fraction of any bounding
+#             box supplied.
+#         aspect_ratio_range: An optional list of `float`s. The cropped area of the
+#             image must have an aspect ratio = width / height within this range.
+#         area_range: An optional list of `float`s. The cropped area of the image
+#             must contain a fraction of the supplied image within in this range.
+#         max_attempts: An optional `int`. Number of attempts at generating a cropped
+#             region of the image of the specified constraints. After `max_attempts`
+#             failures, return the entire image.
+#         scope: Optional `str` for name scope.
+#         Returns:
+#         (cropped image `Tensor`, distorted bbox `Tensor`).
+#
+#         https://www.tensorflow.org/api_docs/python/tf/image/sample_distorted_bounding_box
+#
+#   """
+#     with tf.name_scope(scope, 'distorted_bounding_box_crop', [image_bytes, bbox]):
+#         shape = tf.image.extract_jpeg_shape(image_bytes)
+#
+#         sample_distorted_bounding_box = tf.image.sample_distorted_bounding_box(
+#             shape,
+#             bounding_boxes      =bbox,
+#             min_object_covered  =min_object_covered,
+#             aspect_ratio_range  =aspect_ratio_range,
+#             area_range          =area_range,
+#             max_attempts        =max_attempts,
+#             use_image_if_no_bounding_boxes=True)
+#
+#         bbox_begin, bbox_size, _ = sample_distorted_bounding_box
+#
+#         # Crop the image to the specified bounding box.
+#         offset_y, offset_x, _           = tf.unstack(bbox_begin)
+#         target_height, target_width, _  = tf.unstack(bbox_size)
+#         crop_window                     = tf.stack([offset_y,
+#                                                     offset_x,
+#                                                     target_height,
+#                                                     target_width])
+#
+#         image = tf.image.decode_and_crop_jpeg(image_bytes,
+#                                               crop_window,
+#                                               channels=3)
+#
+#     return image,crop_window
+#
+#
+#
+#
+# def _at_least_x_are_equal(a, b, x):
+#     """At least `x` of `a` and `b` `Tensors` are equal."""
+#     match = tf.equal(a, b)
+#     match = tf.cast(match, tf.int32)
+#     return tf.greater_equal(tf.reduce_sum(match), x)
+#
+#
+#
+#
+# def _decode_and_random_crop(image_bytes):
+#     """Make a random crop of IMAGE_SIZE.
+#         For training
+#     """
+#     bbox = tf.constant([0.0, 0.0, 1.0, 1.0], dtype=tf.float32, shape=[1, 1, 4])
+#
+#     image,crop_window = distorted_bounding_box_crop(image_bytes,
+#                                                     bbox,
+#                                                     min_object_covered=0.1,
+#                                                     aspect_ratio_range=(3. / 4, 4. / 3.),
+#                                                     area_range=(0.08, 1.0),
+#                                                     max_attempts=10,
+#                                                     scope=None)
+#
+#     original_shape  = tf.image.extract_jpeg_shape(image_bytes)
+#     bad             = _at_least_x_are_equal(a=original_shape,
+#                                             b=tf.shape(image),
+#                                             x=3)
+#
+#     image = tf.cond(bad,
+#                     lambda: _decode_and_center_crop(image_bytes),
+#                     lambda: tf.image.resize_bicubic([image],  # pylint: disable=g-long-lambda
+#                                                     [IMAGE_SIZE, IMAGE_SIZE])[0])
+#
+#     return image,crop_window
+#
+#
+#
+#
+#
+# def _decode_and_center_crop(image_bytes):
+#     """Crops to center of image with padding then scales IMAGE_SIZE.
+#         For evaluation
+#     """
+#
+#     shape           = tf.image.extract_jpeg_shape(image_bytes)
+#     image_height    = shape[0]
+#     image_width     = shape[1]
+#
+#     # we need to see the below codes
+#     padded_center_crop_size = tf.cast(
+#         ((IMAGE_SIZE / (IMAGE_SIZE + CROP_PADDING)) *
+#         tf.cast(tf.minimum(image_height, image_width), tf.float32)),
+#         tf.int32)
+#
+#     offset_height   = ((image_height - padded_center_crop_size) + 1) // 2
+#     offset_width    = ((image_width  - padded_center_crop_size) + 1) // 2
+#
+#     crop_window     = tf.stack([offset_height,
+#                                 offset_width,
+#                                 padded_center_crop_size,
+#                                 padded_center_crop_size])
+#
+#     image = tf.image.decode_and_crop_jpeg(image_bytes,
+#                                           crop_window,
+#                                           channels=3)
+#
+#     image = tf.image.resize_bicubic([image],
+#                                     [IMAGE_SIZE, IMAGE_SIZE])[0]
+#     return image
+#
+## -----------------------------------------------------
 
 
 

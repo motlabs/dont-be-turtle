@@ -22,14 +22,12 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-from glob import glob
 import tensorflow as tf
 import functools
 import preprocessor
 
-
-from train_config  import BATCH_SIZE
 from train_config  import FLAGS
+from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
 from train_config  import VALIDATIONSET_SIZE
 
@@ -123,7 +121,7 @@ class DataSetInput(object):
             (tf.TensorShape([None, None, None, batch_size])))
 
             labels.set_shape(labels.get_shape().merge_with
-            (tf.TensorShape([None,None,batch_size])))
+            (tf.TensorShape([None,None,None,batch_size])))
 
         else:
             images.set_shape(images.get_shape().merge_with(
@@ -131,7 +129,7 @@ class DataSetInput(object):
 
             # below codes must be modified after applying preprocessing
             labels.set_shape(labels.get_shape().merge_with(
-                tf.TensorShape([batch_size, None,None])))
+                tf.TensorShape([batch_size, None,None,None])))
 
         return images, labels
 
@@ -184,23 +182,23 @@ class DataSetInput(object):
                             label_Lshoulder_bytes]
 
         # get the original image shape
-        height      = parsed['height']
-        width       = parsed['width']
-        channel     = parsed['channel']
+        height      = tf.cast(parsed['height']  ,dtype=tf.int32)
+        width       = tf.cast(parsed['width']   ,dtype=tf.int32)
+        channel     = tf.cast(parsed['channel'] ,dtype=tf.int32)
         mean        = parsed['mean']
         std         = parsed['std']
 
         # preprocessing
-        image,labels = self.image_preprocessing_fn(
-                            image_bytes         =image_bytes,
-                            image_orig_height   =height,
-                            image_orig_width    =width,
-                            label_bytes_list    =label_bytes_list,
-                            is_training         =self.is_training,
-                            use_bfloat16        =self.use_bfloat16)
+        image,label_heatmap = self.image_preprocessing_fn(
+                                    image_bytes         =image_bytes,
+                                    image_orig_height   =height,
+                                    image_orig_width    =width,
+                                    label_bytes_list    =label_bytes_list,
+                                    is_training         =self.is_training,
+                                    use_bfloat16        =self.use_bfloat16)
 
 
-        return image, labels
+        return image, label_heatmap
 
 
 
@@ -270,11 +268,8 @@ class DataSetInput(object):
             dataset = dataset.shuffle(buffer_size=VALIDATIONSET_SIZE)
 
 
-        if FLAGS.use_tpu == True:
-
+        if FLAGS.use_tpu:
             # # Parse, preprocess, and batch the data in parallel
-
-
             dataset = dataset.apply(
                 tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
                                               batch_size=batch_size,
@@ -323,7 +318,7 @@ class DataSetInput(object):
 
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
-        dataset = dataset.prefetch(32)     # Prefetch overlaps in-feed with training
+        dataset = dataset.prefetch(batch_size)     # Prefetch overlaps in-feed with training
         tf.logging.info('Input dataset: %s', str(dataset))
         return dataset
 
