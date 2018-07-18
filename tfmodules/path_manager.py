@@ -50,8 +50,8 @@ TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 
 # GCP BUCKET ADDRESS
-DATASET_GS          = 'gs://pose_dataset_tfrecord'
-CKPT_GS             = 'gs://dontbeturtle_ckpt'
-TENSORBOARD_GS      = 'gs://dontbeturtle_tflogs'
+DATASET_BUCKET          = 'gs://pose_dataset_tfrecord'
+MODEL_BUCKET             = 'gs://dontbeturtle_ckpt'
+TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'
 
 

@@ -22,6 +22,11 @@ from path_manager import EXPORT_MODEL
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import EXPORT_TFLOG_DIR
 
+from path_manager import DATASET_BUCKET
+from path_manager import MODEL_BUCKET
+from path_manager import TENSORBOARD_BUCKET
+
+
 TRAININGSET_SIZE     = 6
 VALIDATIONSET_SIZE   = 216
 # TESTSET_SIZE         = 100

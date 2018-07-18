@@ -123,6 +123,8 @@ def main(train_dir, eval_dir, out_dir):
 
         return image, label
 
+
+
     train_out_path  = os.path.join(out_dir, 'train-dataset.tfrecord.gz')
     eval_out_path   = os.path.join(out_dir, 'eval-dataset.tfrecord.gz')
 
@@ -154,7 +156,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--out-dir',
-        default='../dataset/',
+        default='../dataset/tfrecords/',
         help='directory of output of data set generated',
         nargs='+',
         required=False
