@@ -44,6 +44,11 @@ sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
 sys.path.insert(0,EXPORT_TFLOG_DIR)
 
+print('TF_MODULE_DIR=$s'% TF_MODULE_DIR)
+print('TF_MODEL_DIR=$s'% TF_MODEL_DIR)
+print('TF_CNN_MODULE_DIR=$s'% TF_CNN_MODULE_DIR)
+print('EXPORT_DIR=$s'% EXPORT_DIR)
+print('EXPORT_TFLOG_DIR=$s'% EXPORT_TFLOG_DIR)
 
 # custom python packages
 
