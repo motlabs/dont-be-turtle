@@ -42,27 +42,53 @@ def image_serving_input_fn():
     """Serving input fn for raw images.
     """
 
-    def _preprocess_image(image_bytes,label_coord_byte):
+    def _preprocess_image(image_bytes,
+                          label_bytes_list,
+                          image_orig_height,
+                          image_orig_width):
         """Preprocess a single raw image."""
         image = preprocessor.preprocess_image(
-            image_bytes=image_bytes,
-            label_coord=label_coord,
-            is_training=False)
+            image_bytes         =image_bytes,
+            label_bytes_list    =label_bytes_list,
+            image_orig_height   =image_orig_height,
+            image_orig_width    =image_orig_width,
+            is_training         =False)
 
         return image
 
-    image_bytes_list = tf.placeholder(shape=[None],
-                                      dtype=tf.string)
-    label_coord      = tf.placeholder(shape=[None],dtype=tf.string)
+    image_bytes  = tf.placeholder(shape=[None],
+                                  dtype=tf.string)
+
+    label_head_bytes      = tf.placeholder(shape=[None],dtype=tf.string)
+    label_neck_bytes      = tf.placeholder(shape=[None],dtype=tf.string)
+    label_Rshoulder_bytes = tf.placeholder(shape=[None],dtype=tf.string)
+    label_Lshoulder_bytes = tf.placeholder(shape=[None],dtype=tf.string)
+
+    image_height          = tf.placeholder(shape=[None],dtype=tf.int32)
+    image_width           = tf.placeholder(shape=[None],dtype=tf.int32)
+
+    label_byte_list = [label_head_bytes,
+                       label_neck_bytes,
+                       label_Rshoulder_bytes,
+                       label_Lshoulder_bytes]
 
 
     images = tf.map_fn(fn=_preprocess_image,
-                       elems=(image_bytes_list, label_coord),
+                       elems=(image_bytes,
+                              label_byte_list,
+                              image_height,
+                              image_width),
                        back_prop=False,
                        dtype=tf.float32)
 
     return tf.estimator.export.ServingInputReceiver(
-      images, {'image_bytes': image_bytes_list})
+      images, {'image_bytes': image_bytes,
+               'label_head_bytes': label_head_bytes,
+               'label_neck_bytes': label_neck_bytes,
+               'label_Rshoulder': label_Rshoulder_bytes,
+               'label_Lshoulder': label_Lshoulder_bytes,
+               'image_height':    image_height,
+               'imaeg_width':     image_width})
 
 
 

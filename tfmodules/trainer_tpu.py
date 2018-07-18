@@ -787,13 +787,13 @@ def main(unused_argv):
         tf.logging.info('Finished training up to step %d. Elapsed seconds %d.' %
                         (FLAGS.train_steps, elapsed_time))
 
-        if FLAGS.export_dir is not None:
-            # The guide to serve a exported TensorFlow model is at:
-            #    https://www.tensorflow.org/serving/serving_basic
-            tf.logging.info('Starting to export model.')
-            dontbeturtle_estimator.export_savedmodel(
-                export_dir_base             =FLAGS.export_dir,
-                serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
+        # if FLAGS.export_dir is not None:
+        #     # The guide to serve a exported TensorFlow model is at:
+        #     #    https://www.tensorflow.org/serving/serving_basic
+        #     tf.logging.info('Starting to export model.')
+        #     dontbeturtle_estimator.export_savedmodel(
+        #         export_dir_base             =FLAGS.export_dir,
+        #         serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
