@@ -338,7 +338,7 @@ def metric_fn(labels, logits):
 
 
 # def host_call_fn(global_step, loss, mid_loss_list, learning_rate, current_epoch):
-def tb_summary_fn(global_step, loss, learning_rate, current_epoch):
+def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -372,11 +372,7 @@ def tb_summary_fn(global_step, loss, learning_rate, current_epoch):
         global_step = global_step[0]
         ## create tflog dir
         now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-
-        if FLAGS.use_tpu:
-            tb_logdir_path = TENSORBOARD_BUCKET
-        else:
-            tb_logdir_path = FLAGS.tflogs_dir
+        tb_logdir_path = TENSORBOARD_BUCKET
 
         tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
 
@@ -614,7 +610,7 @@ def model_fn(features,
 
 
 
-        if not FLAGS.is_tensorboard_summary:
+        if FLAGS.is_tensorboard_summary:
             # To log the loss, current learning rate, and epoch for Tensorboard, the
             # summary op needs to be run on the host CPU via host_call. host_call
             # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
@@ -632,11 +628,29 @@ def model_fn(features,
 
             if FLAGS.use_tpu:
                 # host_call = (host_call_fn, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
-                host_call = (tb_summary_fn, [gs_t, loss_t, lr_t, ce_t])
+                host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
             else:
-                tb_summary_fn(gs_t, loss_t, lr_t, ce_t)
 
+                ## create tflog dir
+                now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                tb_logdir_path = FLAGS.tflogs_dir
 
+                tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
+
+                if not tf.gfile.Exists(tb_logdir_path):
+                    tf.gfile.MakeDirs(tb_logdir_path)
+                tf.summary.scalar('loss', loss)
+
+                for n in range(0,model_config.num_of_hgstacking):
+                    summary.scalar('mid_loss'+str(n), mid_loss_list[n])
+
+                tf.summary.scalar('learning_rate', learning_rate)
+                tf.summary.scalar('current_epoch', current_epoch)
+
+                tf.logging.info('Create SummarySaveHook.')
+                summary_hook = tf.train.SummarySaverHook(save_steps=1,
+                                                         output_dir=tb_logdir,
+                                                         summary_op=tf.summary.merge_all())
     else:
         train_op = None
 
@@ -657,7 +671,8 @@ def model_fn(features,
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
-                                                 eval_metric_ops=metric_ops)
+                                                 eval_metric_ops=metric_ops,
+                                                 training_hooks = [summary_hook])
 
     return tfestimator
 
