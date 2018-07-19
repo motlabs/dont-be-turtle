@@ -22,6 +22,7 @@ echo "             (> <)"
 OS="$(uname -s)"
 OS_X="Darwin"
 
+echo ${OS}
 
 if [ "$OS" == "$OS_X" ]; then
     export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model
