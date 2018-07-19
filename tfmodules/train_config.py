@@ -27,11 +27,11 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 
-TRAININGSET_SIZE     = 16
+TRAININGSET_SIZE     = 2000
 VALIDATIONSET_SIZE   = 16
 # TESTSET_SIZE         = 100
 
-BATCH_SIZE           = 8*1
+BATCH_SIZE           = 8*2
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -77,7 +77,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
@@ -182,7 +182,7 @@ flags.DEFINE_integer(
 #           ' learning rate, etc...). When --skip_host_call=false, there could'
 #           ' be a performance drop if host_call function is slow and cannot'
 #           ' keep up with the TPU-side computation.'))
-
+#
 
 
 flags.DEFINE_bool(

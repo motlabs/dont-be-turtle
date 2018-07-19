@@ -45,9 +45,9 @@ TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
 
 # data path
-DATASET_DIR         = PROJ_HOME     + '/dataset'
-TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
-TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
+DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/'
+# TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
+# TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 
 # GCP BUCKET ADDRESS
 DATASET_BUCKET          = 'gs://pose_dataset_tfrecord'
