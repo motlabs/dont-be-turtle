@@ -18,7 +18,7 @@ import tensorflow as tf
 from absl import flags
 
 from path_manager import DATASET_DIR
-from path_manager import EXPORT_MODEL
+from path_manager import EXPORT_MODEL_DIR
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import EXPORT_TFLOG_DIR
 
@@ -77,7 +77,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
@@ -124,7 +124,7 @@ flags.DEFINE_string(
           ' the README.md for the expected data format.'))
 
 flags.DEFINE_string(
-    'model_dir', default=EXPORT_MODEL,
+    'model_dir', default=EXPORT_MODEL_DIR,
     help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
 flags.DEFINE_string(

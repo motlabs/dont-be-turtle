@@ -35,7 +35,7 @@ TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
 EXPORT_DIR              = TF_MODULE_DIR          + '/export'
 
 EXPORT_SAVEMODEL_DIR    = EXPORT_DIR             + '/savedmodel'
-EXPORT_MODEL            = EXPORT_DIR             + '/model'
+EXPORT_MODEL_DIR        = EXPORT_DIR             + '/model'
 EXPORT_TFLOG_DIR        = EXPORT_DIR             + '/tf_logs'
 
 
@@ -45,7 +45,7 @@ TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
 
 # data path
-DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/'
+DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/testdataset/'
 # TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 # TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 

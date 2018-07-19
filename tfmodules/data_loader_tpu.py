@@ -323,6 +323,12 @@ class DataSetInput(object):
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
 
+
+        # here we can return "object of TFRecordDataset" or iterator().get_next()
+        # there is some performance difference between them but currently ignorable
+        # iterator = dataset.make_initializable_iterator()
+        # a = iterator.get_next()
+
         return dataset
 
 
