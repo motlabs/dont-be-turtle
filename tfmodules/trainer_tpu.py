@@ -129,7 +129,7 @@ def argmax_2d(tensor):
         argmax_x = argmax // tensor_shape[2]
         argmax_y = argmax % tensor_shape[2]
 
-        return tf.concat((argmax_x, argmax_y), axis=1)
+    return tf.concat((argmax_x, argmax_y), axis=1)
 
 
 
@@ -391,7 +391,7 @@ def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
                 summary.scalar('learning_rate', learning_rate[0], step=global_step)
                 summary.scalar('current_epoch', current_epoch[0], step=global_step)
 
-        return summary.all_summary_ops()
+    return summary.all_summary_ops()
 
 
 
@@ -845,6 +845,10 @@ def main(unused_argv):
         #     dontbeturtle_estimator.export_savedmodel(
         #         export_dir_base             =FLAGS.export_dir,
         #         serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
+
+
+
+
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
