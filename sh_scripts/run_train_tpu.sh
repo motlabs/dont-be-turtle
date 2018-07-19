@@ -1,5 +1,7 @@
 #! /bin/bash
 
+OS := $(shell uname)
+OS_X := Darwin
 
 echo =============================================
 echo RUN DONBE-TURTLE-MODEL TRAINING  BY TPU
@@ -21,10 +23,17 @@ echo "      ^      (\_/)"
 echo "      '----- (O.o)"
 echo "             (> <)"
 
+ifeq ($(OS),$(OS_X))
+    export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model
+    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/tfrecords
+else
+    export MODEL_BUCKET=gs://dontbeturtle_ckpt
+    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords
+endif
 
-export MODEL_BUCKET=gs://dontbeturtle_ckpt
-export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords
 
+echo "MODEL_BUCKET="${MODEL_BUCKET}
+echo "DATA_BUCKET=" ${DATA_BUCKET}
 
 python ~/dont-be-turtle/tfmodules/trainer_tpu.py\
 	  --tpu=$USER-tpu \
