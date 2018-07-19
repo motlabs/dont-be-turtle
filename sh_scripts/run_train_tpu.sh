@@ -27,5 +27,5 @@ export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords
 
 python ~/dont-be-turtle/tfmodules/trainer_tpu.py\
 	  --tpu=$USER-tpu \
-	  --data_dir=${DATA_BUCKET}\
+	  --data_dir=${DATA_BUCKET}/testdataset/\
 	  --model_dir=${MODEL_BUCKET}
