@@ -116,19 +116,20 @@ def argmax_2d(tensor):
     # input format: BxHxWxD
     assert len(tensor.get_shape()) == 4
 
-    tensor_shape = tensor.get_shape().as_list()
+    with tf.name_scope(name='argmax_2d',values=[tensor]):
+        tensor_shape = tensor.get_shape().as_list()
 
-    # flatten the Tensor along the height and width axes
-    flat_tensor = tf.reshape(tensor, (tensor_shape[0], -1, tensor_shape[3]))
+        # flatten the Tensor along the height and width axes
+        flat_tensor = tf.reshape(tensor, (tensor_shape[0], -1, tensor_shape[3]))
 
-    # argmax of the flat tensor
-    argmax = tf.cast(tf.argmax(flat_tensor, axis=1), tf.float32)
+        # argmax of the flat tensor
+        argmax = tf.cast(tf.argmax(flat_tensor, axis=1), tf.float32)
 
-    # convert indexes into 2D coordinates
-    argmax_x = argmax // tensor_shape[2]
-    argmax_y = argmax % tensor_shape[2]
+        # convert indexes into 2D coordinates
+        argmax_x = argmax // tensor_shape[2]
+        argmax_y = argmax % tensor_shape[2]
 
-    return tf.concat((argmax_x, argmax_y), axis=1)
+        return tf.concat((argmax_x, argmax_y), axis=1)
 
 
 
@@ -149,7 +150,7 @@ def get_heatmap_activation(logits,scope=None):
 
         written by Jaewook Kang July 2018
     '''
-    with tf.name_scope(name=scope, default_name='heatmap_logits_activation',values=[logits]):
+    with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
         ### 1) split logit to head, neck, Rshoulder, Lshoulder
         logits_heatmap_head, \
@@ -523,7 +524,7 @@ def model_fn(features,
     # -----------------------------
 
     ### output layer ===
-    with tf.name_scope(name='outlayer_post_proc',values=[logits_out_heatmap,labels]):
+    with tf.name_scope(name='out_post_proc',values=[logits_out_heatmap,labels]):
         # heatmap activation of output layer out
         act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
                                                   scope='out_heatmap')
@@ -537,7 +538,7 @@ def model_fn(features,
 
 
     ### middle layer ===
-    with tf.name_scope(name='midlayer_post_proc',values=[logits_mid_heatmap,
+    with tf.name_scope(name='mid_post_proc',values=[logits_mid_heatmap,
                                                          labels]):
         ### supervision layers ===
         act_mid_heatmap_list    = []
@@ -577,8 +578,10 @@ def model_fn(features,
 
 
 
+    host_call    = None
+    summary_hook = None
+    train_op     = None
 
-    host_call = None
     if mode == tf.estimator.ModeKeys.TRAIN:
         # Compute the current epoch and associated learning rate from global_step.
         global_step         = tf.train.get_global_step()
@@ -651,8 +654,6 @@ def model_fn(features,
                 summary_hook = tf.train.SummarySaverHook(save_steps=1,
                                                          output_dir=tb_logdir,
                                                          summary_op=tf.summary.merge_all())
-    else:
-        train_op = None
 
 
 
@@ -673,7 +674,6 @@ def model_fn(features,
                                                  train_op    =train_op,
                                                  eval_metric_ops=metric_ops,
                                                  training_hooks = [summary_hook])
-
     return tfestimator
 
 

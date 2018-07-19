@@ -138,8 +138,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--train-data-dir',
-        # default = '../dataset/traintest/lsp/',
-        default='../dataset/train/lsp/',
+        default = '../dataset/traintest/lsp/',
+        # default='../dataset/train/lsp/',
         help='training data',
         nargs='+',
         required=False
@@ -147,8 +147,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--eval-data-dir',
-        # default='../dataset/evaltest/collected_data/',
-        default='../dataset/eval/collected_data/',
+        default='../dataset/evaltest/collected_data/',
+        # default='../dataset/eval/collected_data/',
         help='evaluation data',
         nargs='+',
         required=False

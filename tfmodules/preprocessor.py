@@ -21,6 +21,10 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import sys
+
+from path_manager import TF_MODEL_DIR
+sys.path.insert(0,TF_MODEL_DIR)
 
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_INPUT_CHNUM
@@ -50,6 +54,7 @@ def _flip(image):
 
 
 
+
 def _rotate(image):
 
     # random angle (rad) geneartion
@@ -61,6 +66,8 @@ def _rotate(image):
                                     angles=random_ang_rad,
                                     interpolation='BILINEAR')
     return image, random_ang_rad
+
+
 
 
 
@@ -100,6 +107,8 @@ def preprocess_for_train(image_bytes, use_bfloat16):
 
 
 
+
+
 def preprocess_for_eval(image_bytes, use_bfloat16):
     """Preprocesses the given image for evaluation.
     Args:
@@ -131,6 +140,8 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
 
 
 
+
+
 def _heatmap_generator(label_bytes,
                        image_orig_height,
                        image_orig_width,
@@ -140,10 +151,11 @@ def _heatmap_generator(label_bytes,
                        gaussian_ksize=10):
 
     labels      = tf.decode_raw(bytes=label_bytes,
-                                out_type=tf.int64)
+                                out_type=tf.int32)
 
     labels.set_shape(labels.get_shape().merge_with
                      (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
+    labels = tf.reshape(tensor=labels, shape=[DEFAULT_LABEL_LENGTH,1])
 
     label_len   = labels.get_shape().as_list()[0]
 
