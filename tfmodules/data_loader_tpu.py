@@ -22,16 +22,24 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import tensorflow as tf
 import functools
-import preprocessor
+from glob import glob
+from path_manager import TF_MODULE_DIR
+from path_manager import TF_MODEL_DIR
+
+sys.path.insert(0,TF_MODULE_DIR)
+sys.path.insert(0,TF_MODEL_DIR)
 
 from train_config  import FLAGS
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
 from train_config  import VALIDATIONSET_SIZE
-
 from model_config  import DEFAULT_INPUT_RESOL
+
+
+import preprocessor
 
 
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
@@ -142,20 +150,20 @@ class DataSetInput(object):
                          labels):
         """Statically set the batch_size dimension."""
 
-        if FLAGS.use_tpu == True and self.transpose_input:
-            images.set_shape(images.get_shape().merge_with
-            (tf.TensorShape([None, None, None, batch_size])))
+        # if FLAGS.use_tpu == True and self.transpose_input:
+        #     images.set_shape(images.get_shape().merge_with
+        #     (tf.TensorShape([None, None, None, batch_size])))
+        #
+        #     labels.set_shape(labels.get_shape().merge_with
+        #     (tf.TensorShape([None,None,None,batch_size])))
+        #
+        # else:
+        images.set_shape(images.get_shape().merge_with(
+          tf.TensorShape([batch_size, None, None, None])))
 
-            labels.set_shape(labels.get_shape().merge_with
-            (tf.TensorShape([None,None,None,batch_size])))
-
-        else:
-            images.set_shape(images.get_shape().merge_with(
-              tf.TensorShape([batch_size, None, None, None])))
-
-            # below codes must be modified after applying preprocessing
-            labels.set_shape(labels.get_shape().merge_with(
-                tf.TensorShape([batch_size, None,None,None])))
+        # below codes must be modified after applying preprocessing
+        labels.set_shape(labels.get_shape().merge_with(
+            tf.TensorShape([batch_size, None,None,None])))
 
         return images, labels
 
@@ -175,20 +183,36 @@ class DataSetInput(object):
                 tf.FixedLenFeature((), dtype=tf.int64, default_value=3),
             'image':
                 tf.FixedLenFeature((), dtype=tf.string, default_value=""),
-            'label_head':
-                tf.FixedLenFeature((), dtype=tf.string, default_value=""),
-            'label_neck':
-                tf.FixedLenFeature((), dtype=tf.string, default_value=""),
-            'label_Rshoulder':
-                tf.FixedLenFeature((), dtype=tf.string, default_value=""),
-            'label_Lshoulder':
-                tf.FixedLenFeature((), dtype=tf.string, default_value=""),
+            'label_head_x':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_head_y':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_head_occ':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_neck_x':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_neck_y':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_neck_occ':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Rshoulder_x':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Rshoulder_y':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Rshoulder_occ':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Lshoulder_x':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Lshoulder_y':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
+            'label_Lshoulder_occ':
+                tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
             'mean':
                 tf.VarLenFeature(dtype=tf.float32),
             'std':
                 tf.VarLenFeature(dtype=tf.float32),
             "filename":
-                tf.FixedLenFeature((), tf.string, default_value="")
+                tf.FixedLenFeature([], tf.string, default_value="")
         }
 
         parsed = tf.parse_single_example(serialized =value,
@@ -197,15 +221,43 @@ class DataSetInput(object):
         image_bytes = tf.reshape(parsed['image'], shape=[])
 
         # labels
-        label_head_bytes        = tf.reshape(parsed['label_head'], shape=[])
-        label_neck_bytes        = tf.reshape(parsed['label_neck'], shape=[])
-        label_Rshoulder_bytes   = tf.reshape(parsed['label_Rshoulder'], shape=[])
-        label_Lshoulder_bytes   = tf.reshape(parsed['label_Lshoulder'], shape=[])
+        label_head_x        = tf.cast(parsed['label_head_x'], dtype=tf.float32)
+        label_head_y        = tf.cast(parsed['label_head_y'], dtype=tf.float32)
+        label_head_occ      = tf.cast(parsed['label_head_occ'], dtype=tf.int32)
 
-        label_bytes_list = [label_head_bytes,
-                            label_neck_bytes,
-                            label_Rshoulder_bytes,
-                            label_Lshoulder_bytes]
+        label_neck_x        = tf.cast(parsed['label_neck_x'], dtype=tf.float32)
+        label_neck_y        = tf.cast(parsed['label_neck_y'], dtype=tf.float32)
+        label_neck_occ      = tf.cast(parsed['label_neck_occ'], dtype=tf.int32)
+
+        label_Rshoulder_x        = tf.cast(parsed['label_Rshoulder_x'], dtype=tf.float32)
+        label_Rshoulder_y        = tf.cast(parsed['label_Rshoulder_y'], dtype=tf.float32)
+        label_Rshoulder_occ      = tf.cast(parsed['label_Rshoulder_occ'], dtype=tf.int32)
+
+        label_Lshoulder_x        = tf.cast(parsed['label_Lshoulder_x'], dtype=tf.float32)
+        label_Lshoulder_y        = tf.cast(parsed['label_Lshoulder_y'], dtype=tf.float32)
+        label_Lshoulder_occ      = tf.cast(parsed['label_Lshoulder_occ'], dtype=tf.int32)
+
+        label_head_list = [label_head_x,
+                           label_head_y,
+                           label_head_occ]
+
+        label_neck_list = [label_neck_x,
+                           label_neck_y,
+                           label_neck_occ]
+
+        label_Rshoulder_list = [label_Rshoulder_x,
+                                label_Rshoulder_y,
+                                label_Rshoulder_occ]
+
+        label_Lshoulder_list = [label_Lshoulder_x,
+                                label_Lshoulder_y,
+                                label_Lshoulder_occ]
+
+        label_list = [label_head_list,
+                      label_neck_list,
+                      label_Rshoulder_list,
+                      label_Lshoulder_list]
+
 
         # get the original image shape
         height      = tf.cast(parsed['height']  ,dtype=tf.int32)
@@ -219,7 +271,7 @@ class DataSetInput(object):
                                     image_bytes         =image_bytes,
                                     image_orig_height   =height,
                                     image_orig_width    =width,
-                                    label_bytes_list    =label_bytes_list,
+                                    label_list          =label_list,
                                     is_training         =self.is_training,
                                     use_bfloat16        =self.use_bfloat16)
 
@@ -231,7 +283,7 @@ class DataSetInput(object):
 
 
 
-    def input_fn(self, params):
+    def input_fn(self, params=None):
         """Input function which provides a single batch for train or eval.
             Args:
                 params: `dict` of parameters passed from the `TPUEstimator`.
@@ -254,37 +306,43 @@ class DataSetInput(object):
         batch_size = BATCH_SIZE
 
         # loading tfrecord filenames from self.data_dir
-        # if self.is_training:
-        #     # training set
-        #     filenames_list = glob(self.data_dir + '/train-*.*')
-        # else:
-        #     # validation set
-        #     filenames_list = glob(self.data_dir + '/eval-*.*')
-        #
-        # compression_type = 'ZLIB' if filenames_list[0].split('.')[-1] == 'zlib' else 'GZIP'
+        if self.is_training:
+            # training set
+            filenames_list = glob(self.data_dir + '/train-*.*')
+        else:
+            # validation set
+            filenames_list = glob(self.data_dir + '/eval-*.*')
 
+        dataset = tf.data.TFRecordDataset(filenames_list)
+
+        print('\nfile_pattern=%s'%filenames_list)
+
+        # compression_type = 'ZLIB' if filenames_list[0].split('.')[-1] == 'zlib' else 'GZIP'
         # -----------------------------------------------------------------
 
         # Shuffle the filenames to ensure better randomization.
-        file_pattern = os.path.join(
-            self.data_dir, 'train-*' if self.is_training else 'eval-*')
-
-        dataset = tf.data.Dataset.list_files(file_pattern,
-                                             shuffle=self.is_training)
+        # file_pattern = os.path.join(
+        #     self.data_dir, 'train-*' if self.is_training else 'eval-*')
+        #
+        # print('file_pattern=%s'%file_pattern)
+        # dataset = tf.data.Dataset.list_files(file_pattern,
+        #                                      shuffle=self.is_training)
 
         if self.is_training:
             dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
-        def fetch_dataset(filename):
-            dataset = tf.data.TFRecordDataset(filename,
-                                              compression_type='GZIP')
-            return dataset
+        # def fetch_dataset(filename):
+        #     # dataset = tf.data.TFRecordDataset(filename,
+        #     #                                   compression_type='GZIP')
+        #     print ('filename=%s'%filename)
+        #     dataset = tf.data.TFRecordDataset(filename)
+        #     return dataset
 
         # Read the data from disk in parallel
-        dataset = dataset.apply(
-            tf.contrib.data.parallel_interleave(
-                fetch_dataset, cycle_length=32, sloppy=True))
+        # dataset = dataset.apply(
+        #     tf.contrib.data.parallel_interleave(
+        #         fetch_dataset, cycle_length=32, sloppy=True))
 
         # dataset elementwise shuffling
         # where buffer_size is the number of data elements
@@ -294,27 +352,29 @@ class DataSetInput(object):
             dataset = dataset.shuffle(buffer_size=VALIDATIONSET_SIZE)
 
 
-        if FLAGS.use_tpu:
-            # # Parse, preprocess, and batch the data in parallel
-            dataset = dataset.apply(
-                tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
-                                              batch_size=batch_size,
-                                              num_parallel_batches=8,  # 8 == num_cores per host
-                                              drop_remainder=True))
+        # if FLAGS.use_tpu:
+        #     # # Parse, preprocess, and batch the data in parallel
+        #     dataset = dataset.apply(
+        #         tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
+        #                                       batch_size=batch_size,
+        #                                       num_parallel_batches=8,  # 8 == num_cores per host
+        #                                       drop_remainder=True))
+        #
+        # else:
+        # Parse, preprocess, and batch the data in parallel
+        dataset = dataset.apply(
+            tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
+                                          batch_size=batch_size,
+                                          drop_remainder=True))
 
-        else:
-            # Parse, preprocess, and batch the data in parallel
-            dataset = dataset.apply(
-                tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
-                                              batch_size=batch_size,
-                                              drop_remainder=True))
 
-
+        ########################################
         # Transpose for performance on TPU
         # if FLAGS.use_tpu == True and self.transpose_input:
         #     dataset = dataset.map(
         #       lambda images, labels: (tf.transpose(images, [1, 2, 3, 0]), labels),
         #       num_parallel_calls=8)
+        ########################################
 
 
         # Assign static batch size dimension
@@ -323,11 +383,12 @@ class DataSetInput(object):
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
 
-
+        ########################################
         # here we can return "object of TFRecordDataset" or iterator().get_next()
         # there is some performance difference between them but currently ignorable
         # iterator = dataset.make_initializable_iterator()
         # a = iterator.get_next()
+        ########################################
 
         return dataset
 

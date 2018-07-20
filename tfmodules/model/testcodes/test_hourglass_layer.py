@@ -51,7 +51,7 @@ class HourGlassLayerTest(tf.test.TestCase):
         '''
 
         ch_in_num       = 256
-        batch_size      = None
+        batch_size      = 1
         model_config    = HourGlassTestConfig()
         scope           = 'unittest'
         TEST_LAYER_NAME = 'hourglass'

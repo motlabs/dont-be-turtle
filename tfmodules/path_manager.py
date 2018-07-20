@@ -30,6 +30,7 @@ chdir('..')
 PROJ_HOME               = getcwd()
 TF_MODULE_DIR           = PROJ_HOME              + '/tfmodules'
 
+print("[pathmanager] PROJ HOME = %s" % PROJ_HOME)
 # tf module related directory
 TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
 EXPORT_DIR              = TF_MODULE_DIR          + '/export'
@@ -45,7 +46,9 @@ TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
 
 # data path
-DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/testdataset/'
+# DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/testdataset/'
+DATASET_DIR         = PROJ_HOME     + '/dataset/tfrecords/realdataset/'
+
 # TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 # TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 

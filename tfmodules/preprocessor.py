@@ -28,8 +28,8 @@ sys.path.insert(0,TF_MODEL_DIR)
 
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_INPUT_CHNUM
-from model_config  import DEFAULT_LABEL_LENGTH
 from model_config  import DEFAULT_HG_INOUT_RESOL
+# from model_config  import DEFAULT_LABEL_LENGTH
 
 from train_config  import MAX_AUGMENT_ROTATE_ANGLE_DEG
 from train_config  import MIN_AUGMENT_ROTATE_ANGLE_DEG
@@ -55,6 +55,7 @@ def _flip(image):
 
 
 
+
 def _rotate(image):
 
     # random angle (rad) geneartion
@@ -72,7 +73,7 @@ def _rotate(image):
 
 
 
-def preprocess_for_train(image_bytes, use_bfloat16):
+def preprocess_for_train(image_bytes,use_bfloat16):
     """Preprocesses the given image for evaluation.
     Args:
     image_bytes: `Tensor` representing an image binary of arbitrary size.
@@ -89,7 +90,7 @@ def preprocess_for_train(image_bytes, use_bfloat16):
                                  channels=DEFAULT_INPUT_CHNUM)
 
     image = tf.image.resize_bicubic(images=[image],
-                                    size=[IMAGE_SIZE, IMAGE_SIZE])
+                                    size=[IMAGE_SIZE, IMAGE_SIZE])[0]
 
     # augmentation
     image, is_flip           = _flip(image = image)
@@ -125,8 +126,8 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
     image = tf.image.decode_jpeg(contents=image_bytes,
                                  channels=DEFAULT_INPUT_CHNUM)
 
-    image = tf.image.resize_bicubic(image=[image],
-                                    size =[IMAGE_SIZE,IMAGE_SIZE])
+    image = tf.image.resize_bicubic(images=[image],
+                                    size =[IMAGE_SIZE,IMAGE_SIZE])[0]
 
     image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
 
@@ -142,7 +143,7 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
 
 
 
-def _heatmap_generator(label_bytes,
+def _heatmap_generator(label_list,
                        image_orig_height,
                        image_orig_width,
                        is_flip,
@@ -150,23 +151,15 @@ def _heatmap_generator(label_bytes,
                        use_bfloat16,
                        gaussian_ksize=10):
 
-    labels      = tf.decode_raw(bytes=label_bytes,
-                                out_type=tf.int32)
-
-    labels.set_shape(labels.get_shape().merge_with
-                     (tf.TensorShape([DEFAULT_LABEL_LENGTH])))
-    labels = tf.reshape(tensor=labels, shape=[DEFAULT_LABEL_LENGTH,1])
-
-    label_len   = labels.get_shape().as_list()[0]
-
-    x0,y0,is_occlusion = tf.unstack(labels)
+    x0 = label_list[0]
+    y0 = label_list[1]
 
     # reflection of aspect ratio by resizing to DEFAULT_INPUT_RESOL
     aspect_ratio_height = DEFAULT_INPUT_RESOL / tf.cast(image_orig_height,dtype=tf.float32)
     aspect_ratio_width  = DEFAULT_INPUT_RESOL / tf.cast(image_orig_width, dtype=tf.float32)
 
-    resized_x0 = tf.cast(x0,dtype=tf.float32) * aspect_ratio_width
-    resized_y0 = tf.cast(y0,dtype=tf.float32) * aspect_ratio_height
+    resized_x0 = x0 * aspect_ratio_width
+    resized_y0 = y0 * aspect_ratio_height
 
     # reflection of left right flipping
     if is_flip:
@@ -193,15 +186,12 @@ def _heatmap_generator(label_bytes,
     heatmap_x0 = rotated_x0 * aspect_ratio_by_model
     heatmap_y0 = rotated_y0 * aspect_ratio_by_model
 
-    if label_len == DEFAULT_LABEL_LENGTH :
-        label_heatmap = make_gaussian_heatmap(size_h=DEFAULT_HG_INOUT_RESOL,
-                                              size_w=DEFAULT_HG_INOUT_RESOL,
-                                              fwhm  =gaussian_ksize,
-                                              x0    =heatmap_x0,
-                                              y0    =heatmap_y0)
-    else:
-        print('error : label length is improper. ')
-        raise ValueError
+    # heatmap generation
+    label_heatmap = make_gaussian_heatmap(size_h=DEFAULT_HG_INOUT_RESOL,
+                                          size_w=DEFAULT_HG_INOUT_RESOL,
+                                          fwhm  =gaussian_ksize,
+                                          x0    =heatmap_x0,
+                                          y0    =heatmap_y0)
 
     label_heatmap = tf.image.convert_image_dtype(image=label_heatmap,
                                                  dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
@@ -233,8 +223,11 @@ def make_gaussian_heatmap(size_h, size_w, x0,y0,fwhm=3):
 
 
 
+
+
+
 def preprocess_image(image_bytes,
-                     label_bytes_list,
+                     label_list,
                      image_orig_height,
                      image_orig_width,
                      is_training=False, use_bfloat16=False):
@@ -261,7 +254,7 @@ def preprocess_image(image_bytes,
 
 
     # label heatmap generation
-    label_heatmap_head = _heatmap_generator(label_bytes      =label_bytes_list[0],
+    label_heatmap_head = _heatmap_generator(label_list      =label_list[0],
                                             image_orig_height=image_orig_height,
                                             image_orig_width =image_orig_width,
                                             is_flip          = is_flip,
@@ -269,7 +262,7 @@ def preprocess_image(image_bytes,
                                             use_bfloat16     =use_bfloat16,
                                             gaussian_ksize=10)
 
-    label_heatmap_neck = _heatmap_generator(label_bytes      =label_bytes_list[1],
+    label_heatmap_neck = _heatmap_generator(label_list      =label_list[1],
                                             image_orig_height=image_orig_height,
                                             image_orig_width =image_orig_width,
                                             is_flip          = is_flip,
@@ -277,7 +270,7 @@ def preprocess_image(image_bytes,
                                             use_bfloat16     =use_bfloat16,
                                             gaussian_ksize=10)
 
-    label_heatmap_Rshoulder = _heatmap_generator(label_bytes =label_bytes_list[2],
+    label_heatmap_Rshoulder = _heatmap_generator(label_list =label_list[2],
                                                 image_orig_height=image_orig_height,
                                                 image_orig_width =image_orig_width,
                                                 is_flip          = is_flip,
@@ -285,7 +278,7 @@ def preprocess_image(image_bytes,
                                                 use_bfloat16     =use_bfloat16,
                                                 gaussian_ksize=10)
 
-    label_heatmap_Lshoulder = _heatmap_generator(label_bytes =label_bytes_list[3],
+    label_heatmap_Lshoulder = _heatmap_generator(label_list =label_list[3],
                                                 image_orig_height=image_orig_height,
                                                 image_orig_width =image_orig_width,
                                                 is_flip          = is_flip,
@@ -298,6 +291,7 @@ def preprocess_image(image_bytes,
                                         label_heatmap_neck,
                                         label_heatmap_Rshoulder,
                                         label_heatmap_Lshoulder],axis=2)
+
 
     return image, label_heatmap
 

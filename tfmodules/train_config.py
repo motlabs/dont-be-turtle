@@ -27,11 +27,11 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 
-TRAININGSET_SIZE     = 2000
-VALIDATIONSET_SIZE   = 200
+TRAININGSET_SIZE     = 128
+VALIDATIONSET_SIZE   = 8
 # TESTSET_SIZE         = 100
 
-BATCH_SIZE           = 8*2
+BATCH_SIZE           = 32
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'

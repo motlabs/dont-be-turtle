@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+# -*- coding: utf-8 -*-
+
 """Train a dont be turtle model on TPU."""
 # code reference : https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/resnet_main.py
 
@@ -130,7 +132,6 @@ def argmax_2d(tensor):
         argmax_y = argmax % tensor_shape[2]
 
     return tf.concat((argmax_x, argmax_y), axis=1)
-
 
 
 
@@ -690,6 +691,9 @@ def main(unused_argv):
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     curr_model_dir = "{}/run-{}/".format(FLAGS.model_dir, now)
+
+    tf.logging.info('[main] data dir === %s'%FLAGS.data_dir)
+    tf.logging.info('[main] model dir === %s'%curr_model_dir)
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)

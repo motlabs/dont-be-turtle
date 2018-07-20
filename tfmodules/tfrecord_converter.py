@@ -20,17 +20,20 @@ import argparse
 import numpy as np
 import json
 from PIL import Image
-from scipy.io import loadmat
 import tensorflow as tf
 
 from utils import progress_bar
-
 
 def _int64_feature(value):
     """Wrapper for inserting int64 features into Example proto."""
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
+
+
+def _bytes_feature(value):
+    """Wrapper for inserting bytes features into Example proto."""
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
 def _float_feature(value):
@@ -40,24 +43,20 @@ def _float_feature(value):
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 
-def _bytes_feature(value):
-    """Wrapper for inserting bytes features into Example proto."""
-    if not isinstance(value, list):
-        value = [value]
-    return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))
+
 
 
 def to_tfrecords(image_list, label_list, reader, tfrecords_name):
     """Converts a dataset to tfrecords."""
 
     print("Start converting", tfrecords_name)
-    options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
+    # options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
+    options = None
     writer = tf.python_io.TFRecordWriter(path=tfrecords_name, options=options)
 
     for img_n, (image_path, label_path) in enumerate(zip(image_list, label_list)):
-        image, label = reader(image_path, label_path)
+        image, image_jpeg, label = reader(image_path, label_path)
         filename = os.path.basename(image_path)
-
 
         string_set = tf.train.Example\
             (
@@ -68,9 +67,7 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                         'height'    : _int64_feature(image.shape[0]),
                         'width'     : _int64_feature(image.shape[1]),
                         'channel'   : _int64_feature(image.shape[2]),
-
-                        ''' image value has [0,255]'''
-                        'image'     : _bytes_feature(image.tostring()),
+                        'image'     : _bytes_feature(image_jpeg),
 
                         '''
                             /* label json format */
@@ -84,14 +81,22 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                             where values of annotation are casted from float32 to int32
 
                         '''
-                        'label_head'        : _bytes_feature(np.array(label['head'],
-                                                                      dtype=np.int32).tostring()),
-                        'label_neck'        : _bytes_feature(np.array(label['neck'],
-                                                                      dtype=np.int32).tostring()),
-                        'label_Rshoulder'   : _bytes_feature(np.array(label['Rshoulder'],
-                                                                      dtype=np.int32).tostring()),
-                        'label_Lshoulder'   : _bytes_feature(np.array(label['Lshoulder'],
-                                                                      dtype=np.int32).tostring()),
+                        'label_head_x'          : _int64_feature(np.round(label['head'][0]).astype(np.int64)),
+                        'label_head_y'          : _int64_feature(np.round(label['head'][1]).astype(np.int64)),
+                        'label_head_occ'        : _int64_feature(np.round(label['head'][2]).astype(np.int64)),
+
+                        'label_neck_x'          : _int64_feature(np.round(label['neck'][0]).astype(np.int64)),
+                        'label_neck_y'          : _int64_feature(np.round(label['neck'][1]).astype(np.int64)),
+                        'label_neck_occ'        : _int64_feature(np.round(label['neck'][2]).astype(np.int64)),
+
+                        'label_Rshoulder_x'     : _int64_feature(np.round(label['Rshoulder'][0]).astype(np.int64)),
+                        'label_Rshoulder_y'     : _int64_feature(np.round(label['Rshoulder'][1]).astype(np.int64)),
+                        'label_Rshoulder_occ'   : _int64_feature(np.round(label['Rshoulder'][2]).astype(np.int64)),
+
+                        'label_Lshoulder_x'     : _int64_feature(np.round(label['Lshoulder'][0]).astype(np.int64)),
+                        'label_Lshoulder_y'     : _int64_feature(np.round(label['Lshoulder'][1]).astype(np.int64)),
+                        'label_Lshoulder_occ'   : _int64_feature(np.round(label['Lshoulder'][2]).astype(np.int64)),
+
                         'mean'              : _float_feature(image.mean().astype(np.float32)),
                         'std'               : _float_feature(image.std().astype(np.float32)),
                         'filename'          : _bytes_feature(filename),
@@ -116,17 +121,23 @@ def main(train_dir, eval_dir, out_dir):
 
     def reader(image_path, label_path):
         image = Image.open(image_path)
-        image = np.array(image).astype(np.int32)
+        image = np.array(image).astype(np.uint8)
+
+
+        with tf.gfile.FastGFile(image_path, 'r') as f:
+            image_jpeg = f.read()
 
         with open(label_path) as label_file:
             label = json.load(label_file)
 
-        return image, label
+        return image, image_jpeg, label
 
 
 
-    train_out_path  = os.path.join(out_dir, 'train-dataset.tfrecord.gz')
-    eval_out_path   = os.path.join(out_dir, 'eval-dataset.tfrecord.gz')
+    # train_out_path  = os.path.join(out_dir, 'train-dataset.tfrecord.gz')
+    # eval_out_path   = os.path.join(out_dir, 'eval-dataset.tfrecord.gz')
+    train_out_path  = os.path.join(out_dir, 'train-dataset.tfrecord')
+    eval_out_path   = os.path.join(out_dir, 'eval-dataset.tfrecord')
 
 
     to_tfrecords(train_data_list,   train_label_list,   reader, train_out_path)
@@ -156,7 +167,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--out-dir',
-        default='../dataset/tfrecords/',
+        default='../dataset/tfrecords/testdataset',
+        # default='../dataset/tfrecords/realdataset',
         help='directory of output of data set generated',
         nargs='+',
         required=False
