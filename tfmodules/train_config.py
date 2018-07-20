@@ -17,7 +17,7 @@
 import tensorflow as tf
 from absl import flags
 
-from path_manager import DATASET_DIR
+from path_manager import TFRECORD_DIR
 from path_manager import EXPORT_MODEL_DIR
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import EXPORT_TFLOG_DIR
@@ -119,7 +119,7 @@ flags.DEFINE_string(
 
 # Model specific flags
 flags.DEFINE_string(
-    'data_dir', default=DATASET_DIR,
+    'data_dir', default=TFRECORD_DIR,
     help=('The directory where the input data is stored. Please see'
           ' the README.md for the expected data format.'))
 

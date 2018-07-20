@@ -58,16 +58,15 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
         image, image_jpeg, label = reader(image_path, label_path)
         filename = os.path.basename(image_path)
 
-        string_set = tf.train.Example\
-            (
-                features=tf.train.Features
-                (
+        string_set = tf.train.Example(
+                features=tf.train.Features(
                     feature=
                     {
                         'height'    : _int64_feature(image.shape[0]),
                         'width'     : _int64_feature(image.shape[1]),
                         'channel'   : _int64_feature(image.shape[2]),
                         'image'     : _bytes_feature(image_jpeg),
+                        # 'image': _bytes_feature(image.tostring()),
 
                         '''
                             /* label json format */
@@ -149,7 +148,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--train-data-dir',
-        default = '../dataset/traintest/lsp/',
+        default = '../dataset/testimages/',
+        # default = '../dataset/traintest/lsp/',
         # default='../dataset/train/lsp/',
         help='training data',
         nargs='+',
@@ -167,7 +167,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--out-dir',
-        default='../dataset/tfrecords/testdataset',
+        default= '../dataset/tfrecords/testimagedataset',
+        # default='../dataset/tfrecords/testdataset',
         # default='../dataset/tfrecords/realdataset',
         help='directory of output of data set generated',
         nargs='+',

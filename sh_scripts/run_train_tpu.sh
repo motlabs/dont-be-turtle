@@ -36,9 +36,9 @@ fi
 
 
 echo "MODEL_BUCKET="${MODEL_BUCKET}
-echo "DATA_BUCKET=" ${DATA_BUCKET}
-
+echo "DATA_BUCKET="${DATA_BUCKET}
+echo =============================================
 python ${SOURCE}\
 	  --tpu=$USER-tpu \
-	  --data_dir=${DATA_BUCKET}/testdataset\
+	  --data_dir=${DATA_BUCKET}/testdataset/\
 	  --model_dir=${MODEL_BUCKET}
