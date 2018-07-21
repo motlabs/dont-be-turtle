@@ -60,6 +60,8 @@ from model_config  import ModelConfig
 
 #### training config
 from train_config  import TrainConfig
+from train_config  import PreprocessingConfig
+
 from train_config  import LR_SCHEDULE
 from train_config  import MEAN_RGB
 from train_config  import STDDEV_RGB
@@ -77,9 +79,9 @@ from tensorflow.python.estimator import estimator
 
 
 # config instance generation
-train_config = TrainConfig()
-model_config = ModelConfig()
-
+train_config    = TrainConfig()
+model_config    = ModelConfig()
+preproc_config  = PreprocessingConfig()
 
 
 
@@ -128,8 +130,8 @@ def argmax_2d(tensor):
         argmax = tf.cast(tf.argmax(flat_tensor, axis=1), tf.float32)
 
         # convert indexes into 2D coordinates
-        argmax_x = argmax // tensor_shape[2]
-        argmax_y = argmax % tensor_shape[2]
+        argmax_x = argmax % tensor_shape[2]
+        argmax_y = argmax // tensor_shape[2]
 
     return tf.concat((argmax_x, argmax_y), axis=1)
 
@@ -440,7 +442,7 @@ def model_fn(features,
 
 
     with tf.name_scope(name='feature_norm',values=[features]):
-        # Normalize the image to zero mean and unit variance.
+        # Standardization to the image by zero mean and unit variance.
         features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
         features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
@@ -687,6 +689,7 @@ def main(unused_argv):
 
     model_config.show_info()
     train_config.show_info()
+    preproc_config.show_info()
 
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
