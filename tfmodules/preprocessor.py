@@ -29,10 +29,6 @@ sys.path.insert(0,TF_MODEL_DIR)
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_INPUT_CHNUM
 from model_config  import DEFAULT_HG_INOUT_RESOL
-# from model_config  import DEFAULT_LABEL_LENGTH
-
-from train_config  import MAX_AUGMENT_ROTATE_ANGLE_DEG
-from train_config  import MIN_AUGMENT_ROTATE_ANGLE_DEG
 
 
 IMAGE_SIZE = np.int32(DEFAULT_INPUT_RESOL)
@@ -42,13 +38,11 @@ IMAGE_SIZE = np.int32(DEFAULT_INPUT_RESOL)
 
 def _flip(image):
     """Random horizontal image flip."""
-    random_binary = np.random.randint(2)
+    is_flip = tf.less(tf.random_uniform(shape=[1]),0.5)
+    is_flip = tf.cast(is_flip,tf.float32)
 
-    if random_binary == 1:
-        is_flip = True
-        image   = tf.image.flip_left_right(image)
-    else:
-        is_flip = False
+    image_fliped  = tf.image.flip_left_right(image)
+    image         =  image * ( 1.0 - is_flip) + image_fliped * is_flip
 
     return image, is_flip
 
@@ -56,12 +50,16 @@ def _flip(image):
 
 
 
-def _rotate(image):
+def _rotate(image,preproc_config):
 
     # random angle (rad) geneartion
-    min_ang_rad     = MIN_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
-    max_ang_rad     = MAX_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
-    random_ang_rad  = np.random.uniform(min_ang_rad,max_ang_rad)
+    min_ang_rad     = preproc_config.MIN_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
+    max_ang_rad     = preproc_config.MAX_AUGMENT_ROTATE_ANGLE_DEG / 180. * np.pi
+
+
+    random_ang_rad  = tf.random_uniform(shape=[1],
+                                        minval=min_ang_rad,
+                                        maxval=max_ang_rad)
 
     image = tf.contrib.image.rotate(images=image,
                                     angles=random_ang_rad,
@@ -73,7 +71,7 @@ def _rotate(image):
 
 
 
-def preprocess_for_train(image_bytes,use_bfloat16):
+def preprocess_for_train(image_bytes,use_bfloat16,preproc_config):
     """Preprocesses the given image for evaluation.
     Args:
     image_bytes: `Tensor` representing an image binary of arbitrary size.
@@ -89,15 +87,26 @@ def preprocess_for_train(image_bytes,use_bfloat16):
     image = tf.image.decode_jpeg(contents=image_bytes,
                                  channels=DEFAULT_INPUT_CHNUM)
 
+    # orignal size to 256
     image = tf.image.resize_bicubic(images=[image],
                                     size=[IMAGE_SIZE, IMAGE_SIZE])[0]
 
     # augmentation
-    image, is_flip           = _flip(image = image)
-    image, random_ang_rad    = _rotate(image = image)
+    if preproc_config.is_flipping:
+        image, is_flip           = _flip(image = image)
+    else:
+        is_flip = tf.constant(0.0)
 
-    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
+    if preproc_config.is_rotate:
+        image, random_ang_rad    = _rotate(image = image,
+                                           preproc_config=preproc_config)
+    else:
+        random_ang_rad = tf.constant(0.0)
 
+    print('is_flip=%s' % is_flip)
+    # print('random_ang_rad =%s' % (random_ang_rad / np.pi * 180.0))
+
+    # image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
     # here image value scale is converted to [0,255] to [0.0,1.0]
     image = tf.image.convert_image_dtype(image=image,
                                          dtype=tf.bfloat16 if use_bfloat16 else tf.float32,
@@ -126,10 +135,11 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
     image = tf.image.decode_jpeg(contents=image_bytes,
                                  channels=DEFAULT_INPUT_CHNUM)
 
+    # orignal size to 256
     image = tf.image.resize_bicubic(images=[image],
                                     size =[IMAGE_SIZE,IMAGE_SIZE])[0]
 
-    image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
+    # image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
 
     # here image value scale is converted to [0,255] to [0.0,1.0]
     image = tf.image.convert_image_dtype(image=image,
@@ -142,49 +152,48 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
 
 
 
-
 def _heatmap_generator(label_list,
                        image_orig_height,
                        image_orig_width,
                        is_flip,
                        random_ang_rad,
-                       use_bfloat16,
-                       gaussian_ksize=10):
+                       use_bfloat16=False,
+                       gaussian_ksize=3):
 
-    x0 = label_list[0]
-    y0 = label_list[1]
+    x0 = tf.cast(label_list[0], dtype=tf.float32)
+    y0 = tf.cast(label_list[1], dtype=tf.float32)
 
-    # reflection of aspect ratio by resizing to DEFAULT_INPUT_RESOL
+    # reflection of aspect ratio by resizing to DEFAULT_INPUT_RESOL =============
     aspect_ratio_height = DEFAULT_INPUT_RESOL / tf.cast(image_orig_height,dtype=tf.float32)
     aspect_ratio_width  = DEFAULT_INPUT_RESOL / tf.cast(image_orig_width, dtype=tf.float32)
 
     resized_x0 = x0 * aspect_ratio_width
     resized_y0 = y0 * aspect_ratio_height
 
-    # reflection of left right flipping
-    if is_flip:
-        fliped_x0 = DEFAULT_INPUT_RESOL - resized_x0
-        fliped_y0 = DEFAULT_INPUT_RESOL - resized_y0
-    else:
-        fliped_x0 = resized_x0
-        fliped_y0 = resized_y0
+    fliped_x0   = (1.0 - is_flip) * resized_x0 + is_flip * (DEFAULT_INPUT_RESOL - resized_x0)
+    fliped_y0   = resized_y0
 
-    # reflection of rotation
-    rotated_x0 = fliped_x0 * np.cos(random_ang_rad) - fliped_y0 * np.sin(random_ang_rad)
-    rotated_y0 = fliped_x0 * np.sin(random_ang_rad) + fliped_y0 * np.cos(random_ang_rad)
 
-    # max min bound regularization
-    rotated_x0 = tf.minimum(x=rotated_x0,y=0.)
-    rotated_y0 = tf.minimum(x=rotated_y0,y=0.)
-
-    rotated_x0 = tf.maximum(x=rotated_x0,y=DEFAULT_INPUT_RESOL)
-    rotated_y0 = tf.maximum(x=rotated_y0,y=DEFAULT_INPUT_RESOL)
+    # reflection of rotation =============
+    rotated_x0 = (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
+                 - (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
+                 + DEFAULT_INPUT_RESOL/2.0
+    rotated_y0 = (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
+                 + (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
+                 + DEFAULT_INPUT_RESOL / 2.0
 
     # resizing by model to  DEFAULT_HG_INOUT_RESOL
     aspect_ratio_by_model = DEFAULT_HG_INOUT_RESOL / DEFAULT_INPUT_RESOL
 
     heatmap_x0 = rotated_x0 * aspect_ratio_by_model
     heatmap_y0 = rotated_y0 * aspect_ratio_by_model
+
+    # max min bound regularization =============
+    heatmap_x0 = tf.minimum(x=heatmap_x0,y=DEFAULT_HG_INOUT_RESOL)
+    heatmap_y0 = tf.minimum(x=heatmap_y0,y=DEFAULT_HG_INOUT_RESOL)
+
+    heatmap_x0 = tf.maximum(x=heatmap_x0,y=0.0)
+    heatmap_y0 = tf.maximum(x=heatmap_y0,y=0.0)
 
     # heatmap generation
     label_heatmap = make_gaussian_heatmap(size_h=DEFAULT_HG_INOUT_RESOL,
@@ -197,6 +206,7 @@ def _heatmap_generator(label_list,
                                                  dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
 
     return label_heatmap
+
 
 
 
@@ -230,7 +240,9 @@ def preprocess_image(image_bytes,
                      label_list,
                      image_orig_height,
                      image_orig_width,
-                     is_training=False, use_bfloat16=False):
+                     preproc_config,
+                     is_training=False,
+                     use_bfloat16=False):
 
     """Preprocesses the given image.
     Args:
@@ -245,12 +257,13 @@ def preprocess_image(image_bytes,
     # input image preprocessing
     if is_training:
         image,is_flip,random_ang_rad =  preprocess_for_train(image_bytes=image_bytes,
-                                                             use_bfloat16=use_bfloat16)
+                                                             use_bfloat16=use_bfloat16,
+                                                             preproc_config=preproc_config)
     else:
         image = preprocess_for_eval(image_bytes=image_bytes,
                                     use_bfloat16=use_bfloat16)
-        is_flip = False
-        random_ang_rad = 0.0
+        is_flip         = tf.constant(0.0)
+        random_ang_rad  = tf.constant(0.0)
 
 
     # label heatmap generation
@@ -260,7 +273,7 @@ def preprocess_image(image_bytes,
                                             is_flip          = is_flip,
                                             random_ang_rad   = random_ang_rad,
                                             use_bfloat16     =use_bfloat16,
-                                            gaussian_ksize=10)
+                                            gaussian_ksize=preproc_config.heatmap_std)
 
     label_heatmap_neck = _heatmap_generator(label_list      =label_list[1],
                                             image_orig_height=image_orig_height,
@@ -268,7 +281,7 @@ def preprocess_image(image_bytes,
                                             is_flip          = is_flip,
                                             random_ang_rad   = random_ang_rad,
                                             use_bfloat16     =use_bfloat16,
-                                            gaussian_ksize=10)
+                                            gaussian_ksize=preproc_config.heatmap_std)
 
     label_heatmap_Rshoulder = _heatmap_generator(label_list =label_list[2],
                                                 image_orig_height=image_orig_height,
@@ -276,7 +289,7 @@ def preprocess_image(image_bytes,
                                                 is_flip          = is_flip,
                                                 random_ang_rad   = random_ang_rad,
                                                 use_bfloat16     =use_bfloat16,
-                                                gaussian_ksize=10)
+                                                gaussian_ksize=preproc_config.heatmap_std)
 
     label_heatmap_Lshoulder = _heatmap_generator(label_list =label_list[3],
                                                 image_orig_height=image_orig_height,
@@ -284,7 +297,7 @@ def preprocess_image(image_bytes,
                                                 is_flip          = is_flip,
                                                 random_ang_rad   = random_ang_rad,
                                                 use_bfloat16     =use_bfloat16,
-                                                gaussian_ksize=10)
+                                                gaussian_ksize=preproc_config.heatmap_std)
 
 
     label_heatmap           = tf.stack([label_heatmap_head,
