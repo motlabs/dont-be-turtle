@@ -36,15 +36,16 @@ from train_config  import FLAGS
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
 from train_config  import VALIDATIONSET_SIZE
-from model_config  import DEFAULT_INPUT_RESOL
+from train_config  import PreprocessingConfig
 
+from model_config  import DEFAULT_INPUT_RESOL
 
 import preprocessor
 
 
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
-
+preproc_config = PreprocessingConfig()
 
 def image_serving_input_fn():
     """Serving input fn for raw images.
@@ -208,34 +209,37 @@ class DataSetInput(object):
             'label_Lshoulder_occ':
                 tf.FixedLenFeature([], dtype=tf.int64, default_value=0),
             'mean':
-                tf.VarLenFeature(dtype=tf.float32),
+                tf.FixedLenFeature((), dtype=tf.float32, default_value=0),
             'std':
-                tf.VarLenFeature(dtype=tf.float32),
+                tf.FixedLenFeature((), dtype=tf.float32, default_value=0),
             "filename":
-                tf.FixedLenFeature([], tf.string, default_value="")
-        }
+                tf.FixedLenFeature([], tf.string, default_value="")}
 
         parsed = tf.parse_single_example(serialized =value,
                                          features   =keys_to_features)
         # images
-        image_bytes = tf.reshape(parsed['image'], shape=[])
+        # image_bytes = tf.reshape(parsed['image'], shape=[])
+
+        image_bytes = parsed['image']
 
         # labels
-        label_head_x        = tf.cast(parsed['label_head_x'], dtype=tf.float32)
-        label_head_y        = tf.cast(parsed['label_head_y'], dtype=tf.float32)
+        label_head_x        = tf.cast(parsed['label_head_x'], dtype=tf.int32)
+        label_head_y        = tf.cast(parsed['label_head_y'], dtype=tf.int32)
         label_head_occ      = tf.cast(parsed['label_head_occ'], dtype=tf.int32)
 
-        label_neck_x        = tf.cast(parsed['label_neck_x'], dtype=tf.float32)
-        label_neck_y        = tf.cast(parsed['label_neck_y'], dtype=tf.float32)
+        label_neck_x        = tf.cast(parsed['label_neck_x'], dtype=tf.int32)
+        label_neck_y        = tf.cast(parsed['label_neck_y'], dtype=tf.int32)
         label_neck_occ      = tf.cast(parsed['label_neck_occ'], dtype=tf.int32)
 
-        label_Rshoulder_x        = tf.cast(parsed['label_Rshoulder_x'], dtype=tf.float32)
-        label_Rshoulder_y        = tf.cast(parsed['label_Rshoulder_y'], dtype=tf.float32)
+        label_Rshoulder_x        = tf.cast(parsed['label_Rshoulder_x'], dtype=tf.int32)
+        label_Rshoulder_y        = tf.cast(parsed['label_Rshoulder_y'], dtype=tf.int32)
         label_Rshoulder_occ      = tf.cast(parsed['label_Rshoulder_occ'], dtype=tf.int32)
 
-        label_Lshoulder_x        = tf.cast(parsed['label_Lshoulder_x'], dtype=tf.float32)
-        label_Lshoulder_y        = tf.cast(parsed['label_Lshoulder_y'], dtype=tf.float32)
+        label_Lshoulder_x        = tf.cast(parsed['label_Lshoulder_x'], dtype=tf.int32)
+        label_Lshoulder_y        = tf.cast(parsed['label_Lshoulder_y'], dtype=tf.int32)
         label_Lshoulder_occ      = tf.cast(parsed['label_Lshoulder_occ'], dtype=tf.int32)
+
+
 
         label_head_list = [label_head_x,
                            label_head_y,
@@ -273,7 +277,8 @@ class DataSetInput(object):
                                     image_orig_width    =width,
                                     label_list          =label_list,
                                     is_training         =self.is_training,
-                                    use_bfloat16        =self.use_bfloat16)
+                                    use_bfloat16        =self.use_bfloat16,
+                                    preproc_config      =preproc_config)
 
 
         return image, label_heatmap
@@ -302,47 +307,43 @@ class DataSetInput(object):
         # Retrieves the batch size for the current shard. The # of shards is
         # computed according to the input pipeline deployment. See
         # tf.contrib.tpu.RunConfig for details.
-
         batch_size = BATCH_SIZE
 
+        ##################################################
         # loading tfrecord filenames from self.data_dir
-        if self.is_training:
-            # training set
-            filenames_list = glob(self.data_dir + '/train-*.*')
-        else:
-            # validation set
-            filenames_list = glob(self.data_dir + '/eval-*.*')
-
-        dataset = tf.data.TFRecordDataset(filenames_list)
-
-        print('\nfile_pattern=%s'%filenames_list)
-
-        # compression_type = 'ZLIB' if filenames_list[0].split('.')[-1] == 'zlib' else 'GZIP'
-        # -----------------------------------------------------------------
+        # if self.is_training:
+        #     # training set
+        #     filenames_list = glob(self.data_dir + '/train-*.*')
+        # else:
+        #     # validation set
+        #     filenames_list = glob(self.data_dir + '/eval-*.*')
+        #
+        # dataset = tf.data.TFRecordDataset(filenames_list)
+        #
+        # print('\nfile_pattern=%s'%filenames_list)
+        ##################################################
 
         # Shuffle the filenames to ensure better randomization.
-        # file_pattern = os.path.join(
-        #     self.data_dir, 'train-*' if self.is_training else 'eval-*')
-        #
-        # print('file_pattern=%s'%file_pattern)
-        # dataset = tf.data.Dataset.list_files(file_pattern,
-        #                                      shuffle=self.is_training)
+        file_pattern = os.path.join(
+            self.data_dir, 'train-*' if self.is_training else 'eval-*')
 
-        if self.is_training:
-            dataset = dataset.repeat()
+        dataset = tf.data.Dataset.list_files(file_pattern,
+                                             shuffle=self.is_training)
+
+        # if self.is_training:
+        dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
-        # def fetch_dataset(filename):
-        #     # dataset = tf.data.TFRecordDataset(filename,
-        #     #                                   compression_type='GZIP')
-        #     print ('filename=%s'%filename)
-        #     dataset = tf.data.TFRecordDataset(filename)
-        #     return dataset
+        def fetch_dataset(filename):
+            print ('filename=%s'%filename)
+            dataset = tf.data.TFRecordDataset(filename)
+            return dataset
+
 
         # Read the data from disk in parallel
-        # dataset = dataset.apply(
-        #     tf.contrib.data.parallel_interleave(
-        #         fetch_dataset, cycle_length=32, sloppy=True))
+        dataset = dataset.apply(
+            tf.contrib.data.parallel_interleave(
+                fetch_dataset, cycle_length=32, sloppy=True))
 
         # dataset elementwise shuffling
         # where buffer_size is the number of data elements
@@ -352,21 +353,12 @@ class DataSetInput(object):
             dataset = dataset.shuffle(buffer_size=VALIDATIONSET_SIZE)
 
 
-        # if FLAGS.use_tpu:
-        #     # # Parse, preprocess, and batch the data in parallel
-        #     dataset = dataset.apply(
-        #         tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
-        #                                       batch_size=batch_size,
-        #                                       num_parallel_batches=8,  # 8 == num_cores per host
-        #                                       drop_remainder=True))
-        #
-        # else:
-        # Parse, preprocess, and batch the data in parallel
+        # # Parse, preprocess, and batch the data in parallel
         dataset = dataset.apply(
             tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
                                           batch_size=batch_size,
+                                          num_parallel_batches=8,  # 8 == num_cores per host
                                           drop_remainder=True))
-
 
         ########################################
         # Transpose for performance on TPU
