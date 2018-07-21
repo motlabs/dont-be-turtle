@@ -90,18 +90,20 @@ def preprocess_for_train(image_bytes,use_bfloat16,preproc_config):
     # orignal size to 256
     image = tf.image.resize_bicubic(images=[image],
                                     size=[IMAGE_SIZE, IMAGE_SIZE])[0]
-
     # augmentation
     if preproc_config.is_flipping:
-        image, is_flip           = _flip(image = image)
+        image, is_flip = _flip(image=image)
     else:
         is_flip = tf.constant(0.0)
 
     if preproc_config.is_rotate:
-        image, random_ang_rad    = _rotate(image = image,
-                                           preproc_config=preproc_config)
+        image, random_ang_rad = _rotate(image=image,
+                                        preproc_config=preproc_config)
     else:
         random_ang_rad = tf.constant(0.0)
+
+
+
 
     print('is_flip=%s' % is_flip)
     # print('random_ang_rad =%s' % (random_ang_rad / np.pi * 180.0))
@@ -170,17 +172,18 @@ def _heatmap_generator(label_list,
     resized_x0 = x0 * aspect_ratio_width
     resized_y0 = y0 * aspect_ratio_height
 
+    # reflection of flip ================
     fliped_x0   = (1.0 - is_flip) * resized_x0 + is_flip * (DEFAULT_INPUT_RESOL - resized_x0)
     fliped_y0   = resized_y0
 
 
     # reflection of rotation =============
-    rotated_x0 = (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
+    rotated_x0 =   (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
                  - (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
-                 + DEFAULT_INPUT_RESOL/2.0
-    rotated_y0 = (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
+                   + DEFAULT_INPUT_RESOL/2.0
+    rotated_y0 =   (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
                  + (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
-                 + DEFAULT_INPUT_RESOL / 2.0
+                   + DEFAULT_INPUT_RESOL / 2.0
 
     # resizing by model to  DEFAULT_HG_INOUT_RESOL
     aspect_ratio_by_model = DEFAULT_HG_INOUT_RESOL / DEFAULT_INPUT_RESOL
@@ -206,8 +209,6 @@ def _heatmap_generator(label_list,
                                                  dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
 
     return label_heatmap
-
-
 
 
 
