@@ -46,9 +46,10 @@ TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
 
 # data path
-DATASET_DIR         = PROJ_HOME     + '/dataset'
-TFRECORD_DIR        = DATASET_DIR   + '/tfrecords/realdataset/'
-TFRECORD_TEST_DIR   = DATASET_DIR   + '/tfrecords/testimagedataset'
+DATASET_DIR                 = PROJ_HOME     + '/dataset'
+TFRECORD_REALSET_DIR        = DATASET_DIR   + '/tfrecords/realdataset/'
+TFRECORD_TESTSET_DIR        = DATASET_DIR   + '/tfrecords/testdataset/'
+TFRECORD_TESTIMAGE_DIR           = DATASET_DIR   + '/tfrecords/testimagedataset'
 # TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 # TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 

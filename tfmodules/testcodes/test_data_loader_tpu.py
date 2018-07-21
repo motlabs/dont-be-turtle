@@ -204,8 +204,10 @@ class DataLoaderTest(tf.test.TestCase):
                 transpose_input=False,
                 use_bfloat16=False) for is_training in [True, False]]
 
-        dataset_train           = dataset_train.input_fn()
-        iterator_train          = dataset_train.make_initializable_iterator()
+
+        dataset = dataset_train
+        dataset                 = dataset.input_fn()
+        iterator_train          = dataset.make_initializable_iterator()
         feature_op, labels_op   = iterator_train.get_next()
         argmax_2d_head_op       = argmax_2d(tensor=labels_op[:, :, :, 0:1])
 

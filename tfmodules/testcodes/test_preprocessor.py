@@ -68,13 +68,13 @@ class PreprocessorTest(tf.test.TestCase):
             - whether tfrecord is correclty read
         '''
         # loading tfrecord filenames from self.data_dir
-        # train_filename_list = glob(TFRECORD_TESTIMAGE_DIR + '/train-*.*')
-        train_filename_list = glob(TFRECORD_TESTSET_DIR + '/train-*.*')
+        train_filename_list = glob(TFRECORD_TESTIMAGE_DIR + '/train-*.*')
+        # train_filename_list = glob(TFRECORD_TESTSET_DIR + '/train-*.*')
         # train_filename_list = glob(TFRECORD_REALSET_DIR + '/train-*.*')
 
         print('---------------------------------------------------------')
-        # print('[test_heatmap_gen] data_dir = %s' % TFRECORD_TESTIMAGE_DIR)
-        print('[test_heatmap_gen] data_dir = %s' % TFRECORD_TESTSET_DIR)
+        print('[test_heatmap_gen] data_dir = %s' % TFRECORD_TESTIMAGE_DIR)
+        # print('[test_heatmap_gen] data_dir = %s' % TFRECORD_TESTSET_DIR)
         # print('[test_heatmap_gen] data_dir = %s' % TFRECORD_REALSET_DIR)
 
         print('[test_heatmap_gen] train_filename_list = %s'% train_filename_list)

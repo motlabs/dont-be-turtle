@@ -194,8 +194,6 @@ def _heatmap_generator(label_list,
 
 
 
-
-
 def make_gaussian_heatmap(size_h, size_w, x0,y0,fwhm=3):
     """ Make a square gaussian kernel.
     size is the length of a side of the square
