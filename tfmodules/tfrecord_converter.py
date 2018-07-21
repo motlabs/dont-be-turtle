@@ -54,10 +54,23 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
     options = None
     writer = tf.python_io.TFRecordWriter(path=tfrecords_name, options=options)
 
+    image_list.sort()
+    label_list.sort()
     for img_n, (image_path, label_path) in enumerate(zip(image_list, label_list)):
         image, image_jpeg, label = reader(image_path, label_path)
         filename = os.path.basename(image_path)
+        '''
+                   /* label json format */
+                   {
+                       "image_path": "/Users/jwkangmacpro2/SourceCodes/dont-be-turtle-pose-annotation-tool/images_for_annotation/lsp_dataset_original/images/im0004.jpg",
+                       "head": [550.0049944506104, 386.2047724750277, 0.0],
+                       "Rshoulder": [493.74750277469474, 416.89067702552717, 0.0],
+                       "Lshoulder": [518.4667036625972, 423.7097669256381, 1.0],
+                       "neck": [522.7286348501664, 409.2192008879023, 0.0]
+                   }
+                   where values of annotation are casted from float32 to int32
 
+               '''
         string_set = tf.train.Example(
                 features=tf.train.Features(
                     feature=
@@ -67,35 +80,18 @@ def to_tfrecords(image_list, label_list, reader, tfrecords_name):
                         'channel'   : _int64_feature(image.shape[2]),
                         'image'     : _bytes_feature(image_jpeg),
                         # 'image': _bytes_feature(image.tostring()),
-
-                        '''
-                            /* label json format */
-                            {
-                                "image_path": "/Users/jwkangmacpro2/SourceCodes/dont-be-turtle-pose-annotation-tool/images_for_annotation/lsp_dataset_original/images/im0004.jpg",
-                                "head": [550.0049944506104, 386.2047724750277, 0.0],
-                                "Rshoulder": [493.74750277469474, 416.89067702552717, 0.0],
-                                "Lshoulder": [518.4667036625972, 423.7097669256381, 1.0],
-                                "neck": [522.7286348501664, 409.2192008879023, 0.0]
-                            }
-                            where values of annotation are casted from float32 to int32
-
-                        '''
                         'label_head_x'          : _int64_feature(np.round(label['head'][0]).astype(np.int64)),
                         'label_head_y'          : _int64_feature(np.round(label['head'][1]).astype(np.int64)),
                         'label_head_occ'        : _int64_feature(np.round(label['head'][2]).astype(np.int64)),
-
                         'label_neck_x'          : _int64_feature(np.round(label['neck'][0]).astype(np.int64)),
                         'label_neck_y'          : _int64_feature(np.round(label['neck'][1]).astype(np.int64)),
                         'label_neck_occ'        : _int64_feature(np.round(label['neck'][2]).astype(np.int64)),
-
                         'label_Rshoulder_x'     : _int64_feature(np.round(label['Rshoulder'][0]).astype(np.int64)),
                         'label_Rshoulder_y'     : _int64_feature(np.round(label['Rshoulder'][1]).astype(np.int64)),
                         'label_Rshoulder_occ'   : _int64_feature(np.round(label['Rshoulder'][2]).astype(np.int64)),
-
                         'label_Lshoulder_x'     : _int64_feature(np.round(label['Lshoulder'][0]).astype(np.int64)),
                         'label_Lshoulder_y'     : _int64_feature(np.round(label['Lshoulder'][1]).astype(np.int64)),
                         'label_Lshoulder_occ'   : _int64_feature(np.round(label['Lshoulder'][2]).astype(np.int64)),
-
                         'mean'              : _float_feature(image.mean().astype(np.float32)),
                         'std'               : _float_feature(image.std().astype(np.float32)),
                         'filename'          : _bytes_feature(filename),
@@ -148,8 +144,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--train-data-dir',
-        default = '../dataset/testimages/',
-        # default = '../dataset/traintest/lsp/',
+        # default = '../dataset/testimages/',
+        default = '../dataset/traintest/lsp/',
         # default='../dataset/train/lsp/',
         help='training data',
         nargs='+',
@@ -158,6 +154,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--eval-data-dir',
+        # default = '../dataset/testimages/',
         default='../dataset/evaltest/collected_data/',
         # default='../dataset/eval/collected_data/',
         help='evaluation data',
@@ -167,8 +164,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--out-dir',
-        default= '../dataset/tfrecords/testimagedataset',
-        # default='../dataset/tfrecords/testdataset',
+        # default= '../dataset/tfrecords/testimagedataset',
+        default='../dataset/tfrecords/testdataset',
         # default='../dataset/tfrecords/realdataset',
         help='directory of output of data set generated',
         nargs='+',
