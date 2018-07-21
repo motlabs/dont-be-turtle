@@ -17,7 +17,9 @@
 import tensorflow as tf
 from absl import flags
 
-from path_manager import TFRECORD_DIR
+from path_manager import TFRECORD_REALSET_DIR
+from path_manager import TFRECORD_TESTSET_DIR
+from path_manager import TFRECORD_TESTIMAGE_DIR
 from path_manager import EXPORT_MODEL_DIR
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import EXPORT_TFLOG_DIR
@@ -38,6 +40,9 @@ GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
 
 
+
+
+
 class TrainConfig(object):
     def __init__(self):
 
@@ -52,6 +57,7 @@ class TrainConfig(object):
         self.tf_data_type   = tf.float32
         self.display_step   = 5
 
+
     def show_info(self):
         tf.logging.info('------------------------')
         tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
@@ -61,6 +67,36 @@ class TrainConfig(object):
         tf.logging.info('------------------------')
 
 
+class PreprocessingConfig(object):
+
+    def __init__(self):
+        # image pre-processing
+        self.is_random_crop             = False # not implemented yet
+        self.is_rotate                  = True
+        self.is_flipping                = False
+
+        # this is when classification task
+        # which has an input as pose coordinate
+        self.is_label_coordinate_norm   = False
+
+        # for ground true heatmap generation
+        self.heatmap_std        = 3
+        self.heatmap_pdf_type          = 'gaussian'
+
+        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -7.5
+        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 7.5
+
+
+    def show_info(self):
+        tf.logging.info('------------------------')
+        tf.logging.info('[train_config] Use is_random_crop: %s' % str(self.is_random_crop))
+        tf.logging.info('[train_config] Use is_rotate  : %s'    % str(self.is_rotate))
+        tf.logging.info('[train_config] Use is_flipping: %s'    % str(self.is_flipping))
+        tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
+        tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
+        tf.logging.info('[train_config] Use heatmap_std     : %s' % str(self.heatmap_std))
+        tf.logging.info('[train_config] Use heatmap_pdf_type: %s' % self.heatmap_pdf_type)
+        tf.logging.info('------------------------')
 
 
 
@@ -77,7 +113,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=False,
+    'use_tpu', default=True,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
@@ -119,7 +155,7 @@ flags.DEFINE_string(
 
 # Model specific flags
 flags.DEFINE_string(
-    'data_dir', default=TFRECORD_DIR,
+    'data_dir', default=TFRECORD_TESTIMAGE_DIR,
     help=('The directory where the input data is stored. Please see'
           ' the README.md for the expected data format.'))
 
@@ -255,25 +291,7 @@ flags.DEFINE_float(
 
 
 
-MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.
-MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.
 
-
-class PreprocessingConfig(object):
-
-    def __init__(self):
-        # image pre-processing
-        self.is_random_crop             = False
-        self.is_scaling                 = False
-        self.is_flipping                = False
-
-        # this is when classification task
-        # which has an input as pose coordinate
-        self.is_label_coordinate_norm   = False
-
-        # for ground true heatmap generation
-        self.heatmap_std        = 1
-        self.heatmap_pdf_type          = 'gaussian'
 
 #-----------------------------------------------
 
