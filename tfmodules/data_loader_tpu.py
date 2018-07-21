@@ -329,9 +329,9 @@ class DataSetInput(object):
 
         dataset = tf.data.Dataset.list_files(file_pattern,
                                              shuffle=self.is_training)
-
-        # if self.is_training:
-        dataset = dataset.repeat()
+        tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
+        if self.is_training:
+            dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):

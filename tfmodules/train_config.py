@@ -28,11 +28,12 @@ from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
-
-TRAININGSET_SIZE     = 128
-VALIDATIONSET_SIZE   = 8
+# multiple of 8,batchsize
+TRAININGSET_SIZE     = 1920
+VALIDATIONSET_SIZE   = 192
 # TESTSET_SIZE         = 100
 
+# multiple of 8
 BATCH_SIZE           = 32
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
@@ -56,6 +57,7 @@ class TrainConfig(object):
 
         self.tf_data_type   = tf.float32
         self.display_step   = 5
+        self.is_image_summary = False
 
 
     def show_info(self):
@@ -73,7 +75,7 @@ class PreprocessingConfig(object):
         # image pre-processing
         self.is_random_crop             = False # not implemented yet
         self.is_rotate                  = True
-        self.is_flipping                = False
+        self.is_flipping                = True
 
         # this is when classification task
         # which has an input as pose coordinate
@@ -155,16 +157,16 @@ flags.DEFINE_string(
 
 # Model specific flags
 flags.DEFINE_string(
-    'data_dir', default=TFRECORD_TESTIMAGE_DIR,
+    'data_dir', default=DATASET_BUCKET,
     help=('The directory where the input data is stored. Please see'
           ' the README.md for the expected data format.'))
 
 flags.DEFINE_string(
-    'model_dir', default=EXPORT_MODEL_DIR,
+    'model_dir', default=MODEL_BUCKET,
     help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
 flags.DEFINE_string(
-    'tflogs_dir', default=EXPORT_TFLOG_DIR,
+    'tflogs_dir', default=TENSORBOARD_BUCKET,
     help=('The directory where the tensorboard summary are stored')
 )
 

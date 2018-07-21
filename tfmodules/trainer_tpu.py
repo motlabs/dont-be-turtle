@@ -341,8 +341,7 @@ def metric_fn(labels, logits):
 
 
 
-# def host_call_fn(global_step, loss, mid_loss_list, learning_rate, current_epoch):
-def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
+def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -379,6 +378,7 @@ def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
         tb_logdir_path = TENSORBOARD_BUCKET
 
         tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
+        tf.logging.info('[model_fn] tf summary at %s' % tb_logdir)
 
         if not tf.gfile.Exists(tb_logdir_path):
             tf.gfile.MakeDirs(tb_logdir_path)
@@ -387,9 +387,9 @@ def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
         with summary.create_file_writer(logdir=tb_logdir).as_default():
             with summary.always_record_summaries():
                 summary.scalar('loss', loss[0], step=global_step)
-                # for n in range(0,model_config.num_of_hgstacking):
-                #     summary.scalar('mid_loss'+str(n), mid_loss_list[n][0], step=global_step)
-                #
+                for n in range(0,model_config.num_of_hgstacking):
+                    summary.scalar('mid_loss'+str(n), mid_loss_list[n][0], step=global_step)
+
 
                 summary.scalar('learning_rate', learning_rate[0], step=global_step)
                 summary.scalar('current_epoch', current_epoch[0], step=global_step)
@@ -622,19 +622,19 @@ def model_fn(features,
             # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
-            gs_t = tf.reshape(global_step, [1])
-            loss_t = tf.reshape(loss, [1])
+            gs_t        = tf.reshape(global_step, [1])
+            loss_t      = tf.reshape(loss, [1])
 
             mid_loss_list_t = []
-            # for n in range(0,model_config.num_of_hgstacking):
-            #     mid_loss_list_t[n] = tf.reshape(mid_loss_list[n],[1])
+            for n in range(0,model_config.num_of_hgstacking):
+                mid_loss_list_t[n] = tf.reshape(mid_loss_list[n],[1])
 
             lr_t = tf.reshape(learning_rate, [1])
             ce_t = tf.reshape(current_epoch, [1])
 
             if FLAGS.use_tpu:
-                # host_call = (host_call_fn, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
-                host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
+                host_call = (tb_summary_fn_tpu, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
+                # host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
             else:
 
                 ## create tflog dir
@@ -642,6 +642,7 @@ def model_fn(features,
                 tb_logdir_path = FLAGS.tflogs_dir
 
                 tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
+                tf.logging.info('[model_fn] tf summary at %s' % tb_logdir)
 
                 if not tf.gfile.Exists(tb_logdir_path):
                     tf.gfile.MakeDirs(tb_logdir_path)
@@ -695,8 +696,8 @@ def main(unused_argv):
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     curr_model_dir = "{}/run-{}/".format(FLAGS.model_dir, now)
 
-    tf.logging.info('[main] data dir === %s'%FLAGS.data_dir)
-    tf.logging.info('[main] model dir === %s'%curr_model_dir)
+    tf.logging.info('[main] data dir = %s'%FLAGS.data_dir)
+    tf.logging.info('[main] model dir = %s'%curr_model_dir)
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
