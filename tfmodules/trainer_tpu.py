@@ -724,8 +724,8 @@ def main(unused_argv):
                     save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
                     tpu_config                  =tpu_config.TPUConfig(iterations_per_loop=FLAGS.iterations_per_loop))
 
-        tf.logging.info('[main] num_train_images=%s' % FLAGS.train_batch_size)
-        tf.logging.info('[main] train_batch_size=%s' % FLAGS.eval_batch_size)
+        tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
+        tf.logging.info('[main] eval_batch_size=%s' % FLAGS.eval_batch_size)
         dontbeturtle_estimator = tpu_estimator.TPUEstimator(
                     use_tpu         =FLAGS.use_tpu,
                     model_dir       =curr_model_dir,

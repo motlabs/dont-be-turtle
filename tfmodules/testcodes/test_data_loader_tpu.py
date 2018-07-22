@@ -199,13 +199,19 @@ class DataLoaderTest(tf.test.TestCase):
         print('[test_data_loader_tpu] data_dir = %s' % datadir)
 
         filenames = tf.placeholder(tf.string, shape=[None])
-        dataset_train, dataset_eval = \
-            [data_loader_tpu.DataSetInput(
-                is_training=is_training,
+        # dataset_train, dataset_eval = \
+        #     [data_loader_tpu.DataSetInput(
+        #         is_training=is_training,
+        #         data_dir=datadir,
+        #         transpose_input=False,
+        #         use_bfloat16=False) for is_training in [True, False]]
+
+        dataset_train = \
+            data_loader_tpu.DataSetInput(
+                is_training=True,
                 data_dir=datadir,
                 transpose_input=False,
-                use_bfloat16=False) for is_training in [True, False]]
-
+                use_bfloat16=False)
 
         dataset = dataset_train
         dataset                 = dataset.input_fn()
