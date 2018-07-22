@@ -743,7 +743,7 @@ def main(unused_argv):
         config = tf.estimator.RunConfig(
                     model_dir                       =curr_model_dir,
                     tf_random_seed                  =None,
-                    save_summary_steps              =100,
+                    save_summary_steps              =10,
                     save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
                     session_config                  =None,
                     keep_checkpoint_max             =5,

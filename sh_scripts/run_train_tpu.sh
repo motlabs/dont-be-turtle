@@ -41,7 +41,15 @@ fi
 echo "MODEL_BUCKET="${MODEL_BUCKET}
 echo "DATA_BUCKET="${DATA_BUCKET}
 echo =============================================
-python ${SOURCE}\
-	  --tpu=$USER-tpu \
-	  --data_dir=${DATA_BUCKET}\
-	  --model_dir=${MODEL_BUCKET}
+
+if [ "$OS" == "$OS_X" ]; then
+    python ${SOURCE}\
+      --use_tpu=False\
+      --data_dir=${DATA_BUCKET}\
+      --model_dir=${MODEL_BUCKET}
+else
+    python ${SOURCE}\
+          --tpu=$USER-tpu \
+          --data_dir=${DATA_BUCKET}\
+          --model_dir=${MODEL_BUCKET}
+fi

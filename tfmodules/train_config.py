@@ -37,7 +37,12 @@ from path_manager import TENSORBOARD_BUCKET
 
 
 # ## testdate
-TRAININGSET_SIZE     = 48
+# TRAININGSET_SIZE     = 48
+# VALIDATIONSET_SIZE   = 48
+# BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
+# TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+
+TRAININGSET_SIZE     = 192
 VALIDATIONSET_SIZE   = 48
 BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
@@ -47,7 +52,12 @@ EPOCH_NUM = 1
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
-ITER_PER_LOOP_BEFORE_OUTDEEDING = 1
+
+TOTAL_TRAIN_STEP = TRAININGSET_SIZE / BATCH_SIZE * EPOCH_NUM
+
+ITER_PER_LOOP_BEFORE_OUTDEEDING = 10
+if TOTAL_TRAIN_STEP < ITER_PER_LOOP_BEFORE_OUTDEEDING:
+    ITER_PER_LOOP_BEFORE_OUTDEEDING = TOTAL_TRAIN_STEP
 
 
 
@@ -90,7 +100,7 @@ class PreprocessingConfig(object):
 
         # for ground true heatmap generation
         self.heatmap_std        = 3
-        self.heatmap_pdf_type          = 'gaussian'
+        self.heatmap_pdf_type   = 'gaussian'
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -7.5
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 7.5
