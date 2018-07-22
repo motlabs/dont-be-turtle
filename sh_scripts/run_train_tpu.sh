@@ -26,11 +26,11 @@ echo ${OS}
 
 if [ "$OS" == "$OS_X" ]; then
     export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model
-    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/tfrecords
+    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/tfrecords/realdataset/
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_tpu.py
 else
     export MODEL_BUCKET=gs://dontbeturtle_ckpt/
-    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/testdataset/
+    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/realdataset/
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_tpu.py
 fi
 
