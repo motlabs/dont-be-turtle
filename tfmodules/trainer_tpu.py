@@ -341,7 +341,8 @@ def metric_fn(labels, logits):
 
 
 
-def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
+# def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
+    def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -388,16 +389,16 @@ def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_e
             with summary.always_record_summaries():
                 summary.scalar('loss', loss[0], step=global_step)
 
-                for n in range(0,model_config.num_of_hgstacking):
-                    mid_loss_head,\
-                    mid_loss_neck,\
-                    mid_loss_Rshoulder,\
-                    mid_loss_Lshoulder = tf.unstack(mid_loss_list[n])
-
-                    summary.scalar('mid_loss_head'+str(n), mid_loss_head)
-                    summary.scalar('mid_loss_neck'+str(n), mid_loss_neck)
-                    summary.scalar('mid_loss_Rshoulder'+str(n), mid_loss_Rshoulder)
-                    summary.scalar('mid_loss_Lshoulder'+str(n), mid_loss_Lshoulder)
+                # for n in range(0,model_config.num_of_hgstacking):
+                #     mid_loss_head,\
+                #     mid_loss_neck,\
+                #     mid_loss_Rshoulder,\
+                #     mid_loss_Lshoulder = tf.unstack(mid_loss_list[n])
+                #
+                #     summary.scalar('mid_loss_head'+str(n), mid_loss_head)
+                #     summary.scalar('mid_loss_neck'+str(n), mid_loss_neck)
+                #     summary.scalar('mid_loss_Rshoulder'+str(n), mid_loss_Rshoulder)
+                #     summary.scalar('mid_loss_Lshoulder'+str(n), mid_loss_Lshoulder)
 
                 summary.scalar('learning_rate', learning_rate[0], step=global_step)
                 summary.scalar('current_epoch', current_epoch[0], step=global_step)
@@ -638,9 +639,12 @@ def model_fn(features,
             lr_t = tf.reshape(learning_rate, [1])
             ce_t = tf.reshape(current_epoch, [1])
 
+
+
+            # mid_loss_list_t
             if FLAGS.use_tpu:
-                host_call = (tb_summary_fn_tpu, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
-                # host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
+                # host_call = (tb_summary_fn_tpu, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
+                host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
             else:
 
                 ## create tflog dir
