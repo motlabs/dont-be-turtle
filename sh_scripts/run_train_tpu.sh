@@ -45,7 +45,7 @@ echo =============================================
 if [ "$OS" == "$OS_X" ]; then
     python ${SOURCE}\
       --use_tpu=False\
-      --data_dir=None\
+      --data_dir=${DATA_BUCKET}\
       --model_dir=${MODEL_BUCKET}
 else
     python ${SOURCE}\
