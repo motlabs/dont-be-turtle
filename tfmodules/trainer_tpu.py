@@ -493,9 +493,6 @@ def model_fn(features,
         return out_heatmap, mid_heatmap,end_points
 
 
-
-
-
     if FLAGS.precision == 'bfloat16':
         with bfloat16.bfloat16_scope():
             logits_out_heatmap, \

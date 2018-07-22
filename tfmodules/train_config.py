@@ -39,7 +39,7 @@ BATCH_SIZE           = 32
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
-
+ITER_PER_LOOP_BEFORE_OUTDEEDING = 1
 
 
 
@@ -232,7 +232,7 @@ flags.DEFINE_bool(
 
 
 flags.DEFINE_integer(
-    'iterations_per_loop', default=10,
+    'iterations_per_loop', default=ITER_PER_LOOP_BEFORE_OUTDEEDING,
     help=('Number of steps to run on TPU before outfeeding metrics to the CPU.'
           ' If the number of iterations in the loop would exceed the number of'
           ' train steps, the loop will exit before reaching'

@@ -330,6 +330,8 @@ class DataSetInput(object):
         dataset = tf.data.Dataset.list_files(file_pattern,
                                              shuffle=self.is_training)
         tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
+        tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
+
         if self.is_training:
             dataset = dataset.repeat()
 

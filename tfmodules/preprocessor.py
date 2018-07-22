@@ -300,7 +300,7 @@ def preprocess_image(image_bytes,
                                         label_heatmap_Rshoulder,
                                         label_heatmap_Lshoulder],axis=2)
 
-    tf.logging.info('[preprocessor] feature preprocessing complete')
+    tf.logging.info('[preprocessor] preprocessing pipeline building complete')
     return image, label_heatmap
 
 
