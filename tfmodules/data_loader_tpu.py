@@ -303,6 +303,7 @@ class DataSetInput(object):
         if self.data_dir == None:
             tf.logging.info('Using fake input.')
             return self.input_fn_null(params)
+        tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
 
         # Retrieves the batch size for the current shard. The # of shards is
         # computed according to the input pipeline deployment. See
@@ -312,39 +313,39 @@ class DataSetInput(object):
         ##################################################
         # loading tfrecord filenames from self.data_dir
         # if self.is_training:
-        #     # training set
-        #     filenames_list = glob(self.data_dir + '/train-*.*')
+        #     file_pattern = glob(self.data_dir + '/train-*.*')
         # else:
         #     # validation set
-        #     filenames_list = glob(self.data_dir + '/eval-*.*')
-        #
-        # dataset = tf.data.TFRecordDataset(filenames_list)
-        #
-        # print('\nfile_pattern=%s'%filenames_list)
+        #     file_pattern = glob(self.data_dir + '/eval-*.*')
+
+        # dataset = tf.data.TFRecordDataset(file_pattern,buffer_size=buffer_size)
+
         ##################################################
 
-        # Shuffle the filenames to ensure better randomization.
+        # # Shuffle the filenames to ensure better randomization.
         file_pattern = os.path.join(
             self.data_dir, 'train-*' if self.is_training else 'eval-*')
 
         dataset = tf.data.Dataset.list_files(file_pattern,
                                              shuffle=self.is_training)
-        tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
-        tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
-
         if self.is_training:
             dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
-            dataset = tf.data.TFRecordDataset(filename)
+            # number of bytes in the read buffer
+            buffer_size = 6 * 1024 * 1024  # 6MB for lsp train dataset
+            dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
             return dataset
-
 
         # Read the data from disk in parallel
         dataset = dataset.apply(
             tf.contrib.data.parallel_interleave(
-                fetch_dataset, cycle_length=32, sloppy=True))
+                fetch_dataset, cycle_length=64, sloppy=True))
+
+
+        tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
+
 
         # dataset elementwise shuffling
         # where buffer_size is the number of data elements
