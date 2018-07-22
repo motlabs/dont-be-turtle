@@ -74,7 +74,6 @@ class TrainConfig(object):
         self.activation_fn_pose     = tf.nn.relu
 
         self.tf_data_type   = tf.float32
-        self.display_step   = 5
         self.is_image_summary = False
 
 
@@ -84,6 +83,8 @@ class TrainConfig(object):
         tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
         tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
         tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_pose))
+
+
 
 
 class PreprocessingConfig(object):
@@ -104,6 +105,7 @@ class PreprocessingConfig(object):
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -7.5
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 7.5
+
 
 
     def show_info(self):
@@ -135,7 +137,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
@@ -241,6 +243,9 @@ flags.DEFINE_integer(
 #           ' be a performance drop if host_call function is slow and cannot'
 #           ' keep up with the TPU-side computation.'))
 #
+flags.DEFINE_integer(
+    'summary_step', default=5,
+    help=('Tensorboard summary step'))
 
 
 flags.DEFINE_bool(

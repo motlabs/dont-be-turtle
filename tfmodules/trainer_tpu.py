@@ -341,8 +341,7 @@ def metric_fn(labels, logits):
 
 
 
-# def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
-def tb_summary_fn_tpu(global_step, loss,  learning_rate, current_epoch):
+def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -371,6 +370,7 @@ def tb_summary_fn_tpu(global_step, loss,  learning_rate, current_epoch):
 
     with tf.name_scope(name='tb_summary',values=[global_step,
                                                  loss,
+                                                 mid_loss_list,
                                                  learning_rate,
                                                  current_epoch]):
         global_step = global_step[0]
@@ -384,13 +384,20 @@ def tb_summary_fn_tpu(global_step, loss,  learning_rate, current_epoch):
         if not tf.gfile.Exists(tb_logdir_path):
             tf.gfile.MakeDirs(tb_logdir_path)
 
-
         with summary.create_file_writer(logdir=tb_logdir).as_default():
             with summary.always_record_summaries():
                 summary.scalar('loss', loss[0], step=global_step)
-                # for n in range(0,model_config.num_of_hgstacking):
-                #     summary.scalar('mid_loss'+str(n), mid_loss_list[n][0], step=global_step)
 
+                for n in range(0,model_config.num_of_hgstacking):
+                    mid_loss_head,\
+                    mid_loss_neck,\
+                    mid_loss_Rshoulder,\
+                    mid_loss_Lshoulder = tf.unstack(mid_loss_list[n])
+
+                    summary.scalar('mid_loss_head'+str(n), mid_loss_head)
+                    summary.scalar('mid_loss_neck'+str(n), mid_loss_neck)
+                    summary.scalar('mid_loss_Rshoulder'+str(n), mid_loss_Rshoulder)
+                    summary.scalar('mid_loss_Lshoulder'+str(n), mid_loss_Lshoulder)
 
                 summary.scalar('learning_rate', learning_rate[0], step=global_step)
                 summary.scalar('current_epoch', current_epoch[0], step=global_step)
@@ -632,8 +639,8 @@ def model_fn(features,
             ce_t = tf.reshape(current_epoch, [1])
 
             if FLAGS.use_tpu:
-                # host_call = (tb_summary_fn_tpu, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
-                host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
+                host_call = (tb_summary_fn_tpu, [gs_t, loss_t,mid_loss_list_t, lr_t, ce_t])
+                # host_call = (tb_summary_fn_tpu, [gs_t, loss_t, lr_t, ce_t])
             else:
 
                 ## create tflog dir
@@ -648,13 +655,23 @@ def model_fn(features,
                 tf.summary.scalar('loss', loss)
 
                 for n in range(0,model_config.num_of_hgstacking):
-                    summary.scalar('mid_loss'+str(n), mid_loss_list[n])
+                    mid_loss_head,\
+                    mid_loss_neck,\
+                    mid_loss_Rshoulder,\
+                    mid_loss_Lshoulder = tf.unstack(mid_loss_list[n])
+
+                    summary.scalar('mid_loss_head'+str(n), mid_loss_head)
+                    summary.scalar('mid_loss_neck'+str(n), mid_loss_neck)
+                    summary.scalar('mid_loss_Rshoulder'+str(n), mid_loss_Rshoulder)
+                    summary.scalar('mid_loss_Lshoulder'+str(n), mid_loss_Lshoulder)
+
+
 
                 tf.summary.scalar('learning_rate', learning_rate)
                 tf.summary.scalar('current_epoch', current_epoch)
 
                 tf.logging.info('Create SummarySaveHook.')
-                summary_hook = tf.train.SummarySaverHook(save_steps=1,
+                summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
                                                          output_dir=tb_logdir,
                                                          summary_op=tf.summary.merge_all())
 
@@ -743,7 +760,7 @@ def main(unused_argv):
         config = tf.estimator.RunConfig(
                     model_dir                       =curr_model_dir,
                     tf_random_seed                  =None,
-                    save_summary_steps              =10,
+                    save_summary_steps              =FLAGS.summary_step,
                     save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
                     session_config                  =None,
                     keep_checkpoint_max             =5,
