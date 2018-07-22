@@ -42,7 +42,7 @@ VALIDATIONSET_SIZE   = 16
 BATCH_SIZE           = 16 # multiple of 8
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
-
+EPOCH_NUM = 10
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
@@ -191,7 +191,7 @@ flags.DEFINE_string(
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
-    'train_steps', default=TRAININGSET_SIZE*BATCH_SIZE,
+    'train_steps', default=TRAININGSET_SIZE/BATCH_SIZE*EPOCH_NUM,
     help=('The number of steps to use for training. Default is 112603 steps'
           ' which is approximately 90 epochs at batch size 1024. This flag'
           ' should be adjusted according to the --train_batch_size flag.'))
