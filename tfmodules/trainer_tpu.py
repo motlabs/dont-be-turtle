@@ -814,7 +814,7 @@ def main(unused_argv):
 
         tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)
         tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
-        tf.logging.info('[main] batchnum_per_epoch=%s' % FLAGS.batchnum_per_epoch)
+        tf.logging.info('[main] batchnum_per_epoch=%s' % batchnum_per_epoch)
 
         tf.logging.info('[main] Training for %d steps (%.2f epochs in total). Current'
                         ' step %d.' % (FLAGS.train_steps,
