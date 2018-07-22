@@ -482,11 +482,11 @@ def model_fn(features,
                  model_config.out_config.is_trainable   = False
 
             tf.logging.info('-----------------------------------------------------------')
-            tf.logging.info('[model_fn]  feature shape=%s' % features.get_shape().as_list())
-            tf.logging.info('[model_fn]  labels  shape=%s' % labels.get_shape().as_list())
-            tf.logging.info('[model_fn]  out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
+            tf.logging.info('[model_fn] feature shape=%s' % features.get_shape().as_list())
+            tf.logging.info('[model_fn] labels  shape=%s' % labels.get_shape().as_list())
+            tf.logging.info('[model_fn] out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
             for n in range(0,model_config.num_of_hgstacking):
-                tf.logging.info('[model_fn]  mid_heatmap%d  shape=%s'
+                tf.logging.info('[model_fn] mid_heatmap%d  shape=%s'
                                 % (n,mid_heatmap[n].get_shape().as_list()))
 
         return out_heatmap, mid_heatmap,end_points
@@ -699,6 +699,7 @@ def main(unused_argv):
 
     tf.logging.info('[main] data dir = %s'%FLAGS.data_dir)
     tf.logging.info('[main] model dir = %s'%curr_model_dir)
+    tf.logging.info('------------------------')
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)

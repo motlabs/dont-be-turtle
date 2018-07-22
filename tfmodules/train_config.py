@@ -65,8 +65,7 @@ class TrainConfig(object):
         tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
         tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
         tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
-        tf.logging.info('[train_config] Use act_fn   : %s' % str(self.activation_fn_pose))
-        tf.logging.info('------------------------')
+        tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_pose))
 
 
 class PreprocessingConfig(object):
@@ -115,7 +114,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=TPU,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))
