@@ -29,12 +29,19 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 # multiple of 8,batchsize
-TRAININGSET_SIZE     = 1920
-VALIDATIONSET_SIZE   = 192
-# TESTSET_SIZE         = 100
+## realtestdata
+# TRAININGSET_SIZE     = 1920
+# VALIDATIONSET_SIZE   = 192
+#BATCH_SIZE           = 32 # multiple of 8
+# TRAIN_FILE_SIZE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
-# multiple of 8
-BATCH_SIZE           = 32
+
+## testdate
+TRAININGSET_SIZE     = 48
+VALIDATIONSET_SIZE   = 16
+BATCH_SIZE           = 8 # multiple of 8
+TRAIN_FILE_SIZE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -203,7 +210,7 @@ flags.DEFINE_integer(
 
 
 flags.DEFINE_integer(
-    'steps_per_eval', default=10,
+    'steps_per_eval', default=5,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'
