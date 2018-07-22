@@ -317,7 +317,11 @@ class DataSetInput(object):
         dataset = tf.data.Dataset.list_files(file_pattern,
                                              shuffle=self.is_training)
         if self.is_training:
+            # dataset elementwise shuffling
             dataset = dataset.repeat()
+            dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
+            tf.logging.info('[Input_fn] dataset.repeat()')
+            tf.logging.info('[Input_fn] dataset.shuffle()')
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
@@ -326,21 +330,14 @@ class DataSetInput(object):
             dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
             return dataset
 
-        # Read the data from disk in parallel
+        # # Read the data from disk in parallel
+        # where cycle_length is the Number of training files to read in parallel.
         dataset = dataset.apply(
             tf.contrib.data.parallel_interleave(
-                fetch_dataset, cycle_length=64, sloppy=True))
+                fetch_dataset, cycle_length=1, sloppy=True))
 
 
         tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
-
-
-        # dataset elementwise shuffling
-        # where buffer_size is the number of data elements
-        if self.is_training:
-            dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
-        else:
-            dataset = dataset.shuffle(buffer_size=VALIDATIONSET_SIZE)
 
 
         # # Parse, preprocess, and batch the data in parallel
@@ -363,7 +360,8 @@ class DataSetInput(object):
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
         # Prefetch overlaps in-feed with training
-        dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
+        # dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
+
 
         ########################################
         # NOTE(xiejw): We dispatch here based on the return type of the

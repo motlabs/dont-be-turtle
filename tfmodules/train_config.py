@@ -31,16 +31,17 @@ from path_manager import TENSORBOARD_BUCKET
 # multiple of 8,batchsize
 ## realtestdata
 # TRAININGSET_SIZE     = 1920
-# VALIDATIONSET_SIZE   = 192
-#BATCH_SIZE           = 32 # multiple of 8 (>=8*2)
+# VALIDATIONSET_SIZE   = 1920
+# BATCH_SIZE           = 32 # multiple of 8 (>=8*2)
 # TRAIN_FILE_SIZE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
-## testdate
+# ## testdate
 TRAININGSET_SIZE     = 48
-VALIDATIONSET_SIZE   = 16
+VALIDATIONSET_SIZE   = 48
 BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+
 
 EPOCH_NUM = 10
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
