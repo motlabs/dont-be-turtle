@@ -39,7 +39,7 @@ BATCH_SIZE           = 32
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
-ITER_PER_LOOP_BEFORE_OUTDEEDING = 1
+ITER_PER_LOOP_BEFORE_OUTDEEDING = 10
 
 
 
