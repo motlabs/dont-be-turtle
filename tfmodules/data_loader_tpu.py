@@ -413,8 +413,11 @@ class DataSetInput(object):
 
 
     def _get_null_input(self, _):
-        null_image = tf.zeros(shape=[DEFAULT_HEIGHT, DEFAULT_WIDTH, 3],
+        null_image = tf.zeros(shape=[int(DEFAULT_HEIGHT), int(DEFAULT_WIDTH), 3],
                               dtype=tf.bfloat16 if self.use_bfloat16
                               else tf.float32)
-        return (null_image, tf.constant(0, tf.int32))
+        null_label = tf.zeros(shape=[int(DEFAULT_HEIGHT/4.0), int(DEFAULT_WIDTH/4.0), 4],
+                              dtype=tf.bfloat16 if self.use_bfloat16
+                              else tf.float32)
+        return (null_image, null_label)
 
