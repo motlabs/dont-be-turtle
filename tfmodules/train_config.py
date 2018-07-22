@@ -188,7 +188,7 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train',
+    'mode', default='train_and_eval',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
