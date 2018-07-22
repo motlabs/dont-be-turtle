@@ -93,8 +93,11 @@ class PreprocessingConfig(object):
         tf.logging.info('[train_config] Use is_random_crop: %s' % str(self.is_random_crop))
         tf.logging.info('[train_config] Use is_rotate  : %s'    % str(self.is_rotate))
         tf.logging.info('[train_config] Use is_flipping: %s'    % str(self.is_flipping))
-        tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
-        tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
+
+        if self.is_rotate:
+            tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
+            tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
+
         tf.logging.info('[train_config] Use heatmap_std     : %s' % str(self.heatmap_std))
         tf.logging.info('[train_config] Use heatmap_pdf_type: %s' % self.heatmap_pdf_type)
         tf.logging.info('------------------------')

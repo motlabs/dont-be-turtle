@@ -310,38 +310,26 @@ class DataSetInput(object):
         # tf.contrib.tpu.RunConfig for details.
         batch_size = BATCH_SIZE
 
-        ##################################################
-        # loading tfrecord filenames from self.data_dir
-        if self.is_training:
-            file_pattern = glob(self.data_dir + '/train-*.*')
-        else:
-            # validation set
-            file_pattern = glob(self.data_dir + '/eval-*.*')
-
-        dataset = tf.data.TFRecordDataset(file_pattern,buffer_size=6 * 1024 * 1024)
-
-        ##################################################
-
         # # Shuffle the filenames to ensure better randomization.
-        # file_pattern = os.path.join(
-        #     self.data_dir, 'train-*' if self.is_training else 'eval-*')
-        #
-        # dataset = tf.data.Dataset.list_files(file_pattern,
-        #                                      shuffle=self.is_training)
-        if self.is_training:
-            dataset = dataset.repeat()
+        file_pattern = os.path.join(
+            self.data_dir, 'train-*' if self.is_training else 'eval-*')
+
+        dataset = tf.data.Dataset.list_files(file_pattern,
+                                             shuffle=self.is_training)
+        # if self.is_training:
+        dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
-        # def fetch_dataset(filename):
-        #     # buffer_size: number of bytes in the read buffer
-        #     buffer_size = 6 * 1024 * 1024  # 6MB for lsp train dataset file
-        #     dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
-        #     return dataset
-        #
-        # # Read the data from disk in parallel
-        # dataset = dataset.apply(
-        #     tf.contrib.data.parallel_interleave(
-        #         fetch_dataset, cycle_length=64, sloppy=True))
+        def fetch_dataset(filename):
+            # buffer_size: number of bytes in the read buffer
+            buffer_size = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+            dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
+            return dataset
+
+        # Read the data from disk in parallel
+        dataset = dataset.apply(
+            tf.contrib.data.parallel_interleave(
+                fetch_dataset, cycle_length=64, sloppy=True))
 
 
         tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)
@@ -375,13 +363,24 @@ class DataSetInput(object):
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
         # Prefetch overlaps in-feed with training
-        # dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
+        dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
 
         ########################################
-        # here we can return "object of TFRecordDataset" or iterator().get_next()
-        # there is some performance difference between them but currently ignorable
+        # NOTE(xiejw): We dispatch here based on the return type of the
+        # users `input_fn`.
+        #
+        # 1. If input_fn returns a Dataset instance, we initialize the
+        # iterator outside of tf.while_loop, and call the iterator.get_next
+        # inside tf.while_loop.  This should be always safe.
+        #
+        # 2. If input_fn returns (features, labels), it is too late to wrap
+        # them inside tf.while_loop, as resource initialization cannot be
+        # handled in TF control flow properly. In this case, we will use
+        # python loop to enqueue the data into TPU system.  This may be
+        # slow compared to the previous case.
+        #
         # iterator = dataset.make_initializable_iterator()
-        # a = iterator.get_next()
+        # features, labels = iterator.get_next()
         ########################################
         tf.logging.info('[Input_fn] dataset pipeline building complete')
 
