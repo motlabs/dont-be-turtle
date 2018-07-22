@@ -30,9 +30,10 @@ if [ "$OS" == "$OS_X" ]; then
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_tpu.py
 else
     rm -rf /tmp/gcs_filesystem*
-
+    export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/
     export DATA_BUCKET=/home/jwkangmacpro2/dont-be-turtle/dataset/tfrecords/realdataset/
 #    export DATA_BUCKET=null
+    export TENSORBOARD_BUCKET=gs://dontbeturtle_tflogs
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_tpu.py
 fi
 
@@ -44,4 +45,5 @@ echo =============================================
 python ${SOURCE}\
   --use_tpu=False\
   --data_dir=${DATA_BUCKET}\
-  --model_dir=${MODEL_BUCKET}
+  --model_dir=${MODEL_BUCKET}\
+  --tflogs_dir=${TENSORBOARD_BUCKET}
