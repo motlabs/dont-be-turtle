@@ -810,7 +810,7 @@ def main(unused_argv):
 
     else:   # FLAGS.mode == 'train' or FLAGS.mode == 'train_and_eval'
         current_step = estimator._load_global_step_from_checkpoint_dir(curr_model_dir)  # pylint: disable=protected-access,line-too-long
-        batchnum_per_epoch = FLAGS.num_train_images / FLAGS.train_batch_size
+        batchnum_per_epoch = FLAGS.num_train_images // FLAGS.train_batch_size
 
         tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)
         tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
@@ -827,9 +827,12 @@ def main(unused_argv):
             dontbeturtle_estimator.train(
                 input_fn    =dataset_train.input_fn,
                 max_steps   =FLAGS.train_steps)
+            tf.logging.info('[main] Training only')
 
         else:
             assert FLAGS.mode == 'train_and_eval'
+            tf.logging.info('[main] Training and Evaluation')
+
             while current_step < FLAGS.train_steps:
                 # Train for up to steps_per_eval number of steps.
                 # At the end of training, a checkpoint will be written to --model_dir.
