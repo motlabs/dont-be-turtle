@@ -429,7 +429,7 @@ def model_fn(features,
         Returns:
         A `TPUEstimatorSpec` for the model
     """
-
+    del params # unused
 
     if isinstance(features, dict):
         features = features['feature']
@@ -710,14 +710,19 @@ def main(unused_argv):
                     project=FLAGS.gcp_project)
 
         # TPU  config
+        # config = tpu_config.RunConfig(
+        #             cluster                     =tpu_cluster_resolver,
+        #             model_dir                   =curr_model_dir,
+        #             save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
+        #             tpu_config                  =tpu_config.TPUConfig(iterations_per_loop         =FLAGS.iterations_per_loop,
+        #                                                                 num_shards                  =FLAGS.num_cores,
+        #                                                                 per_host_input_for_training =tpu_config.InputPipelineConfig.PER_HOST_V2))  # pylint: disable=line-too-long
+
         config = tpu_config.RunConfig(
                     cluster                     =tpu_cluster_resolver,
                     model_dir                   =curr_model_dir,
                     save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
-                    tpu_config                  =tpu_config.TPUConfig(
-                    iterations_per_loop         =FLAGS.iterations_per_loop,
-                    num_shards                  =FLAGS.num_cores,
-                    per_host_input_for_training =tpu_config.InputPipelineConfig.PER_HOST_V2))  # pylint: disable=line-too-long
+                    tpu_config                  =tpu_config.TPUConfig(iterations_per_loop=FLAGS.iterations_per_loop))
 
         dontbeturtle_estimator = tpu_estimator.TPUEstimator(
                     use_tpu         =FLAGS.use_tpu,

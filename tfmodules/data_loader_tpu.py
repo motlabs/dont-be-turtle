@@ -370,11 +370,11 @@ class DataSetInput(object):
         ########################################
 
 
-        # Assign static batch size dimension
+        # Assign static batch size dimension to input data
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
         # Prefetch overlaps in-feed with training
-        dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
+        # dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
 
         ########################################
         # here we can return "object of TFRecordDataset" or iterator().get_next()
