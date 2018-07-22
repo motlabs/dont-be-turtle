@@ -42,13 +42,13 @@ from path_manager import TENSORBOARD_BUCKET
 # BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
-TRAININGSET_SIZE     = 192
+TRAININGSET_SIZE     = 48
 VALIDATIONSET_SIZE   = 48
 BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
-EPOCH_NUM = 1
+EPOCH_NUM = 30
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
