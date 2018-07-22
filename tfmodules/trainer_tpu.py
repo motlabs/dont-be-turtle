@@ -769,7 +769,7 @@ def main(unused_argv):
                     session_config                  =None,
                     keep_checkpoint_max             =5,
                     keep_checkpoint_every_n_hours   =10000,
-                    log_step_count_steps            =100,
+                    log_step_count_steps            =FLAGS.log_step_count_steps,
                     train_distribute                =None,
                     device_fn                       =None)
 

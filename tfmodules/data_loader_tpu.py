@@ -39,7 +39,7 @@ from train_config  import TRAIN_FILE_BYTE
 
 from train_config  import PreprocessingConfig
 from model_config  import DEFAULT_INPUT_RESOL
-
+from model_config  import DEFAULT_HG_INOUT_RESOL
 import preprocessor
 
 
@@ -416,7 +416,7 @@ class DataSetInput(object):
         null_image = tf.zeros(shape=[int(DEFAULT_HEIGHT), int(DEFAULT_WIDTH), 3],
                               dtype=tf.bfloat16 if self.use_bfloat16
                               else tf.float32)
-        null_label = tf.zeros(shape=[int(DEFAULT_HEIGHT/4.0), int(DEFAULT_WIDTH/4.0), 4],
+        null_label = tf.zeros(shape=[int(DDEFAULT_HG_INOUT_RESOL), int(DEFAULT_HG_INOUT_RESOL), 4],
                               dtype=tf.bfloat16 if self.use_bfloat16
                               else tf.float32)
         return (null_image, null_label)

@@ -49,6 +49,9 @@ TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 EPOCH_NUM = 30
+DEFAULT_SUMMARY_STEP = 5
+DEFAULT_LOG_STPE_COUNT_STEP = 100
+
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
@@ -245,9 +248,11 @@ flags.DEFINE_integer(
 #           ' keep up with the TPU-side computation.'))
 #
 flags.DEFINE_integer(
-    'summary_step', default=5,
+    'summary_step', default=DEFAULT_SUMMARY_STEP,
     help=('Tensorboard summary step'))
-
+flags.DEFINE_integer(
+    'log_step_count_steps',default=DEFAULT_LOG_STPE_COUNT_STEP,
+    help=('Step interval for disply loss'))
 
 flags.DEFINE_bool(
     'is_tensorboard_summary', default=True,
