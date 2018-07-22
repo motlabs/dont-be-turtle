@@ -102,12 +102,6 @@ def preprocess_for_train(image_bytes,use_bfloat16,preproc_config):
     else:
         random_ang_rad = tf.constant(0.0)
 
-
-
-
-    print('is_flip=%s' % is_flip)
-    # print('random_ang_rad =%s' % (random_ang_rad / np.pi * 180.0))
-
     # image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, DEFAULT_INPUT_CHNUM])
     # here image value scale is converted to [0,255] to [0.0,1.0]
     image = tf.image.convert_image_dtype(image=image,
@@ -306,7 +300,7 @@ def preprocess_image(image_bytes,
                                         label_heatmap_Rshoulder,
                                         label_heatmap_Lshoulder],axis=2)
 
-
+    tf.logging.info('[preprocessor] feature preprocessing complete')
     return image, label_heatmap
 
 

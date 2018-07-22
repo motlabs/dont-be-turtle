@@ -481,10 +481,11 @@ def model_fn(features,
                  model_config.rc_config.is_trainable    = False
                  model_config.out_config.is_trainable   = False
 
-            tf.logging.info('-----------------------------------------------------------')
             tf.logging.info('[model_fn] feature shape=%s' % features.get_shape().as_list())
             tf.logging.info('[model_fn] labels  shape=%s' % labels.get_shape().as_list())
             tf.logging.info('[model_fn] out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
+            tf.logging.info('-----------------------------------------------------------')
+
             for n in range(0,model_config.num_of_hgstacking):
                 tf.logging.info('[model_fn] mid_heatmap%d  shape=%s'
                                 % (n,mid_heatmap[n].get_shape().as_list()))

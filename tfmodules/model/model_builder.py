@@ -95,6 +95,7 @@ def get_model(ch_in,model_config,scope=None):
         out = tf.identity(input=net, name= sc.name + '_out')
         end_points[sc.name + '_out'] = out
         end_points[sc.name + '_in'] = ch_in
+        tf.logging.info('[model_builder] buiding hg model complete')
 
         return out, intermediate_heatmaps, end_points
 

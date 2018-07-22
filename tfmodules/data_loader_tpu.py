@@ -335,7 +335,6 @@ class DataSetInput(object):
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
-            print ('filename=%s'%filename)
             dataset = tf.data.TFRecordDataset(filename)
             return dataset
 
@@ -381,6 +380,7 @@ class DataSetInput(object):
         # iterator = dataset.make_initializable_iterator()
         # a = iterator.get_next()
         ########################################
+        tf.logging.info('[Input_fn] dataset pipeline building complete')
 
         return dataset
 
