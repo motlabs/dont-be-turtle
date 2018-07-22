@@ -301,7 +301,7 @@ class DataSetInput(object):
         """
 
         if self.data_dir == None:
-            tf.logging.info('Using fake input.')
+            tf.logging.info('[Input_fn] Using fake input.')
             return self.input_fn_null(params)
         tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
 

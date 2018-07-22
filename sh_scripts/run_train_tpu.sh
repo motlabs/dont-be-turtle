@@ -31,9 +31,9 @@ if [ "$OS" == "$OS_X" ]; then
 else
     rm -rf /tmp/gcs_filesystem*
     export MODEL_BUCKET=gs://dontbeturtle_ckpt
-    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/testdataset
+#    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/testdataset
 #    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/realdataset
-
+    export DATA_BUCKET=None
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_tpu.py
 fi
 
@@ -49,7 +49,8 @@ if [ "$OS" == "$OS_X" ]; then
       --model_dir=${MODEL_BUCKET}
 else
     python ${SOURCE}\
+          --use_tpu=True\
           --tpu=$USER-tpu \
-          --data_dir=None\
+          --data_dir=${DATA_BUCKET}\
           --model_dir=${MODEL_BUCKET}
 fi
