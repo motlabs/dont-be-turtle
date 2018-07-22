@@ -50,6 +50,6 @@ if [ "$OS" == "$OS_X" ]; then
 else
     python ${SOURCE}\
           --tpu=$USER-tpu \
-          --data_dir=${DATA_BUCKET}\
+          --data_dir=None\
           --model_dir=${MODEL_BUCKET}
 fi
