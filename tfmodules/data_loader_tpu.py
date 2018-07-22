@@ -34,7 +34,6 @@ sys.path.insert(0,TF_MODEL_DIR)
 
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
-from train_config  import VALIDATIONSET_SIZE
 from train_config  import TRAIN_FILE_BYTE
 
 from train_config  import PreprocessingConfig

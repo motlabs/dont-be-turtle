@@ -163,23 +163,6 @@ flags.DEFINE_string(
     'will attempt to automatically detect the GCE project from metadata.')
 
 
-# # Model specific flags
-# flags.DEFINE_string(
-#     'data_bucket', default=DATASET_BUCKET,
-#     help=('The gcloud bucket  where the input data is stored. Please see'
-#           ' the README.md for the expected data format.'))
-#
-#
-# flags.DEFINE_string(
-#     'model_bucket', default=MODEL_BUCKET,
-#     help=('The gcloud bucket  where the model and training/evaluation ckeckpoint are stored'))
-#
-# flags.DEFINE_string(
-#     'tflogs_bucket', default=TENSORBOARD_BUCKET,
-#     help=('The gcloud bucket where the tensorboard summary are stored')
-# )
-
-
 # Model specific flags
 flags.DEFINE_string(
     # 'data_dir', default=DATASET_BUCKET,

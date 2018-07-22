@@ -30,8 +30,10 @@ if [ "$OS" == "$OS_X" ]; then
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_tpu.py
 else
     rm -rf /tmp/gcs_filesystem*
+
     export MODEL_BUCKET=gs://dontbeturtle_ckpt
-    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/testdataset
+    export DATA_BUCKET=/home/jwkangmacpro2/dont-be-turtle/dataset/tfrecords/realdataset/
+#    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/testdataset
 #    export DATA_BUCKET=gs://pose_dataset_tfrecord/tfrecords/realdataset
 #    export DATA_BUCKET=null
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_tpu.py
