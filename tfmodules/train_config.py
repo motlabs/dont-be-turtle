@@ -39,7 +39,7 @@ from path_manager import TENSORBOARD_BUCKET
 ## testdate
 TRAININGSET_SIZE     = 48
 VALIDATIONSET_SIZE   = 16
-BATCH_SIZE           = 8 # multiple of 8
+BATCH_SIZE           = 16 # multiple of 8
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
@@ -124,7 +124,7 @@ STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool(
-    'use_tpu', default=True,
+    'use_tpu', default=False,
     help=('Use TPU to execute the model for training and evaluation. If'
           ' --use_tpu=false, will use whatever devices are available to'
           ' TensorFlow by default (e.g. CPU and GPU)'))

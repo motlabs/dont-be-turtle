@@ -316,14 +316,14 @@ class DataSetInput(object):
 
         dataset = tf.data.Dataset.list_files(file_pattern,
                                              shuffle=self.is_training)
-        # if self.is_training:
-        dataset = dataset.repeat()
+        if self.is_training:
+            dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
             # buffer_size: number of bytes in the read buffer
-            # buffer_size = TRAIN_FILE_BYTE
-            dataset = tf.data.TFRecordDataset(filename)
+            buffer_size = TRAIN_FILE_BYTE
+            dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
             return dataset
 
         # Read the data from disk in parallel
