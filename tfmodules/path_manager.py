@@ -54,8 +54,8 @@ TFRECORD_TESTIMAGE_DIR           = DATASET_DIR   + '/tfrecords/testimagedataset'
 # TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 
 # GCP BUCKET ADDRESS
-# DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
-DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/realdataset'
+DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
+# DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/realdataset'
 
 MODEL_BUCKET             = 'gs://dontbeturtle_ckpt'
 TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'

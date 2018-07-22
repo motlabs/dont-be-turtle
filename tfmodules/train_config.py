@@ -43,7 +43,7 @@ BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
-EPOCH_NUM = 10
+EPOCH_NUM = 1
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
 DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'

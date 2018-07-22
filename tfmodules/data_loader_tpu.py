@@ -362,7 +362,6 @@ class DataSetInput(object):
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
 
-        features, labels = dataset.make_initializable_iterator().get_next()
         ########################################
         # NOTE(xiejw): We dispatch here based on the return type of the
         # users `input_fn`.
@@ -383,7 +382,7 @@ class DataSetInput(object):
         tf.logging.info('[Input_fn] dataset pipeline building complete')
 
 
-        return features, labels
+        return dataset
 
 
 
