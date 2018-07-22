@@ -42,6 +42,7 @@ from path_manager import DATASET_DIR
 from path_manager import TFRECORD_TESTSET_DIR
 from path_manager import TFRECORD_REALSET_DIR
 from path_manager import TFRECORD_TESTIMAGE_DIR
+from path_manager import DATASET_BUCKET
 
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
@@ -192,7 +193,8 @@ class DataLoaderTest(tf.test.TestCase):
         '''
 
         # datadir = TFRECORD_TESTIMAGE_DIR
-        datadir = TFRECORD_TESTSET_DIR
+        # datadir = TFRECORD_TESTSET_DIR
+        datadir = DATASET_BUCKET
         print('---------------------------------------------------------')
         print('[test_data_loader_tpu] data_dir = %s' % datadir)
 

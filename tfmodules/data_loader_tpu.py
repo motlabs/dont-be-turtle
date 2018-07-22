@@ -312,36 +312,36 @@ class DataSetInput(object):
 
         ##################################################
         # loading tfrecord filenames from self.data_dir
-        # if self.is_training:
-        #     file_pattern = glob(self.data_dir + '/train-*.*')
-        # else:
-        #     # validation set
-        #     file_pattern = glob(self.data_dir + '/eval-*.*')
+        if self.is_training:
+            file_pattern = glob(self.data_dir + '/train-*.*')
+        else:
+            # validation set
+            file_pattern = glob(self.data_dir + '/eval-*.*')
 
-        # dataset = tf.data.TFRecordDataset(file_pattern,buffer_size=buffer_size)
+        dataset = tf.data.TFRecordDataset(file_pattern,buffer_size=6 * 1024 * 1024)
 
         ##################################################
 
         # # Shuffle the filenames to ensure better randomization.
-        file_pattern = os.path.join(
-            self.data_dir, 'train-*' if self.is_training else 'eval-*')
-
-        dataset = tf.data.Dataset.list_files(file_pattern,
-                                             shuffle=self.is_training)
+        # file_pattern = os.path.join(
+        #     self.data_dir, 'train-*' if self.is_training else 'eval-*')
+        #
+        # dataset = tf.data.Dataset.list_files(file_pattern,
+        #                                      shuffle=self.is_training)
         if self.is_training:
             dataset = dataset.repeat()
 
         # loading dataset from tfrecords files
-        def fetch_dataset(filename):
-            # number of bytes in the read buffer
-            buffer_size = 6 * 1024 * 1024  # 6MB for lsp train dataset
-            dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
-            return dataset
-
-        # Read the data from disk in parallel
-        dataset = dataset.apply(
-            tf.contrib.data.parallel_interleave(
-                fetch_dataset, cycle_length=64, sloppy=True))
+        # def fetch_dataset(filename):
+        #     # buffer_size: number of bytes in the read buffer
+        #     buffer_size = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+        #     dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
+        #     return dataset
+        #
+        # # Read the data from disk in parallel
+        # dataset = dataset.apply(
+        #     tf.contrib.data.parallel_interleave(
+        #         fetch_dataset, cycle_length=64, sloppy=True))
 
 
         tf.logging.info('[Input_fn] file_pattern = %s' % file_pattern)

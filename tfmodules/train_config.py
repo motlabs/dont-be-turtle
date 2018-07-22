@@ -73,7 +73,7 @@ class PreprocessingConfig(object):
     def __init__(self):
         # image pre-processing
         self.is_random_crop             = False # not implemented yet
-        self.is_rotate                  = True
+        self.is_rotate                  = False
         self.is_flipping                = True
 
         # this is when classification task
