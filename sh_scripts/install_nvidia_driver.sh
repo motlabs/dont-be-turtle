@@ -13,7 +13,7 @@ sudo apt-get --purge remove nvidia-*
 echo INSTALL NVIDIA DRIVER
 add-apt-repository ppa:graphics-drivers/ppa
 sudo apt-get update
-sudo apt-get install nvidia-375 #recent version at 2017 June
+sudo apt-get install nvidia-384 #recent version at 2017 June
 
 
 echo REBOOT
