@@ -724,14 +724,15 @@ def main(unused_argv):
                     save_checkpoints_steps      =max(600, FLAGS.iterations_per_loop),
                     tpu_config                  =tpu_config.TPUConfig(iterations_per_loop=FLAGS.iterations_per_loop))
 
+        tf.logging.info('[main] num_train_images=%s' % FLAGS.train_batch_size)
+        tf.logging.info('[main] train_batch_size=%s' % FLAGS.eval_batch_size)
         dontbeturtle_estimator = tpu_estimator.TPUEstimator(
                     use_tpu         =FLAGS.use_tpu,
                     model_dir       =curr_model_dir,
                     model_fn        =model_fn,
                     config          =config,
                     train_batch_size=FLAGS.train_batch_size,
-                    eval_batch_size =FLAGS.eval_batch_size,
-                    export_to_tpu   =False)
+                    eval_batch_size =FLAGS.eval_batch_size)
 
         assert FLAGS.precision == 'bfloat16' or FLAGS.precision == 'float32', \
         ('Invalid value for --precision flag; must be bfloat16 or float32.')
