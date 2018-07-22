@@ -10,19 +10,18 @@ export TENSORBOARD_BUCKET=gs://dontbeturtle_tflogs/
 echo GET AUTHORIZATION OF GCP BUCKET
 
 # check tpus list
-gcloud alpha tpus list
 gcloud alpha compute tpus describe ${YOUR_TPU_NAME}
 
 # GIVE READ / WRITE AUTH
 
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:READER ${DATA_BUCKET}
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:WRITER ${DATA_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:READER ${DATA_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:WRITER ${DATA_BUCKET}
 
 
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:READER ${MODEL_BUCKET}
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:WRITER ${MODEL_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:READER ${MODEL_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:WRITER ${MODEL_BUCKET}
 
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:READER ${TENSORBOARD_BUCKET}
-gsutil ach ch -u ${YOUR_SERVICE_NAME}:WRITER ${TENSORBOARD_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:READER ${TENSORBOARD_BUCKET}
+gsutil acl ch -u ${YOUR_SERVICE_NAME}:WRITER ${TENSORBOARD_BUCKET}
 
 
