@@ -342,7 +342,7 @@ def metric_fn(labels, logits):
 
 
 # def tb_summary_fn_tpu(global_step, loss, mid_loss_list, learning_rate, current_epoch):
-    def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
+def tb_summary_fn_tpu(global_step, loss, learning_rate, current_epoch):
 
     """Training host call. Creates scalar summaries for training metrics.
 
@@ -371,7 +371,7 @@ def metric_fn(labels, logits):
 
     with tf.name_scope(name='tb_summary',values=[global_step,
                                                  loss,
-                                                 mid_loss_list,
+                                                 # mid_loss_list,
                                                  learning_rate,
                                                  current_epoch]):
         global_step = global_step[0]
