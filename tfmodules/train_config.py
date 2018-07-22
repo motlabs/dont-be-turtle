@@ -180,7 +180,7 @@ flags.DEFINE_string(
 # Model specific flags
 flags.DEFINE_string(
     # 'data_dir', default=DATASET_BUCKET,
-    'data_dir', default=None,
+    'data_dir', default=DATASET_BUCKET,
     help=('The directory where the input data is stored. Please see'
           ' the README.md for the expected data format.'))
 
