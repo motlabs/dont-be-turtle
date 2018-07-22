@@ -35,7 +35,7 @@ sys.path.insert(0,TF_MODEL_DIR)
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
 from train_config  import VALIDATIONSET_SIZE
-from train_config  import TRAIN_FILE_SIZE
+from train_config  import TRAIN_FILE_BYTE
 
 from train_config  import PreprocessingConfig
 from model_config  import DEFAULT_INPUT_RESOL
@@ -322,7 +322,7 @@ class DataSetInput(object):
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
             # buffer_size: number of bytes in the read buffer
-            buffer_size = TRAIN_FILE_SIZE
+            buffer_size = TRAIN_FILE_BYTE
             dataset = tf.data.TFRecordDataset(filename,buffer_size=buffer_size)
             return dataset
 

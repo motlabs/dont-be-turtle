@@ -812,7 +812,11 @@ def main(unused_argv):
         current_step = estimator._load_global_step_from_checkpoint_dir(curr_model_dir)  # pylint: disable=protected-access,line-too-long
         batchnum_per_epoch = FLAGS.num_train_images / FLAGS.train_batch_size
 
-        tf.logging.info('Training for %d steps (%.2f epochs in total). Current'
+        tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)
+        tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
+        tf.logging.info('[main] batchnum_per_epoch=%s' % FLAGS.batchnum_per_epoch)
+
+        tf.logging.info('[main] Training for %d steps (%.2f epochs in total). Current'
                         ' step %d.' % (FLAGS.train_steps,
                                        FLAGS.train_steps / batchnum_per_epoch,
                                        current_step))

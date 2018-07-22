@@ -40,7 +40,7 @@ from path_manager import TENSORBOARD_BUCKET
 TRAININGSET_SIZE     = 48
 VALIDATIONSET_SIZE   = 16
 BATCH_SIZE           = 8 # multiple of 8
-TRAIN_FILE_SIZE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
