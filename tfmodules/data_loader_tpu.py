@@ -41,6 +41,7 @@ from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_HG_INOUT_RESOL
 import preprocessor
 
+from train_config import FLAGS
 
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
@@ -354,6 +355,8 @@ class DataSetInput(object):
         #       num_parallel_calls=8)
         ########################################
 
+        if FLAGS.use_tpu:
+            batch_size = int(batch_size / 8.0)
 
         # Assign static batch size dimension to input data
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
