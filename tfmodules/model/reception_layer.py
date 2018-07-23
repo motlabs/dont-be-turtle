@@ -75,8 +75,8 @@ def get_reception_layer(ch_in,
 
         end_points.update(receptconv_end_points)
 
-        net = tf.identity(input =net,
-                          name  = sc.name + '_out')
+        # net = tf.identity(input =net,
+        #                   name  = sc.name + '_out')
         end_points[sc.name + '_in']  = ch_in
         end_points[sc.name + '_out'] = net
 

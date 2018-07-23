@@ -151,30 +151,30 @@ def get_heatmap_activation(logits,scope=None):
     '''
     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
-        ### 1) split logit to head, neck, Rshoulder, Lshoulder
-        logits_heatmap_head, \
-        logits_heatmap_neck, \
-        logits_heatmap_rshoulder, \
-        logits_heatmap_lshoulder = tf.split(logits,
-                                            num_or_size_splits=model_config.num_of_labels,
-                                            axis=3)
+        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
+        # logits_heatmap_head, \
+        # logits_heatmap_neck, \
+        # logits_heatmap_rshoulder, \
+        # logits_heatmap_lshoulder = tf.split(logits,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
         ### 2) activation
         activation_fn = train_config.activation_fn_pose
 
         if train_config.activation_fn_pose == None:
             ''' linear activation case'''
-            act_heatmap_head        = logits_heatmap_head
-            act_heatmap_neck        = logits_heatmap_neck
-            act_heatmap_rshoulder   = logits_heatmap_rshoulder
-            act_heatmap_lshoulder   = logits_heatmap_lshoulder
+            act_heatmap_head        = logits[:,:,:,0:1]
+            act_heatmap_neck        = logits[:,:,:,1:2]
+            act_heatmap_rshoulder   = logits[:,:,:,2:3]
+            act_heatmap_lshoulder   = logits[:,:,:,3:4]
         else:
-            act_heatmap_head      = activation_fn(logits_heatmap_head,
+            act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
                                                   name='act_head')
-            act_heatmap_neck      = activation_fn(logits_heatmap_neck,
+            act_heatmap_neck      = activation_fn(logits[:,:,:,1:2],
                                                   name='act_neck')
-            act_heatmap_rshoulder = activation_fn(logits_heatmap_rshoulder,
+            act_heatmap_rshoulder = activation_fn(logits[:,:,:,2:3],
                                                   name='act_rshoulder')
-            act_heatmap_lshoulder = activation_fn(logits_heatmap_lshoulder,
+            act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
                                                   name='act_lshoulder')
 
         act_heatmaps = tf.concat([act_heatmap_head, \
@@ -209,40 +209,39 @@ def get_loss_heatmap(pred_heatmaps,
 
     with tf.name_scope(name=scope,default_name='loss_heatmap'):
 
-        ### 1) split logit to head, neck, Rshoulder, Lshoulder
-        pred_heatmap_head, \
-        pred_heatmap_neck, \
-        pred_heatmap_rshoulder, \
-        pred_heatmap_lshoulder = tf.split(pred_heatmaps,
-                                            num_or_size_splits=model_config.num_of_labels,
-                                            axis=3)
-        label_heatmap_head, \
-        label_heatmap_neck, \
-        label_heatmap_rshoulder, \
-        label_heatmap_lshoulder = tf.split(label_heatmaps,
-                                            num_or_size_splits=model_config.num_of_labels,
-                                            axis=3)
-
+        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
+        # pred_heatmap_head, \
+        # pred_heatmap_neck, \
+        # pred_heatmap_rshoulder, \
+        # pred_heatmap_lshoulder = tf.split(pred_heatmaps,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
+        # label_heatmap_head, \
+        # label_heatmap_neck, \
+        # label_heatmap_rshoulder, \
+        # label_heatmap_lshoulder = tf.split(label_heatmaps,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
+        #
 
         ### 3) get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        loss_head       = loss_fn(labels     =label_heatmap_head,
-                                  predictions=pred_heatmap_head)
+        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
+                                  predictions=pred_heatmaps[:,:,:,0:1])
 
-        loss_neck       = loss_fn(labels    =label_heatmap_neck,
-                                  predictions=pred_heatmap_neck)
+        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
+                                  predictions=pred_heatmaps[:,:,:,1:2])
 
-        loss_rshoulder  = loss_fn(labels    =label_heatmap_rshoulder,
-                                  predictions=pred_heatmap_rshoulder)
+        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+                                  predictions=pred_heatmaps[:,:,:,2:3])
 
-        loss_lshoulder  = loss_fn(labels    =label_heatmap_lshoulder,
-                                  predictions=pred_heatmap_lshoulder)
+        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+                                  predictions=pred_heatmaps[:,:,:,3:4])
 
-        loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
+        # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
 
-    return total_losssum, loss_tensor
-
+    return total_losssum
 
 
 
@@ -269,30 +268,30 @@ def metric_fn(labels, logits):
     """
 
     with tf.name_scope('metric_fn',values=[labels, logits]):
-        logits_head,\
-        logits_neck,\
-        logits_rshoulder,\
-        logits_lshoulder = tf.split(logits,
-                                    num_or_size_splits=model_config.num_of_labels,
-                                    axis=3)
-
-        label_head, \
-        label_neck, \
-        label_rshoulder, \
-        label_lshoulder = tf.split(labels,
-                                    num_or_size_splits=model_config.num_of_labels,
-                                    axis=3)
+        # logits_head,\
+        # logits_neck,\
+        # logits_rshoulder,\
+        # logits_lshoulder = tf.split(logits,
+        #                             num_or_size_splits=model_config.num_of_labels,
+        #                             axis=3)
+        #
+        # label_head, \
+        # label_neck, \
+        # label_rshoulder, \
+        # label_lshoulder = tf.split(labels,
+        #                             num_or_size_splits=model_config.num_of_labels,
+        #                             axis=3)
 
         # get predicted coordinate
-        pred_head_xy       = argmax_2d(logits_head)
-        pred_neck_xy       = argmax_2d(logits_neck)
-        pred_rshoulder_xy  = argmax_2d(logits_rshoulder)
-        pred_lshoulder_xy  = argmax_2d(logits_lshoulder)
+        pred_head_xy       = argmax_2d(logits[:,:,:,0:1])
+        pred_neck_xy       = argmax_2d(logits[:,:,:,1:2])
+        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
+        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
 
-        label_head_xy      = argmax_2d(label_head)
-        label_neck_xy      = argmax_2d(label_neck)
-        label_rshoulder_xy = argmax_2d(label_rshoulder)
-        label_lshoulder_xy = argmax_2d(label_lshoulder)
+        label_head_xy      = argmax_2d(labels[:,:,:,0:1])
+        label_neck_xy      = argmax_2d(labels[:,:,:,1:2])
+        label_rshoulder_xy = argmax_2d(labels[:,:,:,2:3])
+        label_lshoulder_xy = argmax_2d(labels[:,:,:,3:4])
 
         # error distance measure
         metric_err_fn                 = train_config.metric_fn
@@ -450,43 +449,41 @@ def model_fn(features,
     # -----------------------------
 
     ### output layer ===
-    with tf.name_scope(name='out_post_proc',values=[logits_out_heatmap,labels]):
+    with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
         # heatmap activation of output layer out
         act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
                                                   scope='out_heatmap')
         # heatmap loss
-        total_out_losssum, loss_tensor = \
-            get_loss_heatmap(pred_heatmaps  = act_out_heatmaps,
-                             label_heatmaps = labels,
+        total_out_losssum = \
+            get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
+                             label_heatmaps=labels,
                              scope='out_loss')
 
 
 
 
+
     ### middle layer ===
-    with tf.name_scope(name='mid_post_proc',values=[logits_mid_heatmap,
-                                                         labels]):
+    with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
+                                                     labels]):
         ### supervision layers ===
-        act_mid_heatmap_list    = []
-        mid_loss_list           = []
-        total_mid_losssum_list  = []
-        total_mid_losssum_acc   = 0.0
+        act_mid_heatmap_list = []
+        total_mid_losssum_list = []
+        total_mid_losssum_acc = 0.0
 
-        for stacked_hg_index in range(0,model_config.num_of_hgstacking):
-
+        for stacked_hg_index in range(0, model_config.num_of_hgstacking):
             # heatmap activation of supervision layer out
-            act_mid_heatmap_temp =\
+            act_mid_heatmap_temp = \
                 get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
                                        scope='mid_heatmap_' + str(stacked_hg_index))
             # heatmap loss
-            total_mid_losssum_temp,mid_loss_temp =\
-                get_loss_heatmap(pred_heatmaps  = act_mid_heatmap_temp,
-                                 label_heatmaps = labels,
+            total_mid_losssum_temp = \
+                get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp,
+                                 label_heatmaps=labels,
                                  scope='mid_loss_' + str(stacked_hg_index))
 
             # collect loss and heatmap in list
             act_mid_heatmap_list.append(act_mid_heatmap_temp)
-            mid_loss_list.append(mid_loss_temp)
             total_mid_losssum_list.append(total_mid_losssum_temp)
             total_mid_losssum_acc += total_mid_losssum_temp
 
@@ -504,7 +501,6 @@ def model_fn(features,
 
 
 
-    host_call    = None
     summary_hook = None
     train_op     = None
 
@@ -561,18 +557,11 @@ def model_fn(features,
                 tf.gfile.MakeDirs(tb_logdir_path)
             tf.summary.scalar('loss', loss)
 
-            for n in range(0,model_config.num_of_hgstacking):
-                mid_loss_head,\
-                mid_loss_neck,\
-                mid_loss_Rshoulder,\
-                mid_loss_Lshoulder = tf.unstack(mid_loss_list[n])
-
-                summary.scalar('mid_loss_head'+str(n), mid_loss_head)
-                summary.scalar('mid_loss_neck'+str(n), mid_loss_neck)
-                summary.scalar('mid_loss_Rshoulder'+str(n), mid_loss_Rshoulder)
-                summary.scalar('mid_loss_Lshoulder'+str(n), mid_loss_Lshoulder)
-
-
+            for n in range(0, model_config.num_of_hgstacking):
+                summary.scalar('mid_loss_head' + str(n), total_mid_losssum_list[n])
+                summary.scalar('mid_loss_neck' + str(n), total_mid_losssum_list[n])
+                summary.scalar('mid_loss_Rshoulder' + str(n), total_mid_losssum_list[n])
+                summary.scalar('mid_loss_Lshoulder' + str(n), total_mid_losssum_list[n])
 
                 tf.summary.scalar('learning_rate', learning_rate)
                 tf.summary.scalar('current_epoch', current_epoch)
@@ -581,6 +570,7 @@ def model_fn(features,
                 summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
                                                          output_dir=tb_logdir,
                                                          summary_op=tf.summary.merge_all())
+
 
 
 

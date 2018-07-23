@@ -505,7 +505,6 @@ def model_fn(features,
 
 
 
-        host_call    = None
         summary_hook = None
         train_op     = None
 
@@ -561,7 +560,6 @@ def model_fn(features,
                 tf.summary.scalar('loss', loss)
 
                 for n in range(0,model_config.num_of_hgstacking):
-
                     summary.scalar('mid_loss_head'+str(n), total_mid_losssum_list[n])
                     summary.scalar('mid_loss_neck'+str(n), total_mid_losssum_list[n])
                     summary.scalar('mid_loss_Rshoulder'+str(n), total_mid_losssum_list[n])
