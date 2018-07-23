@@ -30,10 +30,10 @@ from path_manager import TENSORBOARD_BUCKET
 
 # multiple of 8,batchsize
 ## realtestdata
-# TRAININGSET_SIZE     = 1920
-# VALIDATIONSET_SIZE   = 1920
-# BATCH_SIZE           = 32 # multiple of 8 (>=8*2)
-# TRAIN_FILE_SIZE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
+TRAININGSET_SIZE     = 1920
+VALIDATIONSET_SIZE   = 1920
+BATCH_SIZE           = 8*8 # multiple of 8 (>=8*2)
+TRAIN_FILE_SIZE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 # ## testdate
@@ -41,14 +41,14 @@ from path_manager import TENSORBOARD_BUCKET
 # VALIDATIONSET_SIZE   = 48
 # BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+#
+# TRAININGSET_SIZE     = 48
+# VALIDATIONSET_SIZE   = 48
+# BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
+# TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+#
 
-TRAININGSET_SIZE     = 48
-VALIDATIONSET_SIZE   = 48
-BATCH_SIZE           = 16 # multiple of 8 (>=8*2)
-TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
-
-
-EPOCH_NUM = 30
+EPOCH_NUM = 10
 DEFAULT_SUMMARY_STEP = 5
 DEFAULT_LOG_STPE_COUNT_STEP = 100
 
