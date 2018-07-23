@@ -143,7 +143,8 @@ class ReceptionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        self.conv_type = 'inverted_bottleneck'
+        # self.conv_type = 'inverted_bottleneck'
+        self.conv_type = 'residual'
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
 
 
@@ -178,7 +179,8 @@ class HourGlassConfig(object):
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
 
-        self.conv_type = 'linear_bottleneck'
+        # self.conv_type = 'linear_bottleneck'
+        self.conv_type = 'residual'
         self.deconv_type = 'nearest_neighbor_unpool'
 
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)

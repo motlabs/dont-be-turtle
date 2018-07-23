@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+sudo apt-get update
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+libreadline-dev libsqlite3-dev wget curl llvm
 
-sudo apt-get install build-essential
+echo INSTALL PIP
+sudo apt-get install python-pip python-numpy swig python-dev python-wheel
 
 
 # 2) GUI + X window off

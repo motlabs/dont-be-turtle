@@ -147,7 +147,6 @@ def preprocess_for_eval(image_bytes, use_bfloat16):
 
 
 
-
 def _heatmap_generator(label_list,
                        image_orig_height,
                        image_orig_width,
@@ -163,31 +162,30 @@ def _heatmap_generator(label_list,
     aspect_ratio_height = DEFAULT_INPUT_RESOL / tf.cast(image_orig_height,dtype=tf.float32)
     aspect_ratio_width  = DEFAULT_INPUT_RESOL / tf.cast(image_orig_width, dtype=tf.float32)
 
-    # resized_x0 = x0 * aspect_ratio_width
-    # resized_y0 = y0 * aspect_ratio_height
+    resized_x0 = x0 * aspect_ratio_width
+    resized_y0 = y0 * aspect_ratio_height
 
-    # reflection of flip ================
-    fliped_x0   = (1.0 - is_flip) * x0 * aspect_ratio_width + is_flip * (DEFAULT_INPUT_RESOL - x0 * aspect_ratio_width)
-    fliped_y0   = y0 * aspect_ratio_height
+    fliped_x0   = (1.0 - is_flip) * resized_x0 + is_flip * (DEFAULT_INPUT_RESOL - resized_x0)
+    fliped_y0   = resized_y0
 
 
     # reflection of rotation =============
-    rotated_x0 =   (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
+    rotated_x0 = (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
                  - (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
-                   + DEFAULT_INPUT_RESOL/2.0
-    rotated_y0 =   (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
+                 + DEFAULT_INPUT_RESOL/2.0
+    rotated_y0 = (fliped_x0 - DEFAULT_INPUT_RESOL/2.0) * tf.sin(random_ang_rad) \
                  + (fliped_y0 - DEFAULT_INPUT_RESOL/2.0) * tf.cos(random_ang_rad) \
-                   + DEFAULT_INPUT_RESOL / 2.0
+                 + DEFAULT_INPUT_RESOL / 2.0
 
     # resizing by model to  DEFAULT_HG_INOUT_RESOL
     aspect_ratio_by_model = DEFAULT_HG_INOUT_RESOL / DEFAULT_INPUT_RESOL
 
-    # heatmap_x0 = rotated_x0 * aspect_ratio_by_model
-    # heatmap_y0 = rotated_y0 * aspect_ratio_by_model
+    heatmap_x0 = rotated_x0 * aspect_ratio_by_model
+    heatmap_y0 = rotated_y0 * aspect_ratio_by_model
 
     # max min bound regularization =============
-    heatmap_x0 = tf.minimum(x=rotated_x0 * aspect_ratio_by_model,y=DEFAULT_HG_INOUT_RESOL)
-    heatmap_y0 = tf.minimum(x=rotated_y0 * aspect_ratio_by_model,y=DEFAULT_HG_INOUT_RESOL)
+    heatmap_x0 = tf.minimum(x=heatmap_x0,y=DEFAULT_HG_INOUT_RESOL)
+    heatmap_y0 = tf.minimum(x=heatmap_y0,y=DEFAULT_HG_INOUT_RESOL)
 
     heatmap_x0 = tf.maximum(x=heatmap_x0,y=0.0)
     heatmap_y0 = tf.maximum(x=heatmap_y0,y=0.0)
@@ -203,6 +201,7 @@ def _heatmap_generator(label_list,
                                                  dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
 
     return label_heatmap
+
 
 
 

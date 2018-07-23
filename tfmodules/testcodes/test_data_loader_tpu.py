@@ -193,8 +193,8 @@ class DataLoaderTest(tf.test.TestCase):
         '''
 
         # datadir = TFRECORD_TESTIMAGE_DIR
-        # datadir = TFRECORD_TESTSET_DIR
-        datadir = DATASET_BUCKET
+        datadir = TFRECORD_TESTSET_DIR
+        # datadir = DATASET_BUCKET
         print('\n---------------------------------------------------------')
         print('[test_data_loader_tpu] data_dir = %s' % datadir)
 

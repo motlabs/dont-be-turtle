@@ -32,7 +32,7 @@ from path_manager import TENSORBOARD_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 8 # multiple of 8
+BATCH_SIZE           = 32 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
@@ -43,10 +43,11 @@ TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
-EPOCH_NUM = 10
-DEFAULT_SUMMARY_STEP = 20
+EPOCH_NUM                   = 1000
+DEFAULT_SUMMARY_STEP        = 50
 DEFAULT_LOG_STPE_COUNT_STEP = 50
-STEP_PER_EVAL = 5
+STEP_PER_EVAL               = 5
+DEFAULT_BASE_LEARNING_RATE  = 1e-3
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -102,8 +103,8 @@ class PreprocessingConfig(object):
         self.heatmap_std        = 3
         self.heatmap_pdf_type   = 'gaussian'
 
-        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -7.5
-        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 7.5
+        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -10
+        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 10
 
 
 
@@ -281,7 +282,7 @@ flags.DEFINE_string(
     help=('Precision to use; one of: {bfloat16, float32}'))
 
 flags.DEFINE_float(
-    'base_learning_rate', default=2.5e-4,
+    'base_learning_rate', default=DEFAULT_BASE_LEARNING_RATE,
     help=('Base learning rate when train batch size is 256.'))
 
 # flags.DEFINE_float(
