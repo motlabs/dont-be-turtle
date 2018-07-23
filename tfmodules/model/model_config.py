@@ -178,7 +178,7 @@ class HourGlassConfig(object):
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
 
-        self.conv_type = 'inverted_bottleneck'
+        self.conv_type = 'separable_conv2d'
         self.deconv_type = 'nearest_neighbor_unpool'
 
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
