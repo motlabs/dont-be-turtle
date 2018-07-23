@@ -24,6 +24,7 @@ import sys
 import time
 import os
 import json
+import cloudstorage as gcs
 
 from absl import flags
 import absl.logging as _logging  # pylint: disable=unused-import
@@ -370,6 +371,18 @@ def main(unused_argv):
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
 
+    # logging config information
+    with gcs.open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
+        json.dump(train_config_dict, fp)
+
+    with gcs.open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
+        json.dump(model_config_dict, fp)
+
+    with gcs.open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
+        json.dump(preproc_config_dict, fp)
+
+
+
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
@@ -407,18 +420,6 @@ def main(unused_argv):
         data_dir        =FLAGS.data_dir,
         transpose_input =FLAGS.transpose_input,
         use_bfloat16    =False) for is_training in [True, False]]
-
-
-    # save config information
-    with open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
-        json.dump(train_config_dict, fp)
-
-    with open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
-        json.dump(model_config_dict, fp)
-
-    with open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
-        json.dump(preproc_config_dict, fp)
-
 
 
 
