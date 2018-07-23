@@ -23,7 +23,7 @@ from __future__ import print_function
 import sys
 import time
 import os
-
+import json
 
 from absl import flags
 import absl.logging as _logging  # pylint: disable=unused-import
@@ -85,6 +85,9 @@ model_config    = ModelConfig()
 preproc_config  = PreprocessingConfig()
 
 
+train_config_dict   = train_config.__dict__
+model_config_dict   = model_config.__dict__
+preproc_config_dict = preproc_config.__dict__
 
 def model_fn(features,
              labels,
@@ -366,6 +369,16 @@ def main(unused_argv):
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
+
+    # save config information
+    with open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
+        json.dump(train_config_dict, fp)
+
+    with open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
+        json.dump(model_config_dict, fp)
+
+    with open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
+        json.dump(preproc_config_dict, fp)
 
 
     # for CPU or GPU use
