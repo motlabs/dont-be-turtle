@@ -39,9 +39,9 @@ def get_reception_layer(ch_in,
                               weights_initializer   = model_config.weights_initializer,
                               weights_regularizer   = model_config.weights_regularizer,
                               biases_initializer    = model_config.biases_initializer,
-                              kernel_size           = model_config.kernel_size,
+                              kernel_size           = [model_config.kernel_size,model_config.kernel_size],
                               padding               = 'SAME',
-                              stride                = 2,
+                              stride                = [2,2],
                               normalizer_fn         = None,
                               activation_fn         = None,
                               scope                 = scope + '_conv7x7_out')
@@ -64,7 +64,7 @@ def get_reception_layer(ch_in,
             # max pooling
             net =  slim.max_pool2d(inputs           =net,
                                    kernel_size      =[3,3],
-                                   stride           = 2,
+                                   stride           = [2,2],
                                    padding          ='SAME',
                                    scope            = scope +'_maxpool3x3_out')
 

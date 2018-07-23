@@ -72,7 +72,7 @@ def get_hourglass_layer(ch_in,
             if model_config.pooling_type is 'maxpool':
                 net = slim.max_pool2d(inputs=net,
                                       kernel_size= [3,3],
-                                      stride     = model_config.pooling_factor,
+                                      stride     = [model_config.pooling_factor,model_config.pooling_factor],
                                       padding    = 'SAME',
                                       scope      = scope + '_maxpool' + str(conv_index))
                 conv_end_points[scope + '_maxpool' + str(conv_index)] = net

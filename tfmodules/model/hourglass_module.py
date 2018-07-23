@@ -124,8 +124,8 @@ def get_hourglass_deconv_module(ch_in,
     output_height = int(ch_in.get_shape().as_list()[1] * unpool_rate)
     output_width  = int(ch_in.get_shape().as_list()[2] * unpool_rate)
 
-    print('[deconv] output_height = %s' % output_height)
-    print('[deconv] output_width = %s' % output_width)
+    # print('[deconv] output_height = %s' % output_height)
+    # print('[deconv] output_width = %s' % output_width)
 
     with tf.variable_scope(name_or_scope=scope,default_name='hg_deconv',values=[ch_in]):
 
@@ -169,14 +169,14 @@ def get_conv2d_seq(ch_in,
 
         endpoint_collection = sc.original_name_scope + '_end_points'
         with slim.arg_scope([slim.conv2d],
-                            kernel_size         = model_config.kernel_size,
+                            kernel_size         = [model_config.kernel_size,model_config.kernel_size],
                             weights_initializer = model_config.weights_initializer,
                             weights_regularizer = model_config.weights_regularizer,
                             biases_initializer  = model_config.biases_initializer,
                             trainable           = model_config.is_trainable,
                             normalizer_fn       = model_config.normalizer_fn,
                             padding             = 'SAME',
-                            stride              = 1,
+                            stride              = [1,1],
                             activation_fn       = None,
                             outputs_collections = endpoint_collection):
 
