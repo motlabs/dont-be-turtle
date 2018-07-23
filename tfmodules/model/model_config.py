@@ -143,7 +143,7 @@ class ReceptionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        self.conv_type = 'linear_bottleneck'
+        self.conv_type = 'inverted_bottleneck'
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
 
 
@@ -178,7 +178,7 @@ class HourGlassConfig(object):
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
 
-        self.conv_type = 'separable_conv2d'
+        self.conv_type = 'linear_bottleneck'
         self.deconv_type = 'nearest_neighbor_unpool'
 
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
@@ -276,7 +276,7 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.5 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_hgstacking  = 2
         self.num_of_labels      = 4
