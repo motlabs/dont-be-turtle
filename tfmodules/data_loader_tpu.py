@@ -355,9 +355,6 @@ class DataSetInput(object):
         #       num_parallel_calls=8)
         ########################################
 
-        if FLAGS.use_tpu:
-            batch_size = int(batch_size / 8.0)
-
         # Assign static batch size dimension to input data
         dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
