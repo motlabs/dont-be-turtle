@@ -211,34 +211,34 @@ def get_loss_heatmap(pred_heatmaps,
 
     with tf.name_scope(name=scope,default_name='loss_heatmap'):
 
-        ### 1) split logit to head, neck, Rshoulder, Lshoulder
-        pred_heatmap_head, \
-        pred_heatmap_neck, \
-        pred_heatmap_rshoulder, \
-        pred_heatmap_lshoulder = tf.split(pred_heatmaps,
-                                            num_or_size_splits=model_config.num_of_labels,
-                                            axis=3)
-        label_heatmap_head, \
-        label_heatmap_neck, \
-        label_heatmap_rshoulder, \
-        label_heatmap_lshoulder = tf.split(label_heatmaps,
-                                            num_or_size_splits=model_config.num_of_labels,
-                                            axis=3)
-
+        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
+        # pred_heatmap_head, \
+        # pred_heatmap_neck, \
+        # pred_heatmap_rshoulder, \
+        # pred_heatmap_lshoulder = tf.split(pred_heatmaps,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
+        # label_heatmap_head, \
+        # label_heatmap_neck, \
+        # label_heatmap_rshoulder, \
+        # label_heatmap_lshoulder = tf.split(label_heatmaps,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
+        #
 
         ### 3) get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        loss_head       = loss_fn(labels     =label_heatmap_head,
-                                  predictions=pred_heatmap_head)
+        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
+                                  predictions=pred_heatmaps[:,:,:,0:1])
 
-        loss_neck       = loss_fn(labels    =label_heatmap_neck,
-                                  predictions=pred_heatmap_neck)
+        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
+                                  predictions=pred_heatmaps[:,:,:,1:2])
 
-        loss_rshoulder  = loss_fn(labels    =label_heatmap_rshoulder,
-                                  predictions=pred_heatmap_rshoulder)
+        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+                                  predictions=pred_heatmaps[:,:,:,2:3])
 
-        loss_lshoulder  = loss_fn(labels    =label_heatmap_lshoulder,
-                                  predictions=pred_heatmap_lshoulder)
+        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+                                  predictions=pred_heatmaps[:,:,:,3:4])
 
         loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
@@ -271,30 +271,30 @@ def metric_fn(labels, logits):
     """
 
     with tf.name_scope('metric_fn',values=[labels, logits]):
-        logits_head,\
-        logits_neck,\
-        logits_rshoulder,\
-        logits_lshoulder = tf.split(logits,
-                                    num_or_size_splits=model_config.num_of_labels,
-                                    axis=3)
-
-        label_head, \
-        label_neck, \
-        label_rshoulder, \
-        label_lshoulder = tf.split(labels,
-                                    num_or_size_splits=model_config.num_of_labels,
-                                    axis=3)
+        # logits_head,\
+        # logits_neck,\
+        # logits_rshoulder,\
+        # logits_lshoulder = tf.split(logits,
+        #                             num_or_size_splits=model_config.num_of_labels,
+        #                             axis=3)
+        #
+        # label_head, \
+        # label_neck, \
+        # label_rshoulder, \
+        # label_lshoulder = tf.split(labels,
+        #                             num_or_size_splits=model_config.num_of_labels,
+        #                             axis=3)
 
         # get predicted coordinate
-        pred_head_xy       = argmax_2d(logits_head)
-        pred_neck_xy       = argmax_2d(logits_neck)
-        pred_rshoulder_xy  = argmax_2d(logits_rshoulder)
-        pred_lshoulder_xy  = argmax_2d(logits_lshoulder)
+        pred_head_xy       = argmax_2d(logits[:,:,:,0:1])
+        pred_neck_xy       = argmax_2d(logits[:,:,:,1:2])
+        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
+        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
 
-        label_head_xy      = argmax_2d(label_head)
-        label_neck_xy      = argmax_2d(label_neck)
-        label_rshoulder_xy = argmax_2d(label_rshoulder)
-        label_lshoulder_xy = argmax_2d(label_lshoulder)
+        label_head_xy      = argmax_2d(labels[:,:,:,0:1])
+        label_neck_xy      = argmax_2d(labels[:,:,:,1:2])
+        label_rshoulder_xy = argmax_2d(labels[:,:,:,2:3])
+        label_lshoulder_xy = argmax_2d(labels[:,:,:,3:4])
 
         # error distance measure
         metric_err_fn                 = train_config.metric_fn

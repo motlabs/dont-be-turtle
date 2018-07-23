@@ -31,7 +31,7 @@ from path_manager import TENSORBOARD_BUCKET
 # multiple of 8,batchsize
 ## realtestdata
 TRAININGSET_SIZE     = 1920
-VALIDATIONSET_SIZE   = 1920
+VALIDATIONSET_SIZE   = 192
 BATCH_SIZE           = 8*2 # multiple of 8 (>=8*2)
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
@@ -181,7 +181,7 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train',
+    'mode', default='train_and_eval',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
