@@ -60,4 +60,3 @@ DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
 MODEL_BUCKET             = 'gs://dontbeturtle_ckpt'
 TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'
 
-

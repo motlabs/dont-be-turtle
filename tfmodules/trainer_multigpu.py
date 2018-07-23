@@ -24,7 +24,7 @@ import sys
 import time
 import os
 import json
-import cloudstorage as gcs
+# import cloudstorage as gcs
 
 
 from absl import flags
@@ -43,6 +43,7 @@ from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
 
 from path_manager import TENSORBOARD_BUCKET
+from path_manager import EXPORT_MODEL_DIR
 
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
@@ -373,14 +374,16 @@ def main(unused_argv):
         tf.gfile.MakeDirs(curr_model_dir)
 
     # logging config information
-    with gcs.open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
+    curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
+    with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
         json.dump(train_config_dict, fp)
 
-    with gcs.open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
+    with open(curr_model_dir_local + 'model_config' + '.json', 'w') as fp:
         json.dump(model_config_dict, fp)
 
-    with gcs.open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
+    with open(curr_model_dir_local + 'preproc_config' + '.json', 'w') as fp:
         json.dump(preproc_config_dict, fp)
+
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
