@@ -30,22 +30,22 @@ from path_manager import TENSORBOARD_BUCKET
 
 # multiple of 8,batchsize
 ## realtestdata
-# TRAININGSET_SIZE     = 1920
-# VALIDATIONSET_SIZE   = 1920
-# BATCH_SIZE           = 8*8 # multiple of 8 (>=8*2)
-# TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
+TRAININGSET_SIZE     = 1920
+VALIDATIONSET_SIZE   = 1920
+BATCH_SIZE           = 8*2 # multiple of 8 (>=8*2)
+TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 ## testdate
-TRAININGSET_SIZE     = 48
-VALIDATIONSET_SIZE   = 48
-BATCH_SIZE           = 16 # multiple of 8 (>=8*8)
-TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
+# TRAININGSET_SIZE     = 48
+# VALIDATIONSET_SIZE   = 48
+# BATCH_SIZE           = 16 # multiple of 8 (>=8*8)
+# TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 EPOCH_NUM = 10
-DEFAULT_SUMMARY_STEP = 5
-DEFAULT_LOG_STPE_COUNT_STEP = 100
+DEFAULT_SUMMARY_STEP = 20
+DEFAULT_LOG_STPE_COUNT_STEP = 50
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -53,7 +53,7 @@ DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
 
 TOTAL_TRAIN_STEP = TRAININGSET_SIZE / BATCH_SIZE * EPOCH_NUM
 
-ITER_PER_LOOP_BEFORE_OUTDEEDING = 10
+ITER_PER_LOOP_BEFORE_OUTDEEDING = 100
 if TOTAL_TRAIN_STEP < ITER_PER_LOOP_BEFORE_OUTDEEDING:
     ITER_PER_LOOP_BEFORE_OUTDEEDING = TOTAL_TRAIN_STEP
 
@@ -125,7 +125,7 @@ class PreprocessingConfig(object):
 # Learning rate schedule
 LR_SCHEDULE = [
     # (multiplier, epoch to start) tuples
-    (1.0, 5), (0.1, 30), (0.01, 60), (0.001, 80)
+    (1.0, 5), (0.1, 30), (0.01, 60), (0.001, 80), (0.0001, 150)
 ]
 
 # For normalize the image to zero mean and unit variance.

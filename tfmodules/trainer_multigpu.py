@@ -90,8 +90,6 @@ def learning_rate_schedule(current_epoch):
         After 5 epochs we reach the base learning rate (scaled to account
         for batch size).
         After 30, 60 and 80 epochs the learning rate is divided by 10.
-        After 90 epochs training stops and the LR is set to 0. This ensures
-        that we train for exactly 90 epochs for reproducibility.
 
         Args:
             current_epoch: `Tensor` for current epoch.
