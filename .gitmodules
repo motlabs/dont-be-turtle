@@ -1,9 +1,3 @@
-[submodule "mobile_apps/android"]
-	path = mobile_apps/android
-	url = https://github.com/motlabs/mot-android-tensorflow
-[submodule "mobile_apps/ios"]
-	path = mobile_apps/ios
-	url = https://github.com/motlabs/mot-ios-tensorflow
 [submodule "tfmodules/model/tf-cnn-model"]
 	path = tfmodules/model/tf-cnn-model
 	url = https://github.com/jwkanggist/tf-cnn-model

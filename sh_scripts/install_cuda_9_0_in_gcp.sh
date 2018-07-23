@@ -11,3 +11,13 @@ if ! dpkg-query -W cuda-9-0; then
 fi
 # Enable persistence mode
 nvidia-smi -pm 1
+
+
+# Register env variables for CuDA
+echo -e "\n## CUDA and cuDNN paths"  >> ~/.bashrc
+echo 'export PATH=/usr/local/cuda-9.0/bin:${PATH}' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:${LD_LIBRARY_PATH}' >> ~/.bashrc
+
+# CUDA installation check
+source ~/.bashrc
+

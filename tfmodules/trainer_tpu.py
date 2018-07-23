@@ -770,8 +770,7 @@ def main(unused_argv):
                     keep_checkpoint_max             =5,
                     keep_checkpoint_every_n_hours   =10000,
                     log_step_count_steps            =FLAGS.log_step_count_steps,
-                    train_distribute                =None,
-                    device_fn                       =None)
+                    train_distribute                =None)
 
         dontbeturtle_estimator  = tf.estimator.Estimator(
                     model_dir          = curr_model_dir,
