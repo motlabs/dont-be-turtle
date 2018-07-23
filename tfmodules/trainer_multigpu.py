@@ -503,6 +503,7 @@ def model_fn(features,
 
     summary_hook = None
     train_op     = None
+    eval_metrics = None
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         # Compute the current epoch and associated learning rate from global_step.
@@ -579,15 +580,15 @@ def model_fn(features,
                                                      train_op    =train_op,
                                                      eval_metric_ops=metric_ops,
                                                      training_hooks = [summary_hook])
-            
-        elif mode == tf.estimator.ModeKeys.EVAL:
-            metric_ops = metric_fn(labels, logits_out_heatmap)
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops)
-        else:
-            tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
+
+    elif mode == tf.estimator.ModeKeys.EVAL:
+        metric_ops = metric_fn(labels, logits_out_heatmap)
+        tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
+                                                 loss        =loss,
+                                                 train_op    =train_op,
+                                                 eval_metric_ops=metric_ops)
+    else:
+        tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
     return tfestimator
 
