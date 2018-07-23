@@ -26,7 +26,8 @@ DEFAULT_CHANNEL_NUM     = 256.0
 DEFAULT_INPUT_RESOL     = 256.0
 DEFAULT_INPUT_CHNUM     = 3
 
-DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / 4.0
+DEFAULT_RESO_POOL_RATE_IN_RCEPTION = 4.0
+DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / DEFAULT_RESO_POOL_RATE_IN_RCEPTION
 
 DEFAULT_LABEL_LENGTH    = 3
 NUM_OF_BODY_PART        = 4
@@ -119,12 +120,12 @@ class ConvSeqModuleConfig(object):
 class ReceptionConfig(object):
 
     def __init__(self,depth_multiplier, resol_multiplier):
-        self.input_height    = np.floor(DEFAULT_INPUT_RESOL * resol_multiplier)
-        self.input_width     = np.floor(DEFAULT_INPUT_RESOL * resol_multiplier)
+        self.input_height    = int(DEFAULT_INPUT_RESOL * resol_multiplier)
+        self.input_width     = int(DEFAULT_INPUT_RESOL * resol_multiplier)
 
-        self.output_width           = np.floor(self.input_width / 4.0)
-        self.output_height          = np.floor(self.input_height / 4.0)
-        self.num_of_channels_out    = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.output_width           = int(self.input_width / DEFAULT_RESO_POOL_RATE_IN_RCEPTION)
+        self.output_height          = int(self.input_height / DEFAULT_RESO_POOL_RATE_IN_RCEPTION)
+        self.num_of_channels_out    = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
 
         self.is_trainable           = True
 
@@ -166,9 +167,9 @@ class HourGlassConfig(object):
         # hourglass layer config
 
         self.num_of_stacking            = 4 # shold be less than or equal to 4
-        self.input_output_height        = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.input_output_width         = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.num_of_channels_out        = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.input_output_height        = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_output_width         = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.num_of_channels_out        = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
         self.is_trainable               = True
 
 
@@ -203,11 +204,11 @@ class SupervisionConfig(object):
 
     def __init__(self,depth_multiplier, resol_multiplier):
 
-        self.input_output_height    = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.input_output_width     = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_output_height    = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_output_width     = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
 
-        self.num_of_channels_out    = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
-        self.num_of_1st1x1conv_ch   = np.floor(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.num_of_channels_out    = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
+        self.num_of_1st1x1conv_ch   = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
         self.num_of_heatmaps        = 4
 
         self.is_trainable           = True
@@ -237,8 +238,8 @@ class SupervisionConfig(object):
 class OutputConfig(object):
 
     def __init__(self, resol_multiplier):
-        self.input_height           = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.input_width            = np.floor(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_height           = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
+        self.input_width            = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out    = NUM_OF_BODY_PART
 
         self.dim_reduct_ratio              = 1
@@ -271,9 +272,9 @@ class ModelConfig(object):
 
     def __init__(self):
         # common
-        self.input_height       = DEFAULT_INPUT_RESOL
-        self.input_width        = DEFAULT_INPUT_RESOL
-        self.input_channel_num  = DEFAULT_INPUT_CHNUM
+        self.input_height       = int(DEFAULT_INPUT_RESOL)
+        self.input_width        = int(DEFAULT_INPUT_RESOL)
+        self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
         self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25

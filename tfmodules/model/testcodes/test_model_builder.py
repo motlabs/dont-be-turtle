@@ -49,7 +49,7 @@ class ModelTest(tf.test.TestCase):
         '''
 
         ch_in_num       = 3
-        batch_size      = None
+        batch_size      = 1
         model_config    = ModelConfig()
         TEST_LAYER_NAME = 'model'
 
