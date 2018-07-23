@@ -32,14 +32,14 @@ from path_manager import TENSORBOARD_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 8 # multiple of 8 (>=8*2)
+BATCH_SIZE           = 4 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 ## testdate
 # TRAININGSET_SIZE     = 48
 # VALIDATIONSET_SIZE   = 48
-# BATCH_SIZE           = 16 # multiple of 8 (>=8*8)
+# BATCH_SIZE           = 16 # multiple of 8 
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
