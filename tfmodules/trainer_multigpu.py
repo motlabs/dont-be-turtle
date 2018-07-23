@@ -373,16 +373,16 @@ def main(unused_argv):
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
 
-    # logging config information
-    curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
-    with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
-        json.dump(train_config_dict, fp)
-
-    with open(curr_model_dir_local + 'model_config' + '.json', 'w') as fp:
-        json.dump(model_config_dict, fp)
-
-    with open(curr_model_dir_local + 'preproc_config' + '.json', 'w') as fp:
-        json.dump(preproc_config_dict, fp)
+    # # logging config information
+    # curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
+    # with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
+    #     json.dump(train_config_dict, fp)
+    #
+    # with open(curr_model_dir_local + 'model_config' + '.json', 'w') as fp:
+    #     json.dump(model_config_dict, fp)
+    #
+    # with open(curr_model_dir_local + 'preproc_config' + '.json', 'w') as fp:
+    #     json.dump(preproc_config_dict, fp)
 
 
     # for CPU or GPU use
