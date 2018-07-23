@@ -46,6 +46,7 @@ TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 EPOCH_NUM = 10
 DEFAULT_SUMMARY_STEP = 20
 DEFAULT_LOG_STPE_COUNT_STEP = 50
+STEP_PER_EVAL = 5
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -204,7 +205,7 @@ flags.DEFINE_integer(
 
 
 flags.DEFINE_integer(
-    'steps_per_eval', default=5,
+    'steps_per_eval', default=STEP_PER_EVAL,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'

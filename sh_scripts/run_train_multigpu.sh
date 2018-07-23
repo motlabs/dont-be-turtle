@@ -30,10 +30,10 @@ if [ "$OS" == "$OS_X" ]; then
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_multigpu.py
 else
     rm -rf /tmp/gcs_filesystem*
-    export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/
+    export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model
     export DATA_BUCKET=/home/jwkangmacpro2/dont-be-turtle/dataset/tfrecords/realdataset/
 #    export DATA_BUCKET=null
-    export TENSORBOARD_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/tf_logs/
+    export TENSORBOARD_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/tf_logs
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_multigpu.py
 fi
 
