@@ -121,12 +121,27 @@ def get_hourglass_deconv_module(ch_in,
     net         = ch_in
     end_points  = {}
 
+    output_height = int(ch_in.get_shape().as_list()[1] * unpool_rate)
+    output_width  = int(ch_in.get_shape().as_list()[2] * unpool_rate)
+
+    print('[deconv] output_height = %s' % output_height)
+    print('[deconv] output_width = %s' % output_width)
+
     with tf.variable_scope(name_or_scope=scope,default_name='hg_deconv',values=[ch_in]):
 
         if model_config.deconv_type is 'nearest_neighbor_unpool':
-            net,end_points= get_nearest_neighbor_unpool2d_module(inputs=net,
-                                                                 unpool_rate=unpool_rate,
-                                                                 scope = model_config.deconv_type)
+            # net,end_points= get_nearest_neighbor_unpool2d_module(inputs=net,
+            #                                                      unpool_rate=unpool_rate,
+            #                                                      scope = model_config.deconv_type)
+
+            end_points[scope +'/' + model_config.deconv_type + '_in'] = net
+
+            net = tf.image.resize_nearest_neighbor(images=net,
+                                                 size=[output_height,output_width ],
+                                                 align_corners=False)
+            end_points[model_config.deconv_type + '_out'] = net
+
+
         elif model_config.deconv_type is 'conv2dtrans_unpool':
             net,end_points = get_transconv_unpool2d_module(inputs=net,
                                                           unpool_rate = unpool_rate,
