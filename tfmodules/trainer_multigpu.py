@@ -227,12 +227,6 @@ def model_fn(features,
                              label_heatmaps=labels,
                              scope='out_loss')
 
-        # # heatmap loss w/o activation
-        # total_out_losssum = \
-        #     get_loss_heatmap(pred_heatmaps=logits_out_heatmap,
-        #                      label_heatmaps=labels,
-        #                      scope='out_loss')
-
 
 
 
@@ -250,13 +244,14 @@ def model_fn(features,
                                        scope='mid_heatmap_' + str(stacked_hg_index))
             # heatmap loss
             total_mid_losssum_temp = \
-                get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp[stacked_hg_index],
+                get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp,
                                  label_heatmaps=labels,
                                  scope='mid_loss_' + str(stacked_hg_index))
 
             # collect loss and heatmap in list
             total_mid_losssum_list.append(total_mid_losssum_temp)
             total_mid_losssum_acc += total_mid_losssum_temp
+
 
 
 
