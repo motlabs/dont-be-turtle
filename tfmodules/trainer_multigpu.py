@@ -303,15 +303,13 @@ def model_fn(features,
             # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
-            gs_t        = tf.reshape(global_step, [1])
+            # gs_t        = tf.reshape(global_step, [1])
             loss_t      = tf.reshape(total_out_losssum, [1])
             lr_t = tf.reshape(learning_rate, [1])
 
 
-            tf.summary.scalar(name='out_loss', tensor=loss_t,
-                              family='outlayer')
-            tf.summary.scalar(name='learning_rate', tensor=lr_t,
-                              family='outlayer')
+            tf.summary.scalar(name='out_loss', tensor=loss_t)
+            tf.summary.scalar(name='learning_rate', tensor=lr_t)
 
 
 
