@@ -241,7 +241,7 @@ def model_fn(features,
             #                            scope='mid_heatmap_' + str(stacked_hg_index))
             # heatmap loss
             total_mid_losssum_temp = \
-                get_loss_heatmap(pred_heatmaps=logits_mid_heatmap,
+                get_loss_heatmap(pred_heatmaps=logits_mid_heatmap[stacked_hg_index],
                                  label_heatmaps=labels,
                                  scope='mid_loss_' + str(stacked_hg_index))
 
