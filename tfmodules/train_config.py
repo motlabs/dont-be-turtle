@@ -129,7 +129,7 @@ class PreprocessingConfig(object):
 # Learning rate schedule
 LR_SCHEDULE = [
     # (multiplier, epoch to start) tuples
-    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80)
+    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80), (1e-6, 300)
 ]
 
 # For normalize the image to zero mean and unit variance.

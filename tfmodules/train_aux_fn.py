@@ -278,31 +278,43 @@ def metric_fn(labels, logits):
         errdist_lshoulder, update_op_errdist_lshoulder  = metric_err_fn(labels=label_lshoulder_xy,
                                                                         predictions= pred_lshoulder_xy)
         # percentage of correct keypoints
-        total_errdist = (update_op_errdist_head + \
-                         update_op_errdist_neck + \
-                         update_op_errdist_rshoulder + \
-                         update_op_errdist_lshoulder) / update_op_head_neck_dist
+        total_errdist = (errdist_head + \
+                         errdist_neck + \
+                         errdist_rshoulder + \
+                         errdist_lshoulder) / head_neck_dist
+
+        update_op_total_errdist = (update_op_errdist_head + \
+                                   update_op_errdist_neck + \
+                                   update_op_errdist_rshoulder + \
+                                   update_op_errdist_lshoulder) / update_op_head_neck_dist
 
         pck =            tf.metrics.percentage_below(values=total_errdist,
                                                    threshold=FLAGS.pck_threshold,
                                                    name=    'pck_' + str(FLAGS.pck_threshold))
 
+        # pck =            tf.metrics.percentage_below(values=total_errdist,
+        #                                            threshold=0.2,
+        #                                            name=    'pck_' + str(0.2))
+
         # form a dictionary
         metric_dict = {
-                            'label_head_neck_dist(v,v_norm)' : (update_op_head_neck_dist,update_op_head_neck_dist/update_op_head_neck_dist),
+                            'label_head_neck_dist' : (head_neck_dist/head_neck_dist,
+                                                      update_op_head_neck_dist/update_op_head_neck_dist),
 
-                            'errdist_head(v,v_norm)': (update_op_errdist_head,
+                            'total_errdis': (total_errdist,update_op_total_errdist),
+
+                            'errdist_head': (errdist_head/head_neck_dist,
                                              update_op_errdist_head/update_op_head_neck_dist),
 
-                            'errdist_neck(v,v_norm)': (update_op_errdist_neck,
+                            'errdist_neck': (errdist_neck/head_neck_dist,
                                              update_op_errdist_neck/update_op_head_neck_dist),
 
-                            'errdist_rshou(v,v_norm)': (update_op_errdist_rshoulder,
+                            'errdist_rshou': (errdist_rshoulder/head_neck_dist,
                                                     update_op_errdist_rshoulder /update_op_head_neck_dist),
 
-                            'errdist_lshou(v,v_norm)': (update_op_errdist_lshoulder,
+                            'errdist_lshou': (errdist_lshoulder/head_neck_dist,
                                                     update_op_errdist_lshoulder /update_op_head_neck_dist),
-                            'pck(prev,curr)': pck
+                            'pck': pck
                         }
 
     return metric_dict

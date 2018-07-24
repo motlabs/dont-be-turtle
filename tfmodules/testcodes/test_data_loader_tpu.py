@@ -221,7 +221,7 @@ class DataLoaderTest(tf.test.TestCase):
         feature_op, labels_op   = iterator_train.get_next()
         argmax_2d_head_op       = argmax_2d(tensor=labels_op[:, :, :, 0:1])
 
-        metric_dict_op = metric_fn(labels=labels_op,logits=labels_op,pck_threshold=0.2)
+        metric_dict_op = metric_fn(labels=labels_op,logits=labels_op)
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
         metric_fn_var_init = tf.variables_initializer(metric_fn_var)
 
