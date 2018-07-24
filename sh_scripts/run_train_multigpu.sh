@@ -44,3 +44,5 @@ echo =============================================
 python ${SOURCE}\
   --data_dir=${DATA_BUCKET}\
   --model_dir=${MODEL_BUCKET}\
+  --is_ckpt_init=False\
+  --ckptinit_dir=None

@@ -124,9 +124,9 @@ def get_heatmap_activation(logits,scope=None):
         #                                     num_or_size_splits=model_config.num_of_labels,
         #                                     axis=3)
         ### 2) activation
-        activation_fn = train_config.activation_fn_pose
+        activation_fn = train_config.activation_fn_out
 
-        if train_config.activation_fn_pose == None:
+        if train_config.activation_fn_out == None:
             ''' linear activation case'''
             act_heatmap_head        = logits[:,:,:,0:1]
             act_heatmap_neck        = logits[:,:,:,1:2]
@@ -262,9 +262,6 @@ def metric_fn(labels, logits,pck_threshold):
                                                    threshold=pck_threshold,
                                                    name=    'pck_' + str(pck_threshold))
 
-        # pck =            tf.metrics.percentage_below(values=total_errdist,
-        #                                            threshold=0.2,
-        #                                            name=    'pck_' + str(0.2))
 
         # form a dictionary
         metric_dict = {

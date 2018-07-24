@@ -180,7 +180,16 @@ def model_fn(features,
                 tf.logging.info('[model_fn] mid_heatmap%d  shape=%s'
                                 % (n,mid_heatmap[n].get_shape().as_list()))
 
+                # weight init from ckpt
+            if FLAGS.is_ckpt_init:
+                tf.logging.info('[model_fn] ckpt loading from %s' % FLAGS.ckptinit_dir)
+                tf.train.init_from_checkpoint(ckpt_dir_or_file=FLAGS.ckptinit_dir,
+                                              assignment_map={"model/": "model/"})
+
         return out_heatmap, mid_heatmap,end_points
+
+
+
 
     # get model here
     with tf.device('/device:GPU:0'):
@@ -208,20 +217,15 @@ def model_fn(features,
 
         ### output layer ===
         with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
-            # # heatmap activation of output layer out
-            # act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
-            #                                           scope='out_heatmap')
-            # # heatmap loss
-            # total_out_losssum = \
-            #     get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
-            #                      label_heatmaps=labels,
-            #                      scope='out_loss')
-
-            # heatmap loss w/o activation
+            # heatmap activation of output layer out
+            act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
+                                                      scope='out_heatmap')
+            # heatmap loss
             total_out_losssum = \
-                get_loss_heatmap(pred_heatmaps=logits_out_heatmap,
+                get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                                  label_heatmaps=labels,
                                  scope='out_loss')
+
 
 
         ### middle layer ===
@@ -232,13 +236,13 @@ def model_fn(features,
             total_mid_losssum_acc = 0.0
 
             for stacked_hg_index in range(0, model_config.num_of_hgstacking):
-                # heatmap activation of supervision layer out
-                # act_mid_heatmap_temp = \
-                #     get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
-                #                            scope='mid_heatmap_' + str(stacked_hg_index))
+                ## heatmap activation of supervision layer out
+                act_mid_heatmap_temp = \
+                    get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
+                                           scope='mid_heatmap_' + str(stacked_hg_index))
                 # heatmap loss
                 total_mid_losssum_temp = \
-                    get_loss_heatmap(pred_heatmaps=logits_mid_heatmap[stacked_hg_index],
+                    get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp[stacked_hg_index],
                                      label_heatmaps=labels,
                                      scope='mid_loss_' + str(stacked_hg_index))
 
@@ -270,8 +274,8 @@ def model_fn(features,
 
             current_epoch       = (tf.cast(global_step, tf.float32) /
                                     batchnum_per_epoch)
-            learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-            # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
+            # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+            learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
             optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                                             name='RMSprop_opt')
 
@@ -285,7 +289,7 @@ def model_fn(features,
             with tf.control_dependencies(update_ops):
                 train_op = optimizer.minimize(loss, global_step)
 
-            if FLAGS.is_tensorboard_summary:
+            if FLAGS.is_extra_summary:
                 # To log the loss, current learning rate, and epoch for Tensorboard, the
                 # summary op needs to be run on the host CPU via host_call. host_call
                 # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
@@ -351,10 +355,10 @@ def model_fn(features,
                                          max_output=3,
                                          family='mid_featmaps' + str(n))
 
-                    # tf.logging.info('Create SummarySaveHook.')
-                    # extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                    #                                          output_dir=tb_logdir,
-                    #                                          summary_op=tf.summary.merge_all())
+                    tf.logging.info('Create SummarySaveHook.')
+                    extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                                                                 output_dir=FLAGS.model_dir,
+                                                                 summary_op=tf.summary.merge_all())
 
 
 
@@ -364,8 +368,8 @@ def model_fn(features,
             tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                      loss        =loss,
                                                      train_op    =train_op,
-                                                     eval_metric_ops=metric_ops)
-                                                     # training_hooks = [extra_summary_hook])
+                                                     eval_metric_ops=metric_ops,
+                                                     training_hooks = [extra_summary_hook])
 
         elif mode == tf.estimator.ModeKeys.EVAL:
             metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
@@ -401,6 +405,8 @@ def main(unused_argv):
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
 
+    FLAGS.model_dir = curr_model_dir
+
     # # logging config information
     # curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
     # with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
@@ -422,7 +428,7 @@ def main(unused_argv):
     config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
-                model_dir                       =curr_model_dir,
+                model_dir                       =FLAGS.model_dir,
                 tf_random_seed                  =None,
                 save_summary_steps              =FLAGS.summary_step,
                 save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
@@ -433,7 +439,7 @@ def main(unused_argv):
                 train_distribute                =None)
 
     dontbeturtle_estimator  = tf.estimator.Estimator(
-                model_dir          = curr_model_dir,
+                model_dir          = FLAGS.model_dir,
                 model_fn           = model_fn,
                 config             = config,
                 params             = None,
@@ -459,7 +465,7 @@ def main(unused_argv):
 
         # Run evaluation when there's a new checkpoint
         for ckpt in evaluation.checkpoints_iterator(
-                curr_model_dir, timeout=FLAGS.eval_timeout):
+                FLAGS.model_dir, timeout=FLAGS.eval_timeout):
             tf.logging.info('Starting to evaluate.')
 
             try:
@@ -489,7 +495,7 @@ def main(unused_argv):
                     'Checkpoint %s no longer exists, skipping checkpoint' % ckpt)
 
     else:   # FLAGS.mode == 'train' or FLAGS.mode == 'train_and_eval'
-        current_step = estimator._load_global_step_from_checkpoint_dir(curr_model_dir)  # pylint: disable=protected-access,line-too-long
+        current_step = estimator._load_global_step_from_checkpoint_dir(FLAGS.model_dir)  # pylint: disable=protected-access,line-too-long
         batchnum_per_epoch = FLAGS.num_train_images // FLAGS.train_batch_size
 
         tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)

@@ -29,11 +29,6 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 # multiple of 8,batchsize
-## realtestdata
-TRAININGSET_SIZE     = 1920
-VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 32 # multiple of 8
-TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 ## testdate
@@ -42,8 +37,15 @@ TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 # BATCH_SIZE           = 16 # multiple of 8
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
+## realtestdata
+TRAININGSET_SIZE     = 1920
+VALIDATIONSET_SIZE   = 192
+BATCH_SIZE           = 32 # multiple of 8
+TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
-EPOCH_NUM                   = 300
+
+
+EPOCH_NUM                   = 100
 DEFAULT_SUMMARY_STEP        = 20
 DEFAULT_LOG_STPE_COUNT_STEP = 50
 
@@ -69,11 +71,12 @@ class TrainConfig(object):
 
         # self.is_learning_rate_decay = True
         # self.learning_rate_decay_rate =0.99
-        self.opt_fn                 = tf.train.RMSPropOptimizer
-        self.occlusion_loss_fn      = tf.nn.softmax_cross_entropy_with_logits_v2
+        # self.opt_fn                 = tf.train.RMSPropOptimizer
+        self.opt_fn                 = tf.train.AdamOptimizer
+        # self.occlusion_loss_fn      = tf.nn.softmax
         self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.metric_fn              = tf.metrics.root_mean_squared_error
-        self.activation_fn_pose     = tf.nn.relu
+        self.activation_fn_out      = None
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False
@@ -94,7 +97,7 @@ class PreprocessingConfig(object):
     def __init__(self):
         # image pre-processing
         self.is_random_crop             = False # not implemented yet
-        self.is_rotate                  = False
+        self.is_rotate                  = True
         self.is_flipping                = True
 
         # this is when classification task
@@ -102,11 +105,11 @@ class PreprocessingConfig(object):
         self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 3
+        self.heatmap_std        = 1
         self.heatmap_pdf_type   = 'gaussian'
 
-        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -10
-        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 10
+        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
+        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
 
 
 
@@ -135,6 +138,24 @@ LR_SCHEDULE = [
 # For normalize the image to zero mean and unit variance.
 MEAN_RGB    = [0.485, 0.456, 0.406]
 STDDEV_RGB  = [0.229, 0.224, 0.225]
+
+
+flags.DEFINE_bool(
+    'is_extra_summary', default=True,
+    help=('Skip the host_call which is executed every training step. This is'
+          ' generally used for generating training summaries (train loss,'
+          ' learning rate, etc...). When --skip_host_call=false, there could'
+          ' be a performance drop if host_call function is slow and cannot'
+          ' keep up with the TPU-side computation.'))
+
+flags.DEFINE_bool(
+    'is_summary_heatmap', default=True,
+    help=('Give True when storing heatmap image in tensorboard'))
+
+flags.DEFINE_bool(
+    'is_ckpt_init', default=False,
+    help=('Give True when initializating weight by pre-trained check points')
+)
 
 
 FLAGS = flags.FLAGS
@@ -172,10 +193,15 @@ flags.DEFINE_string(
     'model_dir', default=MODEL_BUCKET,
     help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
+# flags.DEFINE_string(
+#     'tflogs_dir', default=TENSORBOARD_BUCKET,
+#     help=('The directory where the tensorboard summary are stored')
+# )
+
 flags.DEFINE_string(
-    'tflogs_dir', default=TENSORBOARD_BUCKET,
-    help=('The directory where the tensorboard summary are stored')
-)
+    'ckptinit_dir', default='',
+    help=('The directory where the model check point for initialization is stored')
+    )
 
 
 flags.DEFINE_string(
@@ -235,17 +261,7 @@ flags.DEFINE_integer(
     'log_step_count_steps',default=DEFAULT_LOG_STPE_COUNT_STEP,
     help=('Step interval for disply loss'))
 
-flags.DEFINE_bool(
-    'is_tensorboard_summary', default=False,
-    help=('Skip the host_call which is executed every training step. This is'
-          ' generally used for generating training summaries (train loss,'
-          ' learning rate, etc...). When --skip_host_call=false, there could'
-          ' be a performance drop if host_call function is slow and cannot'
-          ' keep up with the TPU-side computation.'))
 
-flags.DEFINE_bool(
-    'is_summary_heatmap', default=True,
-    help=('Give True when storing heatmap image in tensorboard'))
 
 
 flags.DEFINE_integer(

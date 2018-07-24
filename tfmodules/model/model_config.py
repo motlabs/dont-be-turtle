@@ -49,7 +49,7 @@ class ConvModuleConfig(object):
         self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
+        self.activation_fn          = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay = 0.999
@@ -79,7 +79,7 @@ class DeconvModuleConfig(object):
         self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
+        self.activation_fn          = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay   = 0.999
@@ -108,7 +108,7 @@ class ConvSeqModuleConfig(object):
         self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer  = slim.init_ops.zeros_initializer()
         self.normalizer_fn       = slim.batch_norm
-        self.activation_fn       = tf.nn.relu6
+        self.activation_fn       = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay   = 0.999
@@ -137,7 +137,7 @@ class ReceptionConfig(object):
         self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
+        self.activation_fn          = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay   = 0.999
@@ -221,7 +221,7 @@ class SupervisionConfig(object):
         self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
+        self.activation_fn          = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay   = 0.999
@@ -252,7 +252,7 @@ class OutputConfig(object):
         self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
-        self.activation_fn          = tf.nn.relu6
+        self.activation_fn          = tf.nn.relu
 
         # batch_norm
         self.batch_norm_decay   = 0.999
