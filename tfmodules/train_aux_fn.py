@@ -287,7 +287,7 @@ def metric_fn(labels, logits):
 
         # form a dictionary
         metric_dict = {
-                            'head_neck_dist' : head_neck_dist,
+                            'head_neck_dist' : (head_neck_dist,update_op),
                             'errdist_head': (errdist_head      / head_neck_dist,
                                              update_op_errdist_head),
                             'errdist_neck': (errdist_neck      / head_neck_dist,

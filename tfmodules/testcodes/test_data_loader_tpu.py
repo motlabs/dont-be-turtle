@@ -47,10 +47,11 @@ from path_manager import DATASET_BUCKET
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 
-from train_config import TRAININGSET_SIZE
 from model_config import DEFAULT_INPUT_CHNUM
+from train_config import TRAININGSET_SIZE
 from train_config import BATCH_SIZE
 from train_config import PreprocessingConfig
+
 
 import data_loader_tpu
 from test_fn_and_util import dataset_parser
