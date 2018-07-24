@@ -44,9 +44,10 @@ TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
 EPOCH_NUM                   = 300
-DEFAULT_SUMMARY_STEP        = 50
+DEFAULT_SUMMARY_STEP        = 20
 DEFAULT_LOG_STPE_COUNT_STEP = 50
-STEP_PER_EVAL               = 5
+
+STEP_PER_EVAL               = DEFAULT_SUMMARY_STEP
 DEFAULT_BASE_LEARNING_RATE  = 5e-3
 LR_DECAY_RATE               = 0.95
 

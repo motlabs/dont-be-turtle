@@ -68,12 +68,7 @@ def learning_rate_schedule(current_epoch):
 
 def learning_rate_exp_decay(current_epoch):
 
-    if (current_epoch > 5):
-        decay_rate = FLAGS.base_learning_rate
-    else:
-        decay_rate = FLAGS.base_learning_rate  * LR_DECAY_RATE **(current_epoch)
-
-
+    decay_rate = FLAGS.base_learning_rate  * LR_DECAY_RATE **(current_epoch)
     return decay_rate
 
 
