@@ -262,7 +262,6 @@ def model_fn(features,
 
     extra_summary_hook = None
     train_op     = None
-    eval_metrics = None
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         # Compute the current epoch and associated learning rate from global_step.
@@ -334,13 +333,13 @@ def model_fn(features,
                                                          summary_op=tf.summary.merge_all())
 
 
-            # in case of Estimator metric_ops must be in a form of dictionary
-            metric_ops = metric_fn(labels, logits_out_heatmap)
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops,
-                                                     training_hooks = [extra_summary_hook])
+        # in case of Estimator metric_ops must be in a form of dictionary
+        metric_ops = metric_fn(labels, logits_out_heatmap)
+        tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
+                                                 loss        =loss,
+                                                 train_op    =train_op,
+                                                 eval_metric_ops=metric_ops,
+                                                 training_hooks = [extra_summary_hook])
 
     elif mode == tf.estimator.ModeKeys.EVAL:
         metric_ops = metric_fn(labels, logits_out_heatmap)
