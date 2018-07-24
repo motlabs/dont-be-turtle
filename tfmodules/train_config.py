@@ -32,7 +32,7 @@ from path_manager import TENSORBOARD_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 8 # multiple of 8
+BATCH_SIZE           = 16 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
@@ -43,11 +43,12 @@ TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 # TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
-EPOCH_NUM                   = 1000
+EPOCH_NUM                   = 300
 DEFAULT_SUMMARY_STEP        = 50
 DEFAULT_LOG_STPE_COUNT_STEP = 50
 STEP_PER_EVAL               = 5
-DEFAULT_BASE_LEARNING_RATE  = 1e-2
+DEFAULT_BASE_LEARNING_RATE  = 5e-3
+LR_DECAY_RATE               = 0.95
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
 GCE_TPU_ZONE            = 'us-central1-f'
@@ -127,7 +128,7 @@ class PreprocessingConfig(object):
 # Learning rate schedule
 LR_SCHEDULE = [
     # (multiplier, epoch to start) tuples
-    (1.0, 5), (0.1, 30), (0.01, 60), (0.001, 80), (0.0001, 150)
+    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80)
 ]
 
 # For normalize the image to zero mean and unit variance.

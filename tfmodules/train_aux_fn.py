@@ -25,7 +25,7 @@ from train_config  import TrainConfig
 
 from train_config  import LR_SCHEDULE
 from train_config  import FLAGS
-
+from train_config  import LR_DECAY_RATE
 
 from tensorflow.contrib import summary
 
@@ -48,6 +48,11 @@ def learning_rate_schedule(current_epoch):
 
         Returns:
             A scaled `Tensor` for current learning rate.
+            # Learning rate schedule
+                LR_SCHEDULE = [
+                    # (multiplier, epoch to start) tuples
+                    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80)
+                ]
     """
     scaled_lr = FLAGS.base_learning_rate * (FLAGS.train_batch_size / 256.0)
 
@@ -59,6 +64,17 @@ def learning_rate_schedule(current_epoch):
                               decay_rate, scaled_lr * mult)
     return decay_rate
 
+
+
+def learning_rate_exp_decay(current_epoch):
+
+    if (current_epoch > 5):
+        decay_rate = FLAGS.base_learning_rate
+    else:
+        decay_rate = FLAGS.base_learning_rate  * LR_DECAY_RATE **(current_epoch)
+
+
+    return decay_rate
 
 
 
@@ -177,18 +193,24 @@ def get_loss_heatmap(pred_heatmaps,
         #
 
         ### 3) get loss function of each part
+
+
         loss_fn         = train_config.heatmap_loss_fn
         loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
-                                  predictions=pred_heatmaps[:,:,:,0:1])
+                                  predictions=pred_heatmaps[:,:,:,0:1]) \
+                          / tf.reduce_mean(label_heatmaps[:,:,:,0:1])
 
         loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
-                                  predictions=pred_heatmaps[:,:,:,1:2])
+                                  predictions=pred_heatmaps[:,:,:,1:2]) \
+                          / tf.reduce_mean(label_heatmaps[:, :, :, 1:2])
 
         loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
-                                  predictions=pred_heatmaps[:,:,:,2:3])
+                                  predictions=pred_heatmaps[:,:,:,2:3]) \
+                          / tf.reduce_mean(label_heatmaps[:, :, :, 2:3])
 
         loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
-                                  predictions=pred_heatmaps[:,:,:,3:4])
+                                  predictions=pred_heatmaps[:,:,:,3:4]) \
+                          / tf.reduce_mean(label_heatmaps[:, :, :, 3:4])
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder

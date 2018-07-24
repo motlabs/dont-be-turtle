@@ -71,6 +71,7 @@ from train_config  import FLAGS
 
 from train_aux_fn import get_loss_heatmap
 from train_aux_fn import learning_rate_schedule
+from train_aux_fn import learning_rate_exp_decay
 from train_aux_fn import get_heatmap_activation
 from train_aux_fn import metric_fn
 
@@ -268,7 +269,8 @@ def model_fn(features,
 
             current_epoch       = (tf.cast(global_step, tf.float32) /
                                     batchnum_per_epoch)
-            learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+            # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+            learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
             optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                                             name='RMSprop_opt')
 
