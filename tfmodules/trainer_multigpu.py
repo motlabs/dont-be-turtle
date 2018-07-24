@@ -338,7 +338,7 @@ def model_fn(features,
             mid_losssum_list_t = []
             for n in range(0, model_config.num_of_hgstacking):
 
-                mid_losssum_list_t[n] = tf.reshape(total_mid_losssum_list[n],[1])
+                mid_losssum_list_t.append(tf.reshape(total_mid_losssum_list[n], [1]))
                 tf.summary.scalar(name='mid_loss' + str(n),
                                   tensor=mid_losssum_list_t[n],
                                   family='midlayer')
