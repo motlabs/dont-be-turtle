@@ -221,7 +221,7 @@ class DataLoaderTest(tf.test.TestCase):
         feature_op, labels_op   = iterator_train.get_next()
         argmax_2d_head_op       = argmax_2d(tensor=labels_op[:, :, :, 0:1])
 
-        metric_dict_op = metric_fn(labels=labels_op,logits=labels_op)
+        metric_dict_op = metric_fn(labels=labels_op,logits=labels_op,pck_threshold=0.2)
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
         metric_fn_var_init = tf.variables_initializer(metric_fn_var)
 
@@ -242,6 +242,7 @@ class DataLoaderTest(tf.test.TestCase):
                 # some post processing
                 image_head          = feature_numpy[favorite_image_index,:,:,:]
 
+                print('[test_data_loader_tpu] sum of single label heatmap =%s'% labels_numpy[favorite_image_index, :, :, 0].sum().sum())
                 # 256 to 64
                 image_head_resized  = cv2.resize(image_head.astype(np.uint8),
                                                dsize=(64,64),

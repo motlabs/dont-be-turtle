@@ -209,7 +209,7 @@ def _heatmap_generator(label_list,
                                                      dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
 
         #
-        label_heatmap = label_heatmap / tf.reduce_mean(label_heatmap)
+        label_heatmap = label_heatmap / (tf.reduce_mean(label_heatmap) * DEFAULT_HG_INOUT_RESOL*DEFAULT_HG_INOUT_RESOL)
 
     return label_heatmap
 
