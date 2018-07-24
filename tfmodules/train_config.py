@@ -76,8 +76,8 @@ class TrainConfig(object):
         self.occlusion_loss_fn      = None
         self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.metric_fn              = tf.metrics.root_mean_squared_error
-        # self.activation_fn_out      = tf.nn.softmax
-        self.activation_fn_out      = None
+        self.activation_fn_out      = tf.nn.softmax
+        # self.activation_fn_out      = None
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False

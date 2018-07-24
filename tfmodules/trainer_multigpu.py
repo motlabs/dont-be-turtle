@@ -304,28 +304,26 @@ def model_fn(features,
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
 
-
-            tf.summary.scalar(name='loss', tensor=loss)
-            tf.summary.scalar(name='out_loss',tensor=total_out_losssum)
-            tf.summary.scalar(name='learning_rate', tensor=learning_rate)
-
+            tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
+            tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')
+            tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
 
             if FLAGS.is_summary_heatmap:
                 tf.summary.image(name='out_heatmat_head',
                                  tensor=logits_out_heatmap[:,:,:,0:1],
-                                 max_outputs=3,
+                                 max_outputs=1,
                                  family='out_featmaps')
                 tf.summary.image(name='out_heatmat_neck',
                                  tensor=logits_out_heatmap[:,:,:,1:2],
-                                 max_outputs=3,
+                                 max_outputs=1,
                                  family='out_featmaps')
                 tf.summary.image(name='out_heatmat_Rshoulder',
                                  tensor=logits_out_heatmap[:,:,:,2:3],
-                                 max_outputs=3,
+                                 max_outputs=1,
                                  family='out_featmaps')
                 tf.summary.image(name='out_heatmat_Lshoulder',
                                  tensor=logits_out_heatmap[:,:,:,3:4],
-                                 max_outputs=3,
+                                 max_outputs=1,
                                  family='out_featmaps')
 
 
@@ -339,22 +337,22 @@ def model_fn(features,
                 if FLAGS.is_summary_heatmap:
                     tf.summary.image(name='mid_heatmat_head'+str(n),
                                      tensor=logits_mid_heatmap[n][:, :, :, 0:1],
-                                     max_outputs=3,
+                                     max_outputs=1,
                                      family='mid_featmaps'+str(n))
 
                     tf.summary.image(name='out_heatmat_neck'+str(n),
                                      tensor=logits_mid_heatmap[n][:, :, :, 1:2],
-                                     max_outputs=3,
+                                     max_outputs=1,
                                      family='mid_featmaps'+str(n))
 
                     tf.summary.image(name='out_heatmat_Rshoulder',
                                      tensor=logits_mid_heatmap[n][:, :, :, 2:3],
-                                     max_outputs=3,
+                                     max_outputs=1,
                                      family='mid_featmaps'+str(n))
 
                     tf.summary.image(name='out_heatmat_Lshoulder',
                                      tensor=logits_mid_heatmap[n][:, :, :, 3:4],
-                                     max_outputs=3,
+                                     max_outputs=1,
                                      family='mid_featmaps'+str(n))
 
                 tf.logging.info('Create SummarySaveHook.')
