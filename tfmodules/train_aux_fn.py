@@ -177,17 +177,17 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0],
-                                  predictions=pred_heatmaps[:,:,:,0])
+        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
+                                  predictions=pred_heatmaps[:,:,:,0:1])
 
-        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1],
-                                  predictions=pred_heatmaps[:,:,:,1])
+        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
+                                  predictions=pred_heatmaps[:,:,:,1:2])
 
-        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2],
-                                  predictions=pred_heatmaps[:,:,:,2])
+        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+                                  predictions=pred_heatmaps[:,:,:,2:3])
 
-        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3],
-                                  predictions=pred_heatmaps[:,:,:,3])
+        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+                                  predictions=pred_heatmaps[:,:,:,3:4])
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
