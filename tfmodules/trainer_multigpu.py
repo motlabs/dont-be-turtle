@@ -342,7 +342,7 @@ def model_fn(features,
                                                 # training_hooks = [extra_summary_hook])
 
     elif mode == tf.estimator.ModeKeys.EVAL:
-        metric_ops = metric_fn(labels, logits_out_heatmap)
+        metric_ops = metric_fn(labels, logits_out_heatmap,FLAGS.pck_threshold)
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
