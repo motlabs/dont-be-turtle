@@ -209,15 +209,20 @@ def model_fn(features,
 
     ### output layer ===
     with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
-        # heatmap activation of output layer out
-        act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
-                                                  scope='out_heatmap')
-        # heatmap loss
+        # # heatmap activation of output layer out
+        # act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
+        #                                           scope='out_heatmap')
+        # # heatmap loss
+        # total_out_losssum = \
+        #     get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
+        #                      label_heatmaps=labels,
+        #                      scope='out_loss')
+
+        # heatmap loss w/o activation
         total_out_losssum = \
-            get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
+            get_loss_heatmap(pred_heatmaps=logits_out_heatmap,
                              label_heatmaps=labels,
                              scope='out_loss')
-
 
 
 
@@ -270,8 +275,8 @@ def model_fn(features,
 
         current_epoch       = (tf.cast(global_step, tf.float32) /
                                 batchnum_per_epoch)
-        # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-        learning_rate = learning_rate_exp_decay(current_epoch=current_epoch)
+        learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+        # learning_rate = learning_rate_exp_decay(current_epoch=current_epoch)
 
         optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                                         name='RMSprop_opt')
