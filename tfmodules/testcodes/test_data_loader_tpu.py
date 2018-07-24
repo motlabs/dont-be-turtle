@@ -48,10 +48,11 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 
 from model_config import DEFAULT_INPUT_CHNUM
+from train_config import TrainConfig
 from train_config import TRAININGSET_SIZE
 from train_config import BATCH_SIZE
 from train_config import PreprocessingConfig
-
+from train_aux_fn import metric_fn
 
 import data_loader_tpu
 from test_fn_and_util import dataset_parser
@@ -59,7 +60,7 @@ from test_fn_and_util import argmax_2d
 
 IMAGE_MAX_VALUE = 255.0
 preproc_config = PreprocessingConfig()
-
+train_config   = TrainConfig()
 
 
 class DataLoaderTest(tf.test.TestCase):
@@ -220,17 +221,23 @@ class DataLoaderTest(tf.test.TestCase):
         feature_op, labels_op   = iterator_train.get_next()
         argmax_2d_head_op       = argmax_2d(tensor=labels_op[:, :, :, 0:1])
 
+        metric_dict_op = metric_fn(labels=labels_op,logits=labels_op,pck_threshold=0.2)
+        metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
+        metric_fn_var_init = tf.variables_initializer(metric_fn_var)
+
         favorite_image_index = 5
 
         with self.test_session() as sess:
             sess.run(iterator_train.initializer)
 
+            # init variable used in metric_fn_var_init
+            sess.run(metric_fn_var_init)
             for n in range(0,50):
 
                 # argmax2d find coordinate of head
                 # containing one heatmap
-                feature_numpy, labels_numpy, coord_head_numpy   \
-                    = sess.run([feature_op,labels_op,argmax_2d_head_op])
+                feature_numpy, labels_numpy, coord_head_numpy,metric_dict   \
+                    = sess.run([feature_op,labels_op,argmax_2d_head_op,metric_dict_op])
 
                 # some post processing
                 image_head          = feature_numpy[favorite_image_index,:,:,:]
@@ -255,7 +262,7 @@ class DataLoaderTest(tf.test.TestCase):
 
                 print ('[test_data_loader_tpu] keypoint_head_x0 = %s' % keypoint_head[0])
                 print ('[test_data_loader_tpu] keypoint_head_y0 = %s' % keypoint_head[1])
-
+                print (metric_dict)
                 print('---------------------------------------------------------')
 
                 plt.imshow(feature_numpy[favorite_image_index].astype(np.uint8))

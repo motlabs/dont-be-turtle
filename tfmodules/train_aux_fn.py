@@ -216,7 +216,7 @@ def get_loss_heatmap(pred_heatmaps,
 
 
 
-def metric_fn(labels, logits):
+def metric_fn(labels, logits,pck_threshold):
     """Evaluation metric function. Evaluates accuracy.
 
     This function is executed on the CPU and should not directly reference
@@ -236,7 +236,7 @@ def metric_fn(labels, logits):
     A dict of the metrics to return from evaluation.
     """
 
-    with tf.name_scope('metric_fn',values=[labels, logits]):
+    with tf.name_scope('metric_fn',values=[labels, logits,pck_threshold]):
         # logits_head,\
         # logits_neck,\
         # logits_rshoulder,\
@@ -264,7 +264,9 @@ def metric_fn(labels, logits):
 
         # error distance measure
         metric_err_fn                 = train_config.metric_fn
-        head_neck_dist, update_op     = metric_err_fn(labels=label_head_xy,
+
+        # distance == root mean square
+        head_neck_dist, update_op_head_neck_dist     = metric_err_fn(labels=label_head_xy,
                                                       predictions=label_neck_xy)
 
         errdist_head,update_op_errdist_head             = metric_err_fn(labels=label_head_xy,
@@ -276,27 +278,31 @@ def metric_fn(labels, logits):
         errdist_lshoulder, update_op_errdist_lshoulder  = metric_err_fn(labels=label_lshoulder_xy,
                                                                         predictions= pred_lshoulder_xy)
         # percentage of correct keypoints
-        total_errdist = (errdist_head +\
-                        errdist_neck +\
-                        errdist_rshoulder +\
-                        errdist_lshoulder) / head_neck_dist
+        total_errdist = (update_op_errdist_head + \
+                         update_op_errdist_neck + \
+                         update_op_errdist_rshoulder + \
+                         update_op_errdist_lshoulder) / update_op_head_neck_dist
 
         pck =            tf.metrics.percentage_below(values=total_errdist,
-                                                   threshold=FLAGS.pck_threshold,
-                                                   name=    'pck_' + str(FLAGS.pck_threshold))
+                                                   threshold=pck_threshold,
+                                                   name=    'pck_' + str(pck_threshold))
 
         # form a dictionary
         metric_dict = {
-                            'head_neck_dist' : (head_neck_dist,update_op),
-                            'errdist_head': (errdist_head      / head_neck_dist,
-                                             update_op_errdist_head),
-                            'errdist_neck': (errdist_neck      / head_neck_dist,
-                                             update_op_errdist_neck),
-                            'errdist_rshoulder': (errdist_rshoulder / head_neck_dist,
-                                                    update_op_errdist_rshoulder),
-                            'errdist_lshoulder': (errdist_lshoulder / head_neck_dist,
-                                                    update_op_errdist_lshoulder),
-                            'pck': pck
+                            'label_head_neck_dist(v,v_norm)' : (update_op_head_neck_dist,update_op_head_neck_dist/update_op_head_neck_dist),
+
+                            'errdist_head(v,v_norm)': (update_op_errdist_head,
+                                             update_op_errdist_head/update_op_head_neck_dist),
+
+                            'errdist_neck(v,v_norm)': (update_op_errdist_neck,
+                                             update_op_errdist_neck/update_op_head_neck_dist),
+
+                            'errdist_rshou(v,v_norm)': (update_op_errdist_rshoulder,
+                                                    update_op_errdist_rshoulder /update_op_head_neck_dist),
+
+                            'errdist_lshou(v,v_norm)': (update_op_errdist_lshoulder,
+                                                    update_op_errdist_lshoulder /update_op_head_neck_dist),
+                            'pck(prev,curr)': pck
                         }
 
     return metric_dict
