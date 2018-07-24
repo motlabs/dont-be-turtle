@@ -47,7 +47,6 @@ python ${SOURCE}\
   --data_dir=${DATA_BUCKET}\
   --model_dir=${MODEL_BUCKET}\
   --tflogs_dir=${TENSORBOARD_BUCKET}\
-  --summary_step=20
 
 
 
