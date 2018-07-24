@@ -26,7 +26,7 @@ from train_config  import TrainConfig
 from train_config  import LR_SCHEDULE
 from train_config  import FLAGS
 from train_config  import LR_DECAY_RATE
-import FLAGS
+from train_config  import FLAGS
 from tensorflow.contrib import summary
 
 
