@@ -235,7 +235,7 @@ flags.DEFINE_integer(
     help=('Step interval for disply loss'))
 
 flags.DEFINE_bool(
-    'is_tensorboard_summary', default=True,
+    'is_tensorboard_summary', default=False,
     help=('Skip the host_call which is executed every training step. This is'
           ' generally used for generating training summaries (train loss,'
           ' learning rate, etc...). When --skip_host_call=false, there could'
