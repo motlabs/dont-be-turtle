@@ -273,8 +273,8 @@ def model_fn(features,
 
         current_epoch       = (tf.cast(global_step, tf.float32) /
                                 batchnum_per_epoch)
-        learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-        # learning_rate = learning_rate_exp_decay(current_epoch=current_epoch)
+        # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+        learning_rate = learning_rate_exp_decay(current_epoch=current_epoch)
 
         optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                                         name='RMSprop_opt')
@@ -300,14 +300,13 @@ def model_fn(features,
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
             gs_t        = tf.reshape(global_step, [1])
-            loss_t      = tf.reshape(loss, [1])
-
-
+            loss_t      = tf.reshape(total_out_losssum, [1])
             lr_t = tf.reshape(learning_rate, [1])
-            ce_t = tf.reshape(current_epoch, [1])
-            tf.summary.scalar(name='loss', tensor=loss,
+
+
+            tf.summary.scalar(name='out_loss', tensor=loss_t,
                               family='outlayer')
-            tf.summary.scalar(name='learning_rate', tensor=learning_rate,
+            tf.summary.scalar(name='learning_rate', tensor=lr_t,
                               family='outlayer')
 
 

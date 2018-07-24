@@ -207,64 +207,61 @@ def model_fn(features,
         # -----------------------------
 
         ### output layer ===
-        # with tf.name_scope(name='out_post_proc',values=[logits_out_heatmap,labels]):
-        #     # heatmap activation of output layer out
-        #     act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
-        #                                               scope='out_heatmap')
-        #     # heatmap loss
-        #     total_out_losssum = \
-        #         get_loss_heatmap(pred_heatmaps  = act_out_heatmaps,
-        #                          label_heatmaps = labels,
-        #                          scope='out_loss')
+        with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
+            # # heatmap activation of output layer out
+            # act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
+            #                                           scope='out_heatmap')
+            # # heatmap loss
+            # total_out_losssum = \
+            #     get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
+            #                      label_heatmaps=labels,
+            #                      scope='out_loss')
 
-        # heatmap loss w/o activation
-        total_out_losssum = \
-            get_loss_heatmap(pred_heatmaps=logits_out_heatmap,
-                             label_heatmaps=labels,
-                             scope='out_loss')
+            # heatmap loss w/o activation
+            total_out_losssum = \
+                get_loss_heatmap(pred_heatmaps=logits_out_heatmap,
+                                 label_heatmaps=labels,
+                                 scope='out_loss')
 
 
         ### middle layer ===
-        with tf.name_scope(name='mid_post_proc',values=[logits_mid_heatmap,
-                                                             labels]):
+        with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
+                                                         labels]):
             ### supervision layers ===
-            act_mid_heatmap_list    = []
-            total_mid_losssum_list  = []
-            total_mid_losssum_acc   = 0.0
+            total_mid_losssum_list = []
+            total_mid_losssum_acc = 0.0
 
-            for stacked_hg_index in range(0,model_config.num_of_hgstacking):
-
+            for stacked_hg_index in range(0, model_config.num_of_hgstacking):
                 # heatmap activation of supervision layer out
-                act_mid_heatmap_temp =\
-                    get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
-                                           scope='mid_heatmap_' + str(stacked_hg_index))
+                # act_mid_heatmap_temp = \
+                #     get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
+                #                            scope='mid_heatmap_' + str(stacked_hg_index))
                 # heatmap loss
-                total_mid_losssum_temp =\
-                    get_loss_heatmap(pred_heatmaps  = act_mid_heatmap_temp,
-                                     label_heatmaps = labels,
+                total_mid_losssum_temp = \
+                    get_loss_heatmap(pred_heatmaps=logits_mid_heatmap[stacked_hg_index],
+                                     label_heatmaps=labels,
                                      scope='mid_loss_' + str(stacked_hg_index))
 
                 # collect loss and heatmap in list
-                act_mid_heatmap_list.append(act_mid_heatmap_temp)
                 total_mid_losssum_list.append(total_mid_losssum_temp)
                 total_mid_losssum_acc += total_mid_losssum_temp
 
 
 
-
-
         ### total loss ===
-        with tf.name_scope(name='total_loss',values=[total_out_losssum,
-                                                     total_mid_losssum_acc]):
+        with tf.name_scope(name='total_loss', values=[total_out_losssum,
+                                                      total_mid_losssum_acc]):
             # Collect weight regularizer loss =====
             loss_regularizer = tf.losses.get_regularization_loss()
             # sum up all losses =====
             loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
 
 
-
         extra_summary_hook = None
         train_op     = None
+
+
+
 
         if mode == tf.estimator.ModeKeys.TRAIN:
             # Compute the current epoch and associated learning rate from global_step.
@@ -288,56 +285,82 @@ def model_fn(features,
             with tf.control_dependencies(update_ops):
                 train_op = optimizer.minimize(loss, global_step)
 
-
-
             if FLAGS.is_tensorboard_summary:
                 # To log the loss, current learning rate, and epoch for Tensorboard, the
                 # summary op needs to be run on the host CPU via host_call. host_call
                 # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
                 # dimension. These Tensors are implicitly concatenated to
                 # [model_config['batch_size']].
-                gs_t        = tf.reshape(global_step, [1])
-                loss_t      = tf.reshape(loss, [1])
-
-                # mid_loss_list_t = []
-                # for n in range(0,model_config.num_of_hgstacking):
-                #     mid_loss_list_t[n] = tf.reshape(mid_loss_list[n],[1])
-
+                gs_t = tf.reshape(global_step, [1])
+                loss_t = tf.reshape(total_out_losssum, [1])
                 lr_t = tf.reshape(learning_rate, [1])
-                ce_t = tf.reshape(current_epoch, [1])
-
-
-                ## create tflog dir
-                now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-                tb_logdir_path = FLAGS.tflogs_dir
-
-                tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
-                tf.logging.info('[model_fn] tf summary at %s' % tb_logdir)
-
-                if not tf.gfile.Exists(tb_logdir_path):
-                    tf.gfile.MakeDirs(tb_logdir_path)
-                tf.summary.scalar('loss', loss)
-
-                for n in range(0,model_config.num_of_hgstacking):
-                    summary.scalar('mid_loss_head'+str(n), total_mid_losssum_list[n])
-                    summary.scalar('mid_loss_neck'+str(n), total_mid_losssum_list[n])
-                    summary.scalar('mid_loss_Rshoulder'+str(n), total_mid_losssum_list[n])
-                    summary.scalar('mid_loss_Lshoulder'+str(n), total_mid_losssum_list[n])
 
 
 
-                    tf.summary.scalar('learning_rate', learning_rate)
-                    tf.summary.scalar('current_epoch', current_epoch)
+                tf.summary.scalar(name='out_loss', tensor=loss,
+                                  family='outlayer')
+                tf.summary.scalar(name='learning_rate', tensor=lr_t,
+                                  family='outlayer')
 
-                    tf.logging.info('Create SummarySaveHook.')
-                    extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                                                             output_dir=tb_logdir,
-                                                             summary_op=tf.summary.merge_all())
+
+
+                if FLAGS.is_summary_heatmap:
+                    tf.summary.image(name='out_heatmat_head',
+                                     tensor=logits_out_heatmap[:, :, :, 0:1],
+                                     max_output=3,
+                                     family='out_featmaps')
+                    tf.summary.image(name='out_heatmat_neck',
+                                     tensor=logits_out_heatmap[:, :, :, 1:2],
+                                     max_output=3,
+                                     family='out_featmaps')
+                    tf.summary.image(name='out_heatmat_Rshoulder',
+                                     tensor=logits_out_heatmap[:, :, :, 2:3],
+                                     max_output=3,
+                                     family='out_featmaps')
+                    tf.summary.image(name='out_heatmat_Lshoulder',
+                                     tensor=logits_out_heatmap[:, :, :, 3:4],
+                                     max_output=3,
+                                     family='out_featmaps')
+
+                mid_losssum_list_t = []
+                for n in range(0, model_config.num_of_hgstacking):
+
+                    mid_losssum_list_t[n] = tf.reshape(total_mid_losssum_list[n], [1])
+                    tf.summary.scalar(name='mid_loss' + str(n),
+                                      tensor=mid_losssum_list_t[n],
+                                      family='midlayer')
+
+                    if FLAGS.is_summary_heatmap:
+                        tf.summary.image(name='mid_heatmat_head' + str(n),
+                                         tensor=logits_mid_heatmap[n][:, :, :, 0:1],
+                                         max_output=3,
+                                         family='mid_featmaps' + str(n))
+
+                        tf.summary.image(name='out_heatmat_neck' + str(n),
+                                         tensor=logits_mid_heatmap[n][:, :, :, 1:2],
+                                         max_output=3,
+                                         family='mid_featmaps' + str(n))
+
+                        tf.summary.image(name='out_heatmat_Rshoulder',
+                                         tensor=logits_mid_heatmap[n][:, :, :, 2:3],
+                                         max_output=3,
+                                         family='mid_featmaps' + str(n))
+
+                        tf.summary.image(name='out_heatmat_Lshoulder',
+                                         tensor=logits_mid_heatmap[n][:, :, :, 3:4],
+                                         max_output=3,
+                                         family='mid_featmaps' + str(n))
+
+                    # tf.logging.info('Create SummarySaveHook.')
+                    # extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                    #                                          output_dir=tb_logdir,
+                    #                                          summary_op=tf.summary.merge_all())
+
 
 
 
             # in case of Estimator metric_ops must be in a form of dictionary
-            metric_ops = metric_fn(labels, logits_out_heatmap)
+            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
             tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                      loss        =loss,
                                                      train_op    =train_op,
@@ -345,7 +368,7 @@ def model_fn(features,
                                                      # training_hooks = [extra_summary_hook])
 
         elif mode == tf.estimator.ModeKeys.EVAL:
-            metric_ops = metric_fn(labels, logits_out_heatmap)
+            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
             tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                      loss        =loss,
                                                      train_op    =train_op,
