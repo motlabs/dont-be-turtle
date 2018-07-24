@@ -330,7 +330,6 @@ def model_fn(features,
 
 
 
-
             for n in range(0, model_config.num_of_hgstacking):
 
                 tf.summary.scalar(name='mid_loss' + str(n),
