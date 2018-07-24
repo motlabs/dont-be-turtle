@@ -96,57 +96,57 @@ def argmax_2d(tensor):
 
 
 
-#
-#
-# def get_heatmap_activation(logits,scope=None):
-#     '''
-#         get_heatmap_activation()
-#
-#         :param logits: NxNx4 logits before activation
-#         :param scope: scope
-#         :return: NxNx4 heatmaps
-#
-#         where we use tf.metrics.mean_squared_error.
-#         for detail plz see
-#         https://www.tensorflow.org/api_docs/python/tf/metrics/mean_squared_error
-#
-#         written by Jaewook Kang July 2018
-#     '''
-#     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
-#
-#         # ### 1) split logit to head, neck, Rshoulder, Lshoulder
-#         # logits_heatmap_head, \
-#         # logits_heatmap_neck, \
-#         # logits_heatmap_rshoulder, \
-#         # logits_heatmap_lshoulder = tf.split(logits,
-#         #                                     num_or_size_splits=model_config.num_of_labels,
-#         #                                     axis=3)
-#         ### 2) activation
-#         activation_fn = train_config.activation_fn_pose
-#
-#         if train_config.activation_fn_pose == None:
-#             ''' linear activation case'''
-#             act_heatmap_head        = logits[:,:,:,0:1]
-#             act_heatmap_neck        = logits[:,:,:,1:2]
-#             act_heatmap_rshoulder   = logits[:,:,:,2:3]
-#             act_heatmap_lshoulder   = logits[:,:,:,3:4]
-#         else:
-#             act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
-#                                                   name='act_head')
-#             act_heatmap_neck      = activation_fn(logits[:,:,:,1:2],
-#                                                   name='act_neck')
-#             act_heatmap_rshoulder = activation_fn(logits[:,:,:,2:3],
-#                                                   name='act_rshoulder')
-#             act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
-#                                                   name='act_lshoulder')
-#
-#         act_heatmaps = tf.concat([act_heatmap_head, \
-#                                  act_heatmap_neck, \
-#                                  act_heatmap_rshoulder, \
-#                                  act_heatmap_lshoulder],axis=3)
-#     return act_heatmaps
-#
-#
+
+
+def get_heatmap_activation(logits,scope=None):
+    '''
+        get_heatmap_activation()
+
+        :param logits: NxNx4 logits before activation
+        :param scope: scope
+        :return: NxNx4 heatmaps
+
+        where we use tf.metrics.mean_squared_error.
+        for detail plz see
+        https://www.tensorflow.org/api_docs/python/tf/metrics/mean_squared_error
+
+        written by Jaewook Kang July 2018
+    '''
+    with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
+
+        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
+        # logits_heatmap_head, \
+        # logits_heatmap_neck, \
+        # logits_heatmap_rshoulder, \
+        # logits_heatmap_lshoulder = tf.split(logits,
+        #                                     num_or_size_splits=model_config.num_of_labels,
+        #                                     axis=3)
+        ### 2) activation
+        activation_fn = train_config.activation_fn_pose
+
+        if train_config.activation_fn_pose == None:
+            ''' linear activation case'''
+            act_heatmap_head        = logits[:,:,:,0:1]
+            act_heatmap_neck        = logits[:,:,:,1:2]
+            act_heatmap_rshoulder   = logits[:,:,:,2:3]
+            act_heatmap_lshoulder   = logits[:,:,:,3:4]
+        else:
+            act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
+                                                  name='act_head')
+            act_heatmap_neck      = activation_fn(logits[:,:,:,1:2],
+                                                  name='act_neck')
+            act_heatmap_rshoulder = activation_fn(logits[:,:,:,2:3],
+                                                  name='act_rshoulder')
+            act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
+                                                  name='act_lshoulder')
+
+        act_heatmaps = tf.concat([act_heatmap_head, \
+                                 act_heatmap_neck, \
+                                 act_heatmap_rshoulder, \
+                                 act_heatmap_lshoulder],axis=3)
+    return act_heatmaps
+
+
 
 
 
