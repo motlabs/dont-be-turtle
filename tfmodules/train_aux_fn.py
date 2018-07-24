@@ -193,19 +193,19 @@ def get_loss_heatmap(pred_heatmaps,
         loss_fn         = train_config.heatmap_loss_fn
         loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
                                   predictions=pred_heatmaps[:,:,:,0:1]) \
-                          / tf.reduce_mean(label_heatmaps[:,:,:,0:1])
+                          # / tf.reduce_mean(label_heatmaps[:,:,:,0:1])
 
         loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
                                   predictions=pred_heatmaps[:,:,:,1:2]) \
-                          / tf.reduce_mean(label_heatmaps[:, :, :, 1:2])
+                          # / tf.reduce_mean(label_heatmaps[:, :, :, 1:2])
 
         loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
                                   predictions=pred_heatmaps[:,:,:,2:3]) \
-                          / tf.reduce_mean(label_heatmaps[:, :, :, 2:3])
+                          # / tf.reduce_mean(label_heatmaps[:, :, :, 2:3])
 
         loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
                                   predictions=pred_heatmaps[:,:,:,3:4]) \
-                          / tf.reduce_mean(label_heatmaps[:, :, :, 3:4])
+                          # / tf.reduce_mean(label_heatmaps[:, :, :, 3:4])
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
@@ -216,7 +216,7 @@ def get_loss_heatmap(pred_heatmaps,
 
 
 
-def metric_fn(labels, logits):
+def metric_fn(labels, logits,pck_threshold):
     """Evaluation metric function. Evaluates accuracy.
 
     This function is executed on the CPU and should not directly reference
@@ -236,7 +236,7 @@ def metric_fn(labels, logits):
     A dict of the metrics to return from evaluation.
     """
 
-    with tf.name_scope('metric_fn',values=[labels, logits]):
+    with tf.name_scope('metric_fn',values=[labels, logits,pck_threshold]):
         # logits_head,\
         # logits_neck,\
         # logits_rshoulder,\
@@ -289,8 +289,8 @@ def metric_fn(labels, logits):
                                    update_op_errdist_lshoulder) / update_op_head_neck_dist
 
         pck =            tf.metrics.percentage_below(values=total_errdist,
-                                                   threshold=FLAGS.pck_threshold,
-                                                   name=    'pck_' + str(FLAGS.pck_threshold))
+                                                   threshold=pck_threshold,
+                                                   name=    'pck_' + pck_threshold)
 
         # pck =            tf.metrics.percentage_below(values=total_errdist,
         #                                            threshold=0.2,

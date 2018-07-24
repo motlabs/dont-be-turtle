@@ -208,6 +208,9 @@ def _heatmap_generator(label_list,
         label_heatmap = tf.image.convert_image_dtype(image=label_heatmap,
                                                      dtype=tf.bfloat16 if use_bfloat16 else tf.float32)
 
+        #
+        label_heatmap = label_heatmap / tf.reduce_mean(label_heatmap)
+
     return label_heatmap
 
 

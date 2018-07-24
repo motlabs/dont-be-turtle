@@ -243,6 +243,10 @@ flags.DEFINE_bool(
           ' be a performance drop if host_call function is slow and cannot'
           ' keep up with the TPU-side computation.'))
 
+flags.DEFINE_bool(
+    'is_summary_heatmap', default=True,
+    help=('Give True when storing heatmap image in tensorboard'))
+
 
 flags.DEFINE_integer(
     'iterations_per_loop', default=ITER_PER_LOOP_BEFORE_OUTDEEDING,
