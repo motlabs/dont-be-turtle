@@ -87,7 +87,7 @@ class TrainConfig(object):
         tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
         tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
         tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
-        tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_pose))
+        tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_out))
 
 
 

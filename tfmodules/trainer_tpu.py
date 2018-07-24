@@ -162,9 +162,9 @@ def get_heatmap_activation(logits,scope=None):
         #                                     num_or_size_splits=model_config.num_of_labels,
         #                                     axis=3)
         ### 2) activation
-        activation_fn = train_config.activation_fn_pose
+        activation_fn = train_config.activation_fn_out
 
-        if train_config.activation_fn_pose == None:
+        if train_config.activation_fn_out == None:
             ''' linear activation case'''
             act_heatmap_head        = logits[:,:,:,0:1]
             act_heatmap_neck        = logits[:,:,:,1:2]
