@@ -303,14 +303,11 @@ def model_fn(features,
             # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
             # dimension. These Tensors are implicitly concatenated to
             # [model_config['batch_size']].
-            # gs_t        = tf.reshape(global_step, [1])
-            loss_t      = tf.reshape(total_out_losssum, [1])
-            lr_t = tf.reshape(learning_rate, [1])
 
 
-            tf.summary.scalar(name='out_loss', tensor=loss_t)
-            tf.summary.scalar(name='learning_rate', tensor=lr_t)
-
+            tf.summary.scalar(name='loss', tensor=loss)
+            tf.summary.scalar(name='out_loss',tensor=total_out_losssum)
+            tf.summary.scalar(name='learning_rate', tensor=learning_rate)
 
 
             if FLAGS.is_summary_heatmap:
@@ -333,12 +330,11 @@ def model_fn(features,
 
 
 
-            mid_losssum_list_t = []
+
             for n in range(0, model_config.num_of_hgstacking):
 
-                mid_losssum_list_t.append(tf.reshape(total_mid_losssum_list[n], [1]))
                 tf.summary.scalar(name='mid_loss' + str(n),
-                                  tensor=mid_losssum_list_t[n],
+                                  tensor=total_mid_losssum_list[n],
                                   family='midlayer')
 
                 if FLAGS.is_summary_heatmap:
@@ -369,9 +365,7 @@ def model_fn(features,
 
 
         # in case of Estimator metric_ops must be in a form of dictionary
-        # metric_ops = metric_fn(labels, logits_out_heatmap)
         metric_ops = metric_fn(labels, logits_out_heatmap,pck_threshold=FLAGS.pck_threshold)
-
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
