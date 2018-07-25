@@ -40,7 +40,7 @@ from path_manager import TENSORBOARD_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 32 # multiple of 8
+BATCH_SIZE           = 16 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
@@ -76,8 +76,8 @@ class TrainConfig(object):
         self.occlusion_loss_fn      = None
         self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.metric_fn              = tf.metrics.root_mean_squared_error
-        self.activation_fn_out      = tf.nn.sigmoid
-        # self.activation_fn_out      = None
+        # self.activation_fn_out      = tf.nn.sigmoid
+        self.activation_fn_out      = None
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False
