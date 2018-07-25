@@ -40,7 +40,7 @@ from path_manager import TENSORBOARD_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 16 # multiple of 8
+BATCH_SIZE           = 8 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 
@@ -50,7 +50,7 @@ DEFAULT_SUMMARY_STEP        = 20
 DEFAULT_LOG_STPE_COUNT_STEP = 50
 
 STEP_PER_EVAL               = DEFAULT_SUMMARY_STEP
-DEFAULT_BASE_LEARNING_RATE  = 1e-2
+DEFAULT_BASE_LEARNING_RATE  = 1e-1
 LR_DECAY_RATE               = 0.95 # not used 180724
 
 GCP_PROJ_NAME           = 'ordinal-virtue-208004'
