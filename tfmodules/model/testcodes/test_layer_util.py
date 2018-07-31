@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from os import getcwd
 
 import numpy as np
 import tensorflow as tf
@@ -25,9 +26,72 @@ from hourglass_layer    import get_hourglass_layer
 from reception_layer    import get_reception_layer
 from supervision_layer  import get_supervision_layer
 from output_layer       import get_output_layer
+from tflite_convertor import TFliteConvertor
 
 
 # where we adopt the NHWC format.
+
+
+def save_pb_ckpt(module_name,init,sess,ckpt_saver):
+    print('------------------------------------------------')
+    print('[tfTest] write pb files')
+    pbsavedir = getcwd() + '/pb_files/'
+    if not tf.gfile.Exists(pbsavedir):
+        tf.gfile.MakeDirs(pbsavedir)
+
+    ckptsavedir = pbsavedir + '/ckpt/'
+    if not tf.gfile.Exists(ckptsavedir):
+        tf.gfile.MakeDirs(ckptsavedir)
+
+    pbfilename = module_name + '.pb'
+    pbtxtfilename = module_name + '.pbtxt'
+    ckptfilename = module_name + '.ckpt'
+
+    sess.run(init)
+    print("TF graph_def is saved in pb at %s" % pbsavedir + pbfilename)
+    print("TF ckpt saved: %s" % ckptsavedir + ckptfilename)
+
+    tf.train.write_graph(graph_or_graph_def=sess.graph_def,
+                         logdir=pbsavedir,
+                         name=pbfilename,
+                         as_text=False)
+
+    tf.train.write_graph(graph_or_graph_def=sess.graph_def,
+                         logdir=pbsavedir,
+                         name=pbtxtfilename,
+                         as_text=True)
+
+    ckpt_saver.save(sess=sess,
+                    save_path=ckptsavedir + ckptfilename)
+
+    print('[tftest] pb and ckpt are generated successful')
+
+    return pbsavedir,pbfilename,ckptfilename
+
+
+
+
+def convert_to_frozen_pb(module_name,pbsavedir,pbfilename,ckptfilename,output_node_name,input_shape):
+    print('------------------------------------------------')
+    print('[tfTest] frozen pb conversion')
+
+    tflitedir = getcwd() + '/tflite_files/'
+    if not tf.gfile.Exists(tflitedir):
+        tf.gfile.MakeDirs(tflitedir)
+    tflitefilename      = module_name + '.tflite'
+    tflite_convertor    = TFliteConvertor()
+
+    #output_node_name = 'unittest0/' + module_name + '/' + expected_output_name
+
+    # converting to frozen graph
+    tflite_convertor.set_config_for_frozen_graph(input_dir_path=pbsavedir,
+                                                 input_pb_name=pbfilename,
+                                                 input_ckpt_name='ckpt/' + ckptfilename,
+                                                 output_dir_path=pbsavedir,
+                                                 output_node_names=output_node_name)
+    tflite_convertor.convert_to_frozen_graph()
+    print('[tftest] frozen graph is successfully generated.')
+
 
 
 def create_test_input(batchsize,heightsize,widthsize,channelnum):
@@ -131,19 +195,20 @@ class LayerEndpointName(object):
                     'hg_conv_maxpool3',
                     'unittest0/hourglass0/hg_convseq_in',
                     'unittest0/hourglass0/hg_convseq_out',
-                    'hg_deconv_shortcut_sum0',
-                    'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_in',
-                    'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_out',
-                    'hg_deconv_shortcut_sum1',
-                    'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_in',
-                    'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_out',
-                    'hg_deconv_shortcut_sum2',
-                    'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_in',
-                    'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_out',
-                    'hg_deconv_shortcut_sum3',
-                    'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_in',
-                    'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_out',
-                    'unittest0/hourglass0_out']
+                    # 'hg_deconv_shortcut_sum0',
+                    # 'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_in',
+                    # 'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_out',
+                    # 'hg_deconv_shortcut_sum1',
+                    # 'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_in',
+                    # 'unittest0/hourglass0/hg_deconv1/'+ deconv_type +'_out',
+                    # 'hg_deconv_shortcut_sum2',
+                    # 'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_in',
+                    # 'unittest0/hourglass0/hg_deconv2/'+ deconv_type +'_out',
+                    # 'hg_deconv_shortcut_sum3',
+                    # 'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_in',
+                    # 'unittest0/hourglass0/hg_deconv3/'+ deconv_type +'_out',
+                    # 'unittest0/hourglass0_out'
+            ]
 
             input_shape_hg_conv0    = input_shape
             input_shape_hg_conv1    = [input_shape[0],input_shape[1]/2, input_shape[2]/2,input_shape[3]]
@@ -171,19 +236,20 @@ class LayerEndpointName(object):
                                 self.name_list[12]:input_shape_hg_convseq,
                                 self.name_list[13]:input_shape_hg_convseq,
                                 self.name_list[14]:input_shape_hg_convseq,
-                                self.name_list[15]:input_shape_hg_convseq,
-                                self.name_list[16]:input_shape_hg_convseq,
-                                self.name_list[17]:input_shape_hg_deconv0,
-                                self.name_list[18]:input_shape_hg_deconv0,
-                                self.name_list[19]:input_shape_hg_deconv0,
-                                self.name_list[20]:input_shape_hg_deconv1,
-                                self.name_list[21]:input_shape_hg_deconv1,
-                                self.name_list[22]:input_shape_hg_deconv1,
-                                self.name_list[23]:input_shape_hg_deconv2,
-                                self.name_list[24]: input_shape_hg_deconv2,
-                                self.name_list[25]: input_shape_hg_deconv2,
-                                self.name_list[26]: input_shape_hg_deconv3,
-                                self.name_list[27]: output_shape}
+                                # self.name_list[15]:input_shape_hg_convseq,
+                                # self.name_list[16]:input_shape_hg_convseq,
+                                # self.name_list[17]:input_shape_hg_deconv0,
+                                # self.name_list[18]:input_shape_hg_deconv0,
+                                # self.name_list[19]:input_shape_hg_deconv0,
+                                # self.name_list[20]:input_shape_hg_deconv1,
+                                # self.name_list[21]:input_shape_hg_deconv1,
+                                # self.name_list[22]:input_shape_hg_deconv1,
+                                # self.name_list[23]:input_shape_hg_deconv2,
+                                # self.name_list[24]: input_shape_hg_deconv2,
+                                # self.name_list[25]: input_shape_hg_deconv2,
+                                # self.name_list[26]: input_shape_hg_deconv3,
+                                # self.name_list[27]: output_shape
+                                }
 
         elif layer_type is 'reception':
             self.name_list  = ['unittest0/reception_in',
