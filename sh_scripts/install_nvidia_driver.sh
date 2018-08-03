@@ -17,8 +17,8 @@ sudo apt-get --purge remove nvidia-*
 echo INSTALL NVIDIA DRIVER
 add-apt-repository ppa:graphics-drivers/ppa
 sudo apt-get update
-sudo apt-get install nvidia-384 #recent version at 2017 June // python2
-#sudo apt-get install nvidia-396 #recent version at 2017 June // python3
+#sudo apt-get install nvidia-384 #recent version at 2017 June // python2
+sudo apt-get install nvidia-396 #recent version at 2017 June // python3
 
 
 echo REBOOT
