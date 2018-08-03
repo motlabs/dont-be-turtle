@@ -41,7 +41,6 @@ EXPORT_SAVEMODEL_DIR    = EXPORT_DIR             + '/savedmodel'
 EXPORT_MODEL_DIR        = EXPORT_DIR             + '/model'
 EXPORT_TFLOG_DIR        = EXPORT_DIR             + '/tf_logs'
 
-
 # sub directory for model
 TF_LAYER_TEST_DIR       = TF_MODEL_DIR           + '/testcodes'
 TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
@@ -62,8 +61,8 @@ COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle/'
 
 
 # GCP BUCKET ADDRESS
-DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
-# DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/realdataset'
+# DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
+DATASET_BUCKET          = '/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle'
 
 MODEL_BUCKET             = 'gs://dontbeturtle_ckpt3'
 TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'

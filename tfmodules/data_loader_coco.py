@@ -197,6 +197,7 @@ class DataSetInput(object):
 
         if self.is_training:
             dataset = dataset.repeat()
+            tf.logging.info('[Input_fn] dataset.repeat()')
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)

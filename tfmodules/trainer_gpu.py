@@ -411,8 +411,6 @@ def main(unused_argv):
     #     json.dump(preproc_config_dict, fp)
 
 
-
-
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
                             log_device_placement=True)
@@ -436,7 +434,6 @@ def main(unused_argv):
                 config             = config,
                 params             = None,
                 warm_start_from    = None)
-
 
     '''
     # data loader
@@ -543,8 +540,6 @@ def main(unused_argv):
         #     dontbeturtle_estimator.export_savedmodel(
         #         export_dir_base             =FLAGS.export_dir,
         #         serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
-
-
 
 
 
