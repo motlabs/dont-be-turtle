@@ -29,8 +29,6 @@ from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
 # multiple of 8,batchsize
-
-
 ## testdate
 # TRAININGSET_SIZE     = 48
 # VALIDATIONSET_SIZE   = 48
@@ -42,7 +40,6 @@ TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
 BATCH_SIZE           = 8 # multiple of 8
 TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
-
 
 
 EPOCH_NUM                   = 100
@@ -97,35 +94,38 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_random_crop             = False # not implemented yet
+        self.is_crop                    = True # not implemented yet
         self.is_rotate                  = True
         self.is_flipping                = True
+        self.is_scale                   = True
+        self.is_resize_shortest_edge    = True
 
         # this is when classification task
         # which has an input as pose coordinate
-        self.is_label_coordinate_norm   = False
+        # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 1
-        self.heatmap_pdf_type   = 'gaussian'
+        self.heatmap_std        = 6.0
 
-        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
-        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
+        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
+        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
 
 
 
     def show_info(self):
         tf.logging.info('------------------------')
-        tf.logging.info('[train_config] Use is_random_crop: %s' % str(self.is_random_crop))
+        tf.logging.info('[train_config] Use is_crop: %s'        % str(self.is_crop))
         tf.logging.info('[train_config] Use is_rotate  : %s'    % str(self.is_rotate))
         tf.logging.info('[train_config] Use is_flipping: %s'    % str(self.is_flipping))
+        tf.logging.info('[train_config] Use is_scale: %s'       % str(self.is_scale))
+        tf.logging.info('[train_config] Use is_resize_shortest_edge: %s' % str(self.is_resize_shortest_edge))
 
         if self.is_rotate:
             tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
             tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
 
-        tf.logging.info('[train_config] Use heatmap_std     : %s' % str(self.heatmap_std))
-        tf.logging.info('[train_config] Use heatmap_pdf_type: %s' % self.heatmap_pdf_type)
+
+        tf.logging.info('[train_config] Use heatmap_std: %s'    % str(self.heatmap_std))
         tf.logging.info('------------------------')
 
 
@@ -322,11 +322,4 @@ flags.DEFINE_float(
     'pck_threshold', default=0.2,
     help=('Threshold to measure percentage for correct keypoints')
 )
-
-
-
-
-
-
-#-----------------------------------------------
 

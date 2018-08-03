@@ -30,7 +30,7 @@ DEFAULT_RESO_POOL_RATE_IN_RCEPTION = 4.0
 DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / DEFAULT_RESO_POOL_RATE_IN_RCEPTION
 
 DEFAULT_LABEL_LENGTH    = 3
-NUM_OF_BODY_PART        = 4
+NUM_OF_KEYPOINTS        = 4
 
 
 
@@ -242,7 +242,7 @@ class OutputConfig(object):
     def __init__(self, resol_multiplier):
         self.input_height           = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_width            = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.num_of_channels_out    = NUM_OF_BODY_PART
+        self.num_of_channels_out    = NUM_OF_KEYPOINTS
 
         self.dim_reduct_ratio              = 1
         self.num_stacking_1x1conv          = 2

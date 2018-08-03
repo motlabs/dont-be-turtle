@@ -28,9 +28,11 @@ import functools
 from glob import glob
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
+from path_manager import TPU_DATALOAD_DIR
 
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
+sys.path.insert(0,TPU_DATALOAD_DIR)
 
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE

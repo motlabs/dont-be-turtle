@@ -34,6 +34,8 @@ print("[pathmanager] PROJ HOME = %s" % PROJ_HOME)
 # tf module related directory
 TF_MODEL_DIR            = TF_MODULE_DIR          + '/model'
 EXPORT_DIR              = TF_MODULE_DIR          + '/export'
+COCO_DATALOAD_DIR       = TF_MODULE_DIR          + '/coco_dataload_modules'
+TPU_DATALOAD_DIR        = TF_MODULE_DIR          + '/tfrecord_dataload_modules'
 
 EXPORT_SAVEMODEL_DIR    = EXPORT_DIR             + '/savedmodel'
 EXPORT_MODEL_DIR        = EXPORT_DIR             + '/model'
@@ -53,10 +55,16 @@ TFRECORD_TESTIMAGE_DIR      = DATASET_DIR   + '/tfrecords/testimagedataset'
 # TRAIN_DATASET_DIR   = DATASET_DIR   + '/train/'
 # TEST_DATASET_SIR    = DATASET_DIR   + '/eval/'
 
+COCO_DATASET_BASE_DIR        = DATASET_DIR + '/coco_form'
+# COCO_REALSET_DIR             = COCO_DATASET_BASE_DIR     + '/ai_challenger/'
+COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle/'
+# COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/lsp/'
+
+
 # GCP BUCKET ADDRESS
 DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
 # DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/realdataset'
 
-MODEL_BUCKET             = 'gs://dontbeturtle_ckpt'
+MODEL_BUCKET             = 'gs://dontbeturtle_ckpt3'
 TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'
 
