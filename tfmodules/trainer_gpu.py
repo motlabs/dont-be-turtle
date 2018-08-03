@@ -55,7 +55,7 @@ sys.path.insert(0,EXPORT_TFLOG_DIR)
 # custom python packages
 
 ### data loader
-import data_loader_tpu
+import data_loader_coco
 
 ### models
 from model_builder import get_model
@@ -444,7 +444,7 @@ def main(unused_argv):
     # preprocessing) between training and evaluation.
     '''
     dataset_train, dataset_eval = \
-        [data_loader_tpu.DataSetInput(
+        [data_loader_coco.DataSetInput(
         is_training     =is_training,
         data_dir        =FLAGS.data_dir,
         transpose_input =FLAGS.transpose_input,
