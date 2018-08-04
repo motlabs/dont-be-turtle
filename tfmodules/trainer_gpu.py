@@ -24,14 +24,12 @@ import sys
 import time
 import os
 import json
-# import cloudstorage as gcs
 
 from absl import flags
 import absl.logging as _logging  # pylint: disable=unused-import
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
-from tensorflow.python.client import device_lib
 
 
 # directory path addition
@@ -40,9 +38,7 @@ from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
 from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
-
-from path_manager import TENSORBOARD_BUCKET
-from path_manager import EXPORT_MODEL_DIR
+from path_manager import COCO_DATALOAD_DIR
 
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
@@ -50,12 +46,14 @@ sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
 sys.path.insert(0,EXPORT_TFLOG_DIR)
+sys.path.insert(0,COCO_DATALOAD_DIR)
 
 
 # custom python packages
 
 ### data loader
 import data_loader_coco
+from dataset_prepare import CocoPose
 
 ### models
 from model_builder import get_model
@@ -68,6 +66,7 @@ from train_config  import PreprocessingConfig
 from train_config  import MEAN_RGB
 from train_config  import STDDEV_RGB
 from train_config  import FLAGS
+
 
 from train_aux_fn import get_loss_heatmap
 from train_aux_fn import learning_rate_schedule
@@ -130,8 +129,6 @@ def model_fn(features,
         features = tf.transpose(features, [3, 0, 1, 2])  # HWCN to NHWC
 
 
-
-
     with tf.name_scope(name='feature_norm',values=[features]):
         # Standardization to the image by zero mean and unit variance.
         features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
@@ -143,8 +140,6 @@ def model_fn(features,
                             model_config.input_height,
                             model_config.input_width,
                             None])))
-
-
 
 
     # Model building ============================
@@ -176,7 +171,7 @@ def model_fn(features,
             tf.logging.info('[model_fn] out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
             tf.logging.info('-----------------------------------------------------------')
 
-            for n in range(0,model_config.num_of_hgstacking):
+            for n in range(0,model_config.num_of_hgstacking - 1):
                 tf.logging.info('[model_fn] mid_heatmap%d  shape=%s'
                                 % (n,mid_heatmap[n].get_shape().as_list()))
 
@@ -187,7 +182,6 @@ def model_fn(features,
                                               assignment_map={"model/": "model/"})
 
         return out_heatmap, mid_heatmap,end_points
-
 
 
 
@@ -235,7 +229,7 @@ def model_fn(features,
             total_mid_losssum_list = []
             total_mid_losssum_acc = 0.0
 
-            for stacked_hg_index in range(0, model_config.num_of_hgstacking):
+            for stacked_hg_index in range(0, model_config.num_of_hgstacking - 1):
                 ## heatmap activation of supervision layer out
                 act_mid_heatmap_temp = \
                     get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
@@ -258,8 +252,7 @@ def model_fn(features,
             # Collect weight regularizer loss =====
             loss_regularizer = tf.losses.get_regularization_loss()
             # sum up all losses =====
-            loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
-
+            loss = (total_out_losssum + total_mid_losssum_acc + loss_regularizer) / FLAGS.train_batch_size
 
         extra_summary_hook = None
         train_op     = None
@@ -275,7 +268,13 @@ def model_fn(features,
             current_epoch       = (tf.cast(global_step, tf.float32) /
                                     batchnum_per_epoch)
             # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-            learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
+            # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
+            learning_rate = tf.train.exponential_decay(learning_rate    =train_config.learning_rate_base,
+                                                       global_step      =global_step,
+                                                       decay_steps      =train_config.learning_rate_decay_step,
+                                                       decay_rate       =train_config.learning_rate_decay_rate,
+                                                       staircase        =True)
+
             optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                                             name='RMSprop_opt')
 
@@ -302,6 +301,7 @@ def model_fn(features,
 
 
                 if FLAGS.is_summary_heatmap:
+
                     tf.summary.image(name='out_heatmat_head',
                                      tensor=logits_out_heatmap[:, :, :, 0:1],
                                      max_outputs=1,
@@ -320,7 +320,7 @@ def model_fn(features,
                                      family='out_featmaps')
 
 
-                for n in range(0, model_config.num_of_hgstacking):
+                for n in range(0, model_config.num_of_hgstacking - 1):
 
                     tf.summary.scalar(name='mid_loss' + str(n),
                                       tensor=total_mid_losssum_list[n],
@@ -347,10 +347,10 @@ def model_fn(features,
                                          max_outputs=1,
                                          family='mid_featmaps' + str(n))
 
-                    tf.logging.info('Create SummarySaveHook.')
-                    extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                                                                 output_dir=FLAGS.model_dir,
-                                                                 summary_op=tf.summary.merge_all())
+                tf.logging.info('Create SummarySaveHook.')
+                extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                                                             output_dir=FLAGS.model_dir,
+                                                             summary_op=tf.summary.merge_all())
 
 
 
@@ -373,7 +373,6 @@ def model_fn(features,
             tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
     return tfestimator
-
 
 
 
