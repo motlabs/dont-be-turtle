@@ -63,8 +63,6 @@ from model_config  import ModelConfig
 from train_config  import TrainConfig
 from train_config  import PreprocessingConfig
 
-from train_config  import MEAN_RGB
-from train_config  import STDDEV_RGB
 from train_config  import FLAGS
 
 
@@ -131,8 +129,8 @@ def model_fn(features,
 
     with tf.name_scope(name='feature_norm',values=[features]):
         # Standardization to the image by zero mean and unit variance.
-        features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
-        features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+        features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
+        features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
         # set input_shape
         features.set_shape(features.get_shape().merge_with(

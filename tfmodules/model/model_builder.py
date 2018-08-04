@@ -24,6 +24,8 @@ from reception_layer    import get_reception_layer
 from supervision_layer  import get_supervision_layer
 from output_layer       import get_output_layer
 
+
+
 def get_model(ch_in,model_config,scope=None):
 
     '''

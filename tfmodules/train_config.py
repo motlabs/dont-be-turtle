@@ -33,21 +33,6 @@ from path_manager import TENSORBOARD_BUCKET
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
 BATCH_SIZE           = 32 # multiple of 8
-EPOCH_NUM                   = 100
-
-DEFAULT_SUMMARY_STEP        = 20
-DEFAULT_LOG_STPE_COUNT_STEP = 50
-TRAIN_FILE_BYTE             = 265 * 1024 * 1024  # 6MB for lsp train dataset file
-
-STEP_PER_EVAL               = DEFAULT_SUMMARY_STEP
-
-
-TOTAL_TRAIN_STEP = TRAININGSET_SIZE / BATCH_SIZE * EPOCH_NUM
-
-ITER_PER_LOOP_BEFORE_OUTDEEDING = 100
-if TOTAL_TRAIN_STEP < ITER_PER_LOOP_BEFORE_OUTDEEDING:
-    ITER_PER_LOOP_BEFORE_OUTDEEDING = TOTAL_TRAIN_STEP
-
 
 
 class TrainConfig(object):
@@ -57,6 +42,19 @@ class TrainConfig(object):
         self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 10000
+
+        self.epoch_num                  = 100
+        self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
+        self.iter_per_before_outfeeding = 100
+
+
+        self.step_interval_for_eval         = 20
+        self.step_interval_for_summary      = 20
+        self.step_interval_for_display_loss = 50
+
+
+        if self.total_train_steps < self.iter_per_before_outfeeding:
+            self.iter_per_before_outfeeding = self.total_train_steps
 
 
         # self.opt_fn                 = tf.train.RMSPropOptimizer
@@ -105,6 +103,10 @@ class PreprocessingConfig(object):
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
 
+        # For normalize the image to zero mean and unit variance.
+        self.MEAN_RGB = [0.485, 0.456, 0.406]
+        self.STDDEV_RGB = [0.229, 0.224, 0.225]
+
 
 
     def show_info(self):
@@ -132,15 +134,7 @@ class GCPConfig(object):
         self.DEFAULT_GCP_TPU_NAME   = 'jwkangmacpro2-tpu'
 
 
-# Learning rate schedule
-LR_SCHEDULE = [
-    # (multiplier, epoch to start) tuples
-    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80), (1e-6, 300)
-]
 
-# For normalize the image to zero mean and unit variance.
-MEAN_RGB    = [0.485, 0.456, 0.406]
-STDDEV_RGB  = [0.229, 0.224, 0.225]
 
 train_config    = TrainConfig()
 gcp_config      = GCPConfig()
@@ -221,7 +215,7 @@ flags.DEFINE_string(
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
-    'train_steps', default=TRAININGSET_SIZE/BATCH_SIZE*EPOCH_NUM,
+    'train_steps', default=train_config.total_train_steps,
     help=('The number of steps to use for training. Default is 112603 steps'
           ' which is approximately 90 epochs at batch size 1024. This flag'
           ' should be adjusted according to the --train_batch_size flag.'))
@@ -240,7 +234,7 @@ flags.DEFINE_integer(
 
 
 flags.DEFINE_integer(
-    'steps_per_eval', default=STEP_PER_EVAL,
+    'steps_per_eval', default=train_config.step_interval_for_eval,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'
@@ -261,17 +255,17 @@ flags.DEFINE_integer(
 #           ' keep up with the TPU-side computation.'))
 #
 flags.DEFINE_integer(
-    'summary_step', default=DEFAULT_SUMMARY_STEP,
+    'summary_step', default=train_config.step_interval_for_summary,
     help=('Tensorboard summary step'))
 flags.DEFINE_integer(
-    'log_step_count_steps',default=DEFAULT_LOG_STPE_COUNT_STEP,
+    'log_step_count_steps',default=train_config.step_interval_for_display_loss,
     help=('Step interval for disply loss'))
 
 
 
 
 flags.DEFINE_integer(
-    'iterations_per_loop', default=ITER_PER_LOOP_BEFORE_OUTDEEDING,
+    'iterations_per_loop', default=train_config.iter_per_before_outfeeding,
     help=('Number of steps to run on TPU before outfeeding metrics to the CPU.'
           ' If the number of iterations in the loop would exceed the number of'
           ' train steps, the loop will exit before reaching'

@@ -36,7 +36,6 @@ sys.path.insert(0,TPU_DATALOAD_DIR)
 
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
-from train_config  import TRAIN_FILE_BYTE
 
 from train_config  import PreprocessingConfig
 from model_config  import DEFAULT_INPUT_RESOL
@@ -48,6 +47,8 @@ from train_config import FLAGS
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
 preproc_config = PreprocessingConfig()
+
+TRAIN_FILE_BYTE             = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 def image_serving_input_fn():
     """Serving input fn for raw images.

@@ -22,9 +22,6 @@ from model_config  import ModelConfig
 
 #### training config
 from train_config  import TrainConfig
-from train_config  import LR_SCHEDULE
-from train_config  import FLAGS
-from train_config  import LR_DECAY_RATE
 from train_config  import FLAGS
 from tensorflow.contrib import summary
 
@@ -34,6 +31,11 @@ train_config    = TrainConfig()
 model_config    = ModelConfig()
 
 
+# Learning rate schedule
+LR_SCHEDULE = [
+    # (multiplier, epoch to start) tuples
+    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80), (1e-6, 300)
+]
 
 
 def learning_rate_schedule(current_epoch):
@@ -69,7 +71,7 @@ def learning_rate_schedule(current_epoch):
 
 def learning_rate_exp_decay(current_epoch):
 
-    decay_rate = FLAGS.base_learning_rate  * LR_DECAY_RATE **(current_epoch)
+    decay_rate = FLAGS.base_learning_rate  * train_config.learning_rate_decay_rate **(current_epoch)
     return decay_rate
 
 

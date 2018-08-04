@@ -96,7 +96,7 @@ def get_hourglass_conv_module(ch_in,
 
         elif model_config.conv_type is 'inverted_bottleneck':
 
-            expand_ch_num = np.floor( ch_in_num *1.5)
+            expand_ch_num = np.floor( ch_in_num * 6.0)
             net,end_points = get_inverted_bottleneck_module(ch_in         = net,
                                                              ch_out_num    = ch_out_num,
                                                              expand_ch_num = expand_ch_num,
