@@ -28,31 +28,19 @@ from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
 from path_manager import TENSORBOARD_BUCKET
 
-# multiple of 8,batchsize
-## testdate
-# TRAININGSET_SIZE     = 48
-# VALIDATIONSET_SIZE   = 48
-# BATCH_SIZE           = 16 # multiple of 8
-# TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 8 # multiple of 8
-TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
-
-
+BATCH_SIZE           = 32 # multiple of 8
 EPOCH_NUM                   = 100
+
 DEFAULT_SUMMARY_STEP        = 20
 DEFAULT_LOG_STPE_COUNT_STEP = 50
+TRAIN_FILE_BYTE             = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 STEP_PER_EVAL               = DEFAULT_SUMMARY_STEP
-DEFAULT_BASE_LEARNING_RATE  = 1e-1
-LR_DECAY_RATE               = 0.95 # not used 180724
 
-GCP_PROJ_NAME           = 'ordinal-virtue-208004'
-GCE_TPU_ZONE            = 'us-central1-f'
-DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
 
 TOTAL_TRAIN_STEP = TRAININGSET_SIZE / BATCH_SIZE * EPOCH_NUM
 
@@ -62,22 +50,30 @@ if TOTAL_TRAIN_STEP < ITER_PER_LOOP_BEFORE_OUTDEEDING:
 
 
 
-
 class TrainConfig(object):
     def __init__(self):
 
-        # self.is_learning_rate_decay = True
-        # self.learning_rate_decay_rate =0.99
+
+        self.learning_rate_base       = 1e-3
+        self.learning_rate_decay_rate = 0.95
+        self.learning_rate_decay_step = 10000
+
+
         # self.opt_fn                 = tf.train.RMSPropOptimizer
         self.opt_fn                 = tf.train.AdamOptimizer
+
         self.occlusion_loss_fn      = None
-        self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        # self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        self.heatmap_loss_fn        = tf.nn.l2_loss
+
         self.metric_fn              = tf.metrics.root_mean_squared_error
+
         # self.activation_fn_out      = tf.nn.sigmoid
         self.activation_fn_out      = None
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False
+
 
 
     def show_info(self):
@@ -86,7 +82,6 @@ class TrainConfig(object):
         tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
         tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
         tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_out))
-
 
 
 
@@ -129,6 +124,13 @@ class PreprocessingConfig(object):
         tf.logging.info('------------------------')
 
 
+class GCPConfig(object):
+
+    def __init__(self):
+        self.GCP_PROJ_NAME          = 'ordinal-virtue-208004'
+        self.GCE_TPU_ZONE           = 'us-central1-f'
+        self.DEFAULT_GCP_TPU_NAME   = 'jwkangmacpro2-tpu'
+
 
 # Learning rate schedule
 LR_SCHEDULE = [
@@ -139,6 +141,9 @@ LR_SCHEDULE = [
 # For normalize the image to zero mean and unit variance.
 MEAN_RGB    = [0.485, 0.456, 0.406]
 STDDEV_RGB  = [0.229, 0.224, 0.225]
+
+train_config    = TrainConfig()
+gcp_config      = GCPConfig()
 
 
 flags.DEFINE_bool(
@@ -168,18 +173,18 @@ flags.DEFINE_bool(
 
 # Cloud TPU Cluster Resolvers
 flags.DEFINE_string(
-    'tpu', default=DEFAULT_GCP_TPU_NAME,
+    'tpu', default=gcp_config.DEFAULT_GCP_TPU_NAME,
     help='The Cloud TPU to use for training. This should be either the name '
     'used when creating the Cloud TPU, or a grpc://ip.address.of.tpu:8470 url.')
 
 
 flags.DEFINE_string(
-    'gcp_project', default=GCP_PROJ_NAME,
+    'gcp_project', default=gcp_config.GCP_PROJ_NAME,
     help='Project name for the Cloud TPU-enabled project. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
 flags.DEFINE_string(
-    'tpu_zone', default=GCE_TPU_ZONE,
+    'tpu_zone', default=gcp_config.GCE_TPU_ZONE,
     help='GCE zone where the Cloud TPU is located in. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
@@ -305,7 +310,7 @@ flags.DEFINE_string(
     help=('Precision to use; one of: {bfloat16, float32}'))
 
 flags.DEFINE_float(
-    'base_learning_rate', default=DEFAULT_BASE_LEARNING_RATE,
+    'base_learning_rate', default=train_config.learning_rate_base,
     help=('Base learning rate when train batch size is 256.'))
 
 # flags.DEFINE_float(

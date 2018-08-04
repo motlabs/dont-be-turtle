@@ -66,17 +66,19 @@ def get_model(ch_in,model_config,scope=None):
                 tf.logging.info('[model_builder] hourglass%d out shape=%s' % (stacking_index,
                                                                          net.get_shape().as_list()))
 
-                # supervision layer
-                net, end_points_sv,heatmaps = get_layer(ch_in           = net,
-                                                        model_config    = model_config.sv_config,
-                                                        layer_index     = stacking_index,
-                                                        layer_type      = 'supervision')
-                end_points.update(end_points_sv)
-                tf.logging.info('[model_builder] supervision%d out shape=%s' % (stacking_index,
-                                                                         net.get_shape().as_list()))
 
-                # intermediate heatmap save
-                intermediate_heatmaps.append(heatmaps)
+                if stacking_index < model_config.num_of_hgstacking - 1:
+                    # supervision layer
+                    net, end_points_sv,heatmaps = get_layer(ch_in           = net,
+                                                            model_config    = model_config.sv_config,
+                                                            layer_index     = stacking_index,
+                                                            layer_type      = 'supervision')
+                    end_points.update(end_points_sv)
+                    tf.logging.info('[model_builder] supervision%d out shape=%s' % (stacking_index,
+                                                                             net.get_shape().as_list()))
+
+                    # intermediate heatmap save
+                    intermediate_heatmaps.append(heatmaps)
 
                 # shortcut sum
                 net = tf.add(x=net, y=shorcut,
