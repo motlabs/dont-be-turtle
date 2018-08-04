@@ -22,7 +22,6 @@ from model_config  import ModelConfig
 
 #### training config
 from train_config  import TrainConfig
-
 from train_config  import LR_SCHEDULE
 from train_config  import FLAGS
 from train_config  import LR_DECAY_RATE
@@ -177,23 +176,36 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
-                                  predictions=pred_heatmaps[:,:,:,0:1])
+        # loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
+        #                           predictions=pred_heatmaps[:,:,:,0:1])
+        #
+        # loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
+        #                           predictions=pred_heatmaps[:,:,:,1:2])
+        #
+        # loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+        #                           predictions=pred_heatmaps[:,:,:,2:3])
+        #
+        # loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+        #                           predictions=pred_heatmaps[:,:,:,3:4])
 
-        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
-                                  predictions=pred_heatmaps[:,:,:,1:2])
+        # loss_head       = loss_fn(label_heatmaps[:,:,:,0:1] -\
+        #                            pred_heatmaps[:,:,:,0:1])
+        #
+        # loss_neck       = loss_fn(label_heatmaps[:,:,:,1:2] -\
+        #                           pred_heatmaps[:,:,:,1:2])
+        #
+        # loss_rshoulder  = loss_fn(label_heatmaps[:,:,:,2:3] -\
+        #                            pred_heatmaps[:,:,:,2:3])
+        #
+        # loss_lshoulder  = loss_fn(label_heatmaps[:,:,:,3:4] -\
+        #                            pred_heatmaps[:,:,:,3:4])
 
-        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
-                                  predictions=pred_heatmaps[:,:,:,2:3])
-
-        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
-                                  predictions=pred_heatmaps[:,:,:,3:4])
+        total_losssum = loss_fn(label_heatmaps - pred_heatmaps)
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
-        total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
+        # total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
 
     return total_losssum
-
 
 
 
