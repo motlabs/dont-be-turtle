@@ -53,7 +53,6 @@ sys.path.insert(0,COCO_DATALOAD_DIR)
 
 ### data loader
 import data_loader_coco
-from dataset_prepare import CocoPose
 
 ### models
 from model_builder import get_model
@@ -109,17 +108,17 @@ def model_fn(features,
         features = tf.transpose(features, [3, 0, 1, 2])  # HWCN to NHWC
 
 
-    with tf.name_scope(name='feature_norm',values=[features]):
+    # with tf.name_scope(name='feature_norm',values=[features]):
         # Standardization to the image by zero mean and unit variance.
-        features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
-        features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+        # features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
+        # features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
-        # set input_shape
-        features.set_shape(features.get_shape().merge_with(
-            tf.TensorShape([None,
-                            model_config.input_height,
-                            model_config.input_width,
-                            None])))
+    # set input_shape
+    features.set_shape(features.get_shape().merge_with(
+        tf.TensorShape([None,
+                        model_config.input_height,
+                        model_config.input_width,
+                        None])))
 
 
     # Model building ============================

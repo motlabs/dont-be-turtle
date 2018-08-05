@@ -192,6 +192,10 @@ def overlay_attention_batch(attention, image,
     ax.axis('off')
     fig.subplots_adjust(0, 0, 1, 1)  # get rid of margins
 
+    print (attention.shape)
+    print ('[tfplot] attention  =%s' % attention)
+    print ('[tfplot] image      =%s' % image)
+
     H, W = attention.shape
     ax.imshow(image, extent=[0, H, 0, W])
     ax.imshow(attention, cmap=cmap,

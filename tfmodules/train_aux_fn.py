@@ -16,9 +16,12 @@
 import tfplot
 import tfplot.summary
 import tensorflow as tf
+import numpy as np
 
 ### models
 from model_config  import ModelConfig
+from model_config  import DEFAULT_HG_INOUT_RESOL
+from model_config  import NUM_OF_KEYPOINTS
 
 #### training config
 from train_config  import TrainConfig
@@ -307,83 +310,58 @@ def summary_fn(loss,
     tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
 
 
-    batch_size      = FLAGS.train_batch_size
+    batch_size          = FLAGS.train_batch_size
+    resized_input_image = tf.image.resize_bicubic(images= input_images,
+                                                  size=[int(DEFAULT_HG_INOUT_RESOL),
+                                                        int(DEFAULT_HG_INOUT_RESOL)],
+                                                  align_corners=False)
+    tf.logging.info ('[summary_fn] batch_size = %s' % batch_size)
+    tf.logging.info ('[summary_fn] resized_input_image.shape= %s' % resized_input_image.get_shape().as_list())
+    tf.logging.info ('[summary_fn] label_heatmap.shape= %s' % label_heatmap.get_shape().as_list())
+    tf.logging.info ('[summary_fn] pred_out_heatmap.shape= %s' % pred_out_heatmap.get_shape().as_list())
+
 
     if FLAGS.is_summary_heatmap:
-        summary_name = "true_heatmap_summary"
-        tfplot.summary.plot_many(name           =summary_name + '_0',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[label_heatmap[:,:,:,0:1], input_images],
-                                 max_outputs    =batch_size)
+        summary_name_true_heatmap           = "true_heatmap_summary"
+        summary_name_pred_out_heatmap       = "pred_out_heatmap_summary"
+        summary_name_pred_mid_heatmap       = "pred_mid_heatmap_summary"
 
-        tfplot.summary.plot_many(name           =summary_name + '_1',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[label_heatmap[:,:,:,1:2], input_images],
-                                 max_outputs    =batch_size)
+        for keypoint_index in range(0,NUM_OF_KEYPOINTS):
+            tfplot.summary.plot_many(name           =summary_name_true_heatmap + '_' +
+                                                     str(keypoint_index),
+                                     plot_func      =overlay_attention_batch,
+                                     in_tensors     =[label_heatmap[:,:,:,keypoint_index],
+                                                      resized_input_image],
+                                     max_outputs    =batch_size)
 
-        tfplot.summary.plot_many(name           =summary_name + '_2',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[label_heatmap[:,:,:,2:3], input_images],
-                                 max_outputs    =batch_size)
-
-        tfplot.summary.plot_many(name           =summary_name + '_3',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[label_heatmap[:,:,:,3:4], input_images],
-                                 max_outputs    =batch_size)
-
-        summary_name = "pred_out_heatmap_summary"
-        tfplot.summary.plot_many(name           =summary_name + '_0',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[pred_out_heatmap[:,:,:,0:1], input_images],
-                                 max_outputs    =batch_size)
-
-        tfplot.summary.plot_many(name           =summary_name + '_1',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[pred_out_heatmap[:,:,:,1:2], input_images],
-                                 max_outputs    =batch_size)
-
-        tfplot.summary.plot_many(name           =summary_name + '_2',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[pred_out_heatmap[:,:,:,2:3], input_images],
-                                 max_outputs    =batch_size)
-
-        tfplot.summary.plot_many(name           =summary_name + '_3',
-                                 plot_func      =overlay_attention_batch,
-                                 in_tensors     =[pred_out_heatmap[:,:,:,3:4], input_images],
-                                 max_outputs    =batch_size)
+            tfplot.summary.plot_many(name           =summary_name_pred_out_heatmap +
+                                                     '_' +
+                                                     str(keypoint_index),
+                                     plot_func      =overlay_attention_batch,
+                                     in_tensors     =[pred_out_heatmap[:,:,:,keypoint_index],
+                                                      resized_input_image],
+                                     max_outputs    =batch_size)
 
 
+        for n in range(0, model_config.num_of_hgstacking - 1):
+            tf.logging.info ('[summary_fn] pred_mid_heatmap.shape= %s' % pred_mid_heatmap[0].get_shape().as_list())
 
-    for n in range(0, model_config.num_of_hgstacking - 1):
+            tf.summary.scalar(name='mid_loss' + str(n),
+                              tensor=total_mid_losssum_list[n],
+                              family='midlayer')
 
-        tf.summary.scalar(name='mid_loss' + str(n),
-                          tensor=total_mid_losssum_list[n],
-                          family='midlayer')
-
-        if FLAGS.is_summary_heatmap:
-            summary_name = "pred_mid_heatmap_summary"
-            tfplot.summary.plot_many(name       =summary_name + '_0',
-                                     plot_func  =overlay_attention_batch,
-                                     in_tensors =[pred_mid_heatmap[:, :, :, 0:1], input_images],
-                                     max_outputs=batch_size)
-
-            tfplot.summary.plot_many(name       =summary_name + '_1',
-                                     plot_func  =overlay_attention_batch,
-                                     in_tensors =[pred_mid_heatmap[:, :, :, 1:2], input_images],
-                                     max_outputs=batch_size)
-
-            tfplot.summary.plot_many(name       =summary_name + '_2',
-                                     plot_func  =overlay_attention_batch,
-                                     in_tensors =[pred_mid_heatmap[:, :, :, 2:3], input_images],
-                                     max_outputs=batch_size)
-
-            tfplot.summary.plot_many(name       =summary_name + '_3',
-                                     plot_func  =overlay_attention_batch,
-                                     in_tensors =[pred_mid_heatmap[:, :, :, 3:4], input_images],
-                                     max_outputs=batch_size)
-
+            for keypoint_index in range(0,NUM_OF_KEYPOINTS):
+                tfplot.summary.plot_many(name       =summary_name_pred_mid_heatmap + '_' +
+                                                     str(keypoint_index) +
+                                                     '_hgstage'+str(n),
+                                         plot_func  =overlay_attention_batch,
+                                         in_tensors =[pred_mid_heatmap[n][:, :, :, keypoint_index],
+                                                      resized_input_image],
+                                         max_outputs=batch_size)
 
     return tf.summary.merge_all()
+
+
 
 
 
@@ -394,8 +372,13 @@ def overlay_attention_batch(attention, image,
     fig = tfplot.Figure(figsize=(4, 4))
     ax = fig.add_subplot(1, 1, 1)
     ax.axis('off')
-    fig.subplots_adjust(0, 0, 1, 1)  # get rid of margins
+    # fig.subplots_adjust(0, 0, 1, 1)  # get rid of margins
 
+    # print (attention.shape)
+    # print (image.shape)
+    # print ('[tfplot] attention  =%s' % attention)
+    # print ('[tfplot] image      =%s' % image)
+    image = image.astype(np.uint8)
     H, W = attention.shape
     ax.imshow(image, extent=[0, H, 0, W])
     ax.imshow(attention, cmap=cmap,
