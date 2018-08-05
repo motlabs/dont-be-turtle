@@ -133,11 +133,11 @@ class DataLoaderTest(tf.test.TestCase):
                                                    dsize=(heatmap_size,
                                                           heatmap_size),
                                                    interpolation=cv2.INTER_CUBIC)
-
-
-                # # marking the annotation
-                # # keypoint_top[0] : x
-                # # keypoint_top[1] : y
+                '''
+                    marking the annotation
+                    # # keypoint_top[0] : x
+                    # # keypoint_top[1] : y
+                '''
                 keypoint_top        = coord_top_numpy[favorite_image_index].astype(np.uint8)
                 keypoint_neck       = coord_neck_numpy[favorite_image_index].astype(np.uint8)
                 keypoint_rshoulder  = coord_rshoulder_numpy[favorite_image_index].astype(np.uint8)
@@ -159,15 +159,7 @@ class DataLoaderTest(tf.test.TestCase):
                 image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],1] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],2] = IMAGE_MAX_VALUE
 
-                #-----------
-                labels_top_numpy        = labels_numpy[favorite_image_index, :, :, 0] \
-                                          * IMAGE_MAX_VALUE
-                labels_neck_numpy       = labels_numpy[favorite_image_index, :, :, 1] \
-                                          * IMAGE_MAX_VALUE
-                labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
-                                          * IMAGE_MAX_VALUE
-                labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
-                                          * IMAGE_MAX_VALUE
+
 
                 print ('[test_data_loader_coco] keypoint_top       = (%s,%s)' % (keypoint_top[0],keypoint_top[1]))
                 print ('[test_data_loader_coco] keypoint_neck      = (%s,%s)' % (keypoint_neck[0],keypoint_neck[1]))
@@ -186,6 +178,15 @@ class DataLoaderTest(tf.test.TestCase):
                 plt.imshow(image_sample_resized.astype(np.uint8))
                 plt.show()
 
+                #-----------
+                # labels_top_numpy        = labels_numpy[favorite_image_index, :, :, 0] \
+                #                           * IMAGE_MAX_VALUE
+                # labels_neck_numpy       = labels_numpy[favorite_image_index, :, :, 1] \
+                #                           * IMAGE_MAX_VALUE
+                # labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
+                #                           * IMAGE_MAX_VALUE
+                # labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
+                #                           * IMAGE_MAX_VALUE
                 # heatmaps
                 # plt.figure(3)
                 # plt.imshow(labels_top_numpy.astype(np.uint8))

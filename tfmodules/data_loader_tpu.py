@@ -14,8 +14,10 @@
 # ==============================================================================
 # -*- coding: utf-8 -*-
 
-"""Efficient dont be turtle input pipeline using tf.data.Dataset."""
-# code ref: https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/imagenet_input.py
+"""Efficient dont be turtle input pipeline using tf.data.Dataset.
+code ref: https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/imagenet_input.py
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division

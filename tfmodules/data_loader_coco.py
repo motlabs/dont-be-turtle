@@ -14,8 +14,10 @@
 # ==============================================================================
 # -*- coding: utf-8 -*-
 
-"""Efficient dont be turtle input pipeline using tf.data.Dataset."""
-# code ref: https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/imagenet_input.py
+"""Efficient dont be turtle input pipeline using tf.data.Dataset.
+    code ref: https://github.com/edvardHua/PoseEstimationForMobile
+"""
+
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,8 +26,6 @@ from __future__ import print_function
 import os
 import sys
 import tensorflow as tf
-import functools
-from glob import glob
 from os.path import join
 
 # for COCO templete
@@ -86,18 +86,6 @@ class DataSetInput(object):
         if self.data_dir == 'null' or self.data_dir == '':
             self.data_dir = None
         self.transpose_input = transpose_input
-
-
-    #
-    # def _set_shapes(self,img, heatmap):
-    #     img.set_shape([DEFAULT_WIDTH,
-    #                    DEFAULT_HEIGHT,
-    #                    DEFAULT_INPUT_CHNUM])
-    #
-    #     heatmap.set_shape([DEFAULT_HG_INOUT_RESOL,
-    #                        DEFAULT_HG_INOUT_RESOL,
-    #                        NUM_OF_KEYPOINTS])
-    #     return img, heatmap
 
 
 

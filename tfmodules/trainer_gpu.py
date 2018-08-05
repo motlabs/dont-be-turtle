@@ -36,7 +36,6 @@ from datetime import datetime
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
-from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
 from path_manager import COCO_DATALOAD_DIR
 
@@ -45,7 +44,6 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
-sys.path.insert(0,EXPORT_TFLOG_DIR)
 sys.path.insert(0,COCO_DATALOAD_DIR)
 
 

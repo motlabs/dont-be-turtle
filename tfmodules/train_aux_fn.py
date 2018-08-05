@@ -303,7 +303,10 @@ def summary_fn(loss,
                label_heatmap,
                pred_out_heatmap,
                pred_mid_heatmap):
+    '''
 
+        code ref: https://github.com/wookayin/tensorflow-plot
+    '''
 
     tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
     tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')

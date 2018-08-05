@@ -17,16 +17,10 @@
 import tensorflow as tf
 from absl import flags
 
-from path_manager import TFRECORD_REALSET_DIR
-from path_manager import TFRECORD_TESTSET_DIR
-from path_manager import TFRECORD_TESTIMAGE_DIR
-from path_manager import EXPORT_MODEL_DIR
-from path_manager import EXPORT_SAVEMODEL_DIR
-from path_manager import EXPORT_TFLOG_DIR
 
+from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
-from path_manager import TENSORBOARD_BUCKET
 
 
 ## realtestdata
@@ -193,10 +187,6 @@ flags.DEFINE_string(
     'model_dir', default=MODEL_BUCKET,
     help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
-# flags.DEFINE_string(
-#     'tflogs_dir', default=TENSORBOARD_BUCKET,
-#     help=('The directory where the tensorboard summary are stored')
-# )
 
 flags.DEFINE_string(
     'ckptinit_dir', default='',
@@ -260,7 +250,6 @@ flags.DEFINE_integer(
 flags.DEFINE_integer(
     'log_step_count_steps',default=train_config.step_interval_for_display_loss,
     help=('Step interval for disply loss'))
-
 
 
 
