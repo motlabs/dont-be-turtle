@@ -70,8 +70,6 @@ from train_aux_fn import get_heatmap_activation
 from train_aux_fn import metric_fn
 from train_aux_fn import summary_fn
 
-from tensorflow.contrib import summary
-from tensorflow.contrib.tpu.python.tpu import bfloat16
 from tensorflow.contrib.training.python.training import evaluation
 from tensorflow.python.estimator import estimator
 
@@ -319,14 +317,9 @@ def main(unused_argv):
     FLAGS.model_dir = curr_model_dir
 
     # # logging config information
-    # with open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
-    #     json.dump(str(train_config_dict), fp)
-    #
-    # with open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
-    #     json.dump(str(model_config_dict), fp)
-    #
-    # with open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
-    #     json.dump(str(preproc_config_dict), fp)
+    tf.logging.info(str(train_config_dict))
+    tf.logging.info(str(model_config_dict))
+    tf.logging.info(str(preproc_config_dict))
 
 
     # for CPU or GPU use
@@ -394,8 +387,8 @@ def main(unused_argv):
                     break
 
             except tf.errors.NotFoundError:
-                # Since the coordinator is on a different job than the TPU worker,
-                # sometimes the TPU worker does not finish initializing until long after
+                # Since the coordinator is on a different job than the GPU worker,
+                # sometimes the GPU worker does not finish initializing until long after
                 # the CPU job tells it to start evaluating. In this case, the checkpoint
                 # file could have been deleted already.
                 tf.logging.info(

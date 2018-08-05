@@ -337,8 +337,7 @@ def summary_fn(loss,
                                                       resized_input_image],
                                      max_outputs    =batch_size)
 
-            tfplot.summary.plot_many(name           =summary_name_pred_out_heatmap +
-                                                     '_' +
+            tfplot.summary.plot_many(name           =summary_name_pred_out_heatmap + '_' +
                                                      str(keypoint_index),
                                      plot_func      =overlay_attention_batch,
                                      in_tensors     =[pred_out_heatmap[:,:,:,keypoint_index],
