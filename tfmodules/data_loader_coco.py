@@ -167,6 +167,8 @@ class DataSetInput(object):
 
 
         if self.is_training:
+            dataset = dataset.repeat()
+            tf.logging.info('[Input_fn] dataset.repeat()')
             # dataset elementwise shuffling
             dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
             tf.logging.info('[Input_fn] dataset.shuffle()')
@@ -188,9 +190,7 @@ class DataSetInput(object):
         dataset = dataset.batch(BATCH_SIZE)
         dataset = dataset.map(self._set_shapes, num_parallel_calls=multiprocessing_num)
 
-        if self.is_training:
-            dataset = dataset.repeat()
-            tf.logging.info('[Input_fn] dataset.repeat()')
+
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
