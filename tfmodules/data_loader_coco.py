@@ -45,6 +45,7 @@ sys.path.insert(0,COCO_REALSET_DIR)
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
 from train_config  import PreprocessingConfig
+from train_config  import FLAGS
 
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_HG_INOUT_RESOL
@@ -118,7 +119,11 @@ class DataSetInput(object):
         anno_ids = TRAIN_ANNO.getAnnIds(imgIds=imgId)
         img_anno = TRAIN_ANNO.loadAnns(anno_ids)
         idx = img_meta['id']
-        img_path = join(COCO_DATASET_BASE_DIR, img_meta['file_name'])
+
+        filename_item_list = img_meta['file_name'].split('/')
+        filename = filename_item_list[1] +'/' + filename_item_list[2]
+
+        img_path = join(FLAGS.data_dir, filename)
 
         img_meta_data   = CocoMetadata(idx=idx,
                                        img_path=img_path,
@@ -147,16 +152,16 @@ class DataSetInput(object):
             doc reference: https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
         """
         tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
-        json_filename_split = COCO_REALSET_DIR.split('/')
+        json_filename_split = FLAGS.data_dir.split('/')
 
         if self.is_training:
-            json_filename       = json_filename_split[-2] + '_train.json'
+            json_filename       = json_filename_split[-1] + '_train.json'
         else:
-            json_filename       = json_filename_split[-2] + '_valid.json'
+            json_filename       = json_filename_split[-1] + '_valid.json'
 
         global TRAIN_ANNO
 
-        TRAIN_ANNO      = COCO(join(COCO_REALSET_DIR,json_filename))
+        TRAIN_ANNO      = COCO(join(FLAGS.data_dir,json_filename))
         imgIds          = TRAIN_ANNO.getImgIds()
         dataset         = tf.data.Dataset.from_tensor_slices(imgIds)
 
