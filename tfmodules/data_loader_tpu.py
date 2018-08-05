@@ -14,8 +14,10 @@
 # ==============================================================================
 # -*- coding: utf-8 -*-
 
-"""Efficient dont be turtle input pipeline using tf.data.Dataset."""
-# code ref: https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/imagenet_input.py
+"""Efficient dont be turtle input pipeline using tf.data.Dataset.
+code ref: https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/imagenet_input.py
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,13 +30,14 @@ import functools
 from glob import glob
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
+from path_manager import TPU_DATALOAD_DIR
 
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
+sys.path.insert(0,TPU_DATALOAD_DIR)
 
 from train_config  import BATCH_SIZE
 from train_config  import TRAININGSET_SIZE
-from train_config  import TRAIN_FILE_BYTE
 
 from train_config  import PreprocessingConfig
 from model_config  import DEFAULT_INPUT_RESOL
@@ -46,6 +49,8 @@ from train_config import FLAGS
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
 preproc_config = PreprocessingConfig()
+
+TRAIN_FILE_BYTE             = 265 * 1024 * 1024  # 6MB for lsp train dataset file
 
 def image_serving_input_fn():
     """Serving input fn for raw images.

@@ -30,7 +30,9 @@ from tf_conv_module import get_residual_module
 
 from tf_deconv_module import get_nearest_neighbor_unpool2d_module
 from tf_deconv_module import get_transconv_unpool2d_module
-
+from tf_deconv_module import get_nearest_neighbor_resize_module
+from tf_deconv_module import get_bilinear_resize_module
+from tf_deconv_module import get_bicubic_resize_module
 
 
 class inception_conv_chout_num(object):
@@ -55,8 +57,6 @@ def get_hourglass_conv_module(ch_in,
     end_points  = {}
     inception_chout_num_list = inception_conv_chout_num()
     ch_in_num = ch_in.get_shape().as_list()[3]
-
-
 
     with tf.variable_scope(name_or_scope=scope,default_name='hg_conv',values=[ch_in]):
 
@@ -96,7 +96,7 @@ def get_hourglass_conv_module(ch_in,
 
         elif model_config.conv_type is 'inverted_bottleneck':
 
-            expand_ch_num = np.floor( ch_in_num *1.5)
+            expand_ch_num = np.floor( ch_in_num * 6.0)
             net,end_points = get_inverted_bottleneck_module(ch_in         = net,
                                                              ch_out_num    = ch_out_num,
                                                              expand_ch_num = expand_ch_num,
@@ -106,6 +106,7 @@ def get_hourglass_conv_module(ch_in,
                                                              scope         = model_config.conv_type)
 
     return net,end_points
+
 
 
 
@@ -121,26 +122,22 @@ def get_hourglass_deconv_module(ch_in,
     net         = ch_in
     end_points  = {}
 
-    output_height = int(ch_in.get_shape().as_list()[1] * unpool_rate)
-    output_width  = int(ch_in.get_shape().as_list()[2] * unpool_rate)
-
-    # print('[deconv] output_height = %s' % output_height)
-    # print('[deconv] output_width = %s' % output_width)
-
     with tf.variable_scope(name_or_scope=scope,default_name='hg_deconv',values=[ch_in]):
 
-        if model_config.deconv_type is 'nearest_neighbor_unpool':
-            # net,end_points= get_nearest_neighbor_unpool2d_module(inputs=net,
-            #                                                      unpool_rate=unpool_rate,
-            #                                                      scope = model_config.deconv_type)
 
-            end_points[scope +'/' + model_config.deconv_type + '_in'] = net
+        if model_config.deconv_type is 'nearest_neighbor_resize':
+            net,end_points = get_nearest_neighbor_resize_module(inputs=net,
+                                                               resize_rate=unpool_rate,
+                                                               scope = model_config.deconv_type)
+        elif model_config.deconv_type is 'bilinear_resize':
+            net, end_points = get_bilinear_resize_module(inputs=net,
+                                                         resize_rate=unpool_rate,
+                                                         scope= model_config.deconv_type)
 
-            net = tf.image.resize_nearest_neighbor(images=net,
-                                                 size=[output_height,output_width ],
-                                                 align_corners=False)
-            end_points[model_config.deconv_type + '_out'] = net
-
+        elif model_config.deconv_type is 'bicubic_resize':
+            net, end_points = get_bicubic_resize_module(inputs = net,
+                                                      resize_rate= unpool_rate,
+                                                      scope= model_config.deconv_type)
 
         elif model_config.deconv_type is 'conv2dtrans_unpool':
             net,end_points = get_transconv_unpool2d_module(inputs=net,
@@ -148,6 +145,10 @@ def get_hourglass_deconv_module(ch_in,
                                                           model_config=model_config,
                                                           scope= model_config.deconv_type)
 
+        elif model_config.deconv_type is 'nearest_neighbor_unpool':
+            net, end_points = get_nearest_neighbor_unpool2d_module(inputs=net,
+                                                                   unpool_rate=unpool_rate,
+                                                                   scope=model_config.deconv_type)
     return net,end_points
 
 

@@ -13,19 +13,18 @@
 # ===================================================================================
 # -*- coding: utf-8 -*-
 #! /usr/bin/env python
-
+import tfplot
+import tfplot.summary
 import tensorflow as tf
-
+import numpy as np
 
 ### models
 from model_config  import ModelConfig
+from model_config  import DEFAULT_HG_INOUT_RESOL
+from model_config  import NUM_OF_KEYPOINTS
 
 #### training config
 from train_config  import TrainConfig
-
-from train_config  import LR_SCHEDULE
-from train_config  import FLAGS
-from train_config  import LR_DECAY_RATE
 from train_config  import FLAGS
 from tensorflow.contrib import summary
 
@@ -35,6 +34,11 @@ train_config    = TrainConfig()
 model_config    = ModelConfig()
 
 
+# Learning rate schedule
+LR_SCHEDULE = [
+    # (multiplier, epoch to start) tuples
+    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80), (1e-6, 300)
+]
 
 
 def learning_rate_schedule(current_epoch):
@@ -70,7 +74,7 @@ def learning_rate_schedule(current_epoch):
 
 def learning_rate_exp_decay(current_epoch):
 
-    decay_rate = FLAGS.base_learning_rate  * LR_DECAY_RATE **(current_epoch)
+    decay_rate = FLAGS.base_learning_rate  * train_config.learning_rate_decay_rate **(current_epoch)
     return decay_rate
 
 
@@ -116,22 +120,11 @@ def get_heatmap_activation(logits,scope=None):
     '''
     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
-        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
-        # logits_heatmap_head, \
-        # logits_heatmap_neck, \
-        # logits_heatmap_rshoulder, \
-        # logits_heatmap_lshoulder = tf.split(logits,
-        #                                     num_or_size_splits=model_config.num_of_labels,
-        #                                     axis=3)
-        ### 2) activation
         activation_fn = train_config.activation_fn_out
 
         if train_config.activation_fn_out == None:
             ''' linear activation case'''
-            act_heatmap_head        = logits[:,:,:,0:1]
-            act_heatmap_neck        = logits[:,:,:,1:2]
-            act_heatmap_rshoulder   = logits[:,:,:,2:3]
-            act_heatmap_lshoulder   = logits[:,:,:,3:4]
+            act_heatmaps = logits
         else:
             act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
                                                   name='act_head')
@@ -142,10 +135,10 @@ def get_heatmap_activation(logits,scope=None):
             act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
                                                   name='act_lshoulder')
 
-        act_heatmaps = tf.concat([act_heatmap_head, \
-                                 act_heatmap_neck, \
-                                 act_heatmap_rshoulder, \
-                                 act_heatmap_lshoulder],axis=3)
+            act_heatmaps = tf.concat([act_heatmap_head, \
+                                     act_heatmap_neck, \
+                                     act_heatmap_rshoulder, \
+                                     act_heatmap_lshoulder],axis=3)
     return act_heatmaps
 
 
@@ -177,23 +170,36 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
-                                  predictions=pred_heatmaps[:,:,:,0:1])
+        # loss_head       = loss_fn(labels     =label_heatmaps[:,:,:,0:1],
+        #                           predictions=pred_heatmaps[:,:,:,0:1])
+        #
+        # loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
+        #                           predictions=pred_heatmaps[:,:,:,1:2])
+        #
+        # loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+        #                           predictions=pred_heatmaps[:,:,:,2:3])
+        #
+        # loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+        #                           predictions=pred_heatmaps[:,:,:,3:4])
 
-        loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
-                                  predictions=pred_heatmaps[:,:,:,1:2])
+        # loss_head       = loss_fn(label_heatmaps[:,:,:,0:1] -\
+        #                            pred_heatmaps[:,:,:,0:1])
+        #
+        # loss_neck       = loss_fn(label_heatmaps[:,:,:,1:2] -\
+        #                           pred_heatmaps[:,:,:,1:2])
+        #
+        # loss_rshoulder  = loss_fn(label_heatmaps[:,:,:,2:3] -\
+        #                            pred_heatmaps[:,:,:,2:3])
+        #
+        # loss_lshoulder  = loss_fn(label_heatmaps[:,:,:,3:4] -\
+        #                            pred_heatmaps[:,:,:,3:4])
 
-        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
-                                  predictions=pred_heatmaps[:,:,:,2:3])
-
-        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
-                                  predictions=pred_heatmaps[:,:,:,3:4])
+        total_losssum = loss_fn(label_heatmaps - pred_heatmaps)
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
-        total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
+        # total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
 
     return total_losssum
-
 
 
 
@@ -287,3 +293,97 @@ def metric_fn(labels, logits,pck_threshold):
     return metric_dict
 
 
+
+
+def summary_fn(loss,
+               total_out_losssum,
+               total_mid_losssum_list,
+               learning_rate,
+               input_images,
+               label_heatmap,
+               pred_out_heatmap,
+               pred_mid_heatmap):
+    '''
+
+        code ref: https://github.com/wookayin/tensorflow-plot
+    '''
+
+    tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
+    tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')
+    tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
+
+
+    batch_size          = FLAGS.train_batch_size
+    resized_input_image = tf.image.resize_bicubic(images= input_images,
+                                                  size=[int(DEFAULT_HG_INOUT_RESOL),
+                                                        int(DEFAULT_HG_INOUT_RESOL)],
+                                                  align_corners=False)
+    tf.logging.info ('[summary_fn] batch_size = %s' % batch_size)
+    tf.logging.info ('[summary_fn] resized_input_image.shape= %s' % resized_input_image.get_shape().as_list())
+    tf.logging.info ('[summary_fn] label_heatmap.shape= %s' % label_heatmap.get_shape().as_list())
+    tf.logging.info ('[summary_fn] pred_out_heatmap.shape= %s' % pred_out_heatmap.get_shape().as_list())
+
+
+    if FLAGS.is_summary_heatmap:
+        summary_name_true_heatmap           = "true_heatmap_summary"
+        summary_name_pred_out_heatmap       = "pred_out_heatmap_summary"
+        summary_name_pred_mid_heatmap       = "pred_mid_heatmap_summary"
+
+        for keypoint_index in range(0,NUM_OF_KEYPOINTS):
+            tfplot.summary.plot_many(name           =summary_name_true_heatmap + '_' +
+                                                     str(keypoint_index),
+                                     plot_func      =overlay_attention_batch,
+                                     in_tensors     =[label_heatmap[:,:,:,keypoint_index],
+                                                      resized_input_image],
+                                     max_outputs    =batch_size)
+
+            tfplot.summary.plot_many(name           =summary_name_pred_out_heatmap + '_' +
+                                                     str(keypoint_index),
+                                     plot_func      =overlay_attention_batch,
+                                     in_tensors     =[pred_out_heatmap[:,:,:,keypoint_index],
+                                                      resized_input_image],
+                                     max_outputs    =batch_size)
+
+
+        for n in range(0, model_config.num_of_hgstacking - 1):
+            tf.logging.info ('[summary_fn] pred_mid_heatmap.shape= %s' % pred_mid_heatmap[0].get_shape().as_list())
+
+            tf.summary.scalar(name='mid_loss' + str(n),
+                              tensor=total_mid_losssum_list[n],
+                              family='midlayer')
+
+            for keypoint_index in range(0,NUM_OF_KEYPOINTS):
+                tfplot.summary.plot_many(name       =summary_name_pred_mid_heatmap + '_' +
+                                                     str(keypoint_index) +
+                                                     '_hgstage'+str(n),
+                                         plot_func  =overlay_attention_batch,
+                                         in_tensors =[pred_mid_heatmap[n][:, :, :, keypoint_index],
+                                                      resized_input_image],
+                                         max_outputs=batch_size)
+
+    return tf.summary.merge_all()
+
+
+
+
+
+
+def overlay_attention_batch(attention, image,
+                            alpha=0.5, cmap='jet'):
+
+    fig = tfplot.Figure(figsize=(4, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis('off')
+    # fig.subplots_adjust(0, 0, 1, 1)  # get rid of margins
+
+    # print (attention.shape)
+    # print (image.shape)
+    # print ('[tfplot] attention  =%s' % attention)
+    # print ('[tfplot] image      =%s' % image)
+    image = image.astype(np.uint8)
+    H, W = attention.shape
+    ax.imshow(image, extent=[0, H, 0, W])
+    ax.imshow(attention, cmap=cmap,
+              alpha=alpha, extent=[0, H, 0, W])
+
+    return fig

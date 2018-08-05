@@ -30,7 +30,7 @@ DEFAULT_RESO_POOL_RATE_IN_RCEPTION = 4.0
 DEFAULT_HG_INOUT_RESOL  = DEFAULT_INPUT_RESOL / DEFAULT_RESO_POOL_RATE_IN_RCEPTION
 
 DEFAULT_LABEL_LENGTH    = 3
-NUM_OF_BODY_PART        = 4
+NUM_OF_KEYPOINTS        = 4
 
 
 
@@ -86,7 +86,7 @@ class DeconvModuleConfig(object):
         self.batch_norm_fused   = True
 
     def show_info(self):
-        tf.logging.info('[deconv_config] conv_type = %s' % self.deconv_type)
+        tf.logging.info('[deconv_config] deconv_type = %s' % self.deconv_type)
         tf.logging.info('[deconv_config] is_trainable = %s' % self.is_trainable)
         # tf.logging.info('[conv_config] weights_regularizer = %s' % str(self.weights_regularizer))
         tf.logging.info('[deconv_config] act_fn = %s' % str(self.activation_fn))
@@ -143,8 +143,8 @@ class ReceptionConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        # self.conv_type = 'inverted_bottleneck'
-        self.conv_type = 'residual'
+        self.conv_type = 'inverted_bottleneck'
+        # self.conv_type = 'residual'
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
 
 
@@ -180,8 +180,9 @@ class HourGlassConfig(object):
         # self.conv_type           = 'separable_conv2d'
 
         # self.conv_type = 'linear_bottleneck'
-        self.conv_type = 'residual'
-        self.deconv_type = 'nearest_neighbor_unpool'
+        # self.conv_type = 'residual'
+        self.conv_type = 'inverted_bottleneck'
+        self.deconv_type = 'bilinear_resize'
 
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
         self.deconv_config  = DeconvModuleConfig(deconv_type=self.deconv_type)
@@ -211,7 +212,7 @@ class SupervisionConfig(object):
 
         self.num_of_channels_out    = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
         self.num_of_1st1x1conv_ch   = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
-        self.num_of_heatmaps        = 4
+        self.num_of_heatmaps        = NUM_OF_KEYPOINTS
 
         self.is_trainable           = True
         self.lossfn_enable          = False
@@ -242,10 +243,10 @@ class OutputConfig(object):
     def __init__(self, resol_multiplier):
         self.input_height           = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_width            = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
-        self.num_of_channels_out    = NUM_OF_BODY_PART
+        self.num_of_channels_out    = NUM_OF_KEYPOINTS
 
         self.dim_reduct_ratio              = 1
-        self.num_stacking_1x1conv          = 2
+        self.num_stacking_1x1conv          = 1
         self.is_trainable                  = True
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
@@ -270,6 +271,8 @@ class OutputConfig(object):
 
 
 
+
+
 class ModelConfig(object):
 
     def __init__(self):
@@ -278,17 +281,17 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 0.25 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
-        self.num_of_hgstacking  = 2
-        self.num_of_labels      = 4
+        self.num_of_hgstacking  = 1
+        self.num_of_labels      = NUM_OF_KEYPOINTS
 
         self.dtype              = tf.float32
 
         self.hg_config          = HourGlassConfig   (self.depth_multiplier, self.resol_multiplier)
         self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
         self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
-        self.out_config         = OutputConfig      (self.depth_multiplier)
+        self.out_config         = OutputConfig      (self.resol_multiplier)
 
 
     def show_info(self):

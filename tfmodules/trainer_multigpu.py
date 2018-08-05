@@ -24,39 +24,33 @@ import sys
 import time
 import os
 import json
-# import cloudstorage as gcs
-
 
 from absl import flags
 import absl.logging as _logging  # pylint: disable=unused-import
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
-from tensorflow.python.client import device_lib
 
 
 # directory path addition
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
-from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
-
-from path_manager import TENSORBOARD_BUCKET
-from path_manager import EXPORT_MODEL_DIR
+from path_manager import COCO_DATALOAD_DIR
 
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
-sys.path.insert(0,EXPORT_TFLOG_DIR)
+sys.path.insert(0,COCO_DATALOAD_DIR)
 
 
 # custom python packages
 
 ### data loader
-import data_loader_tpu
+import data_loader_coco
 
 ### models
 from model_builder import get_model
@@ -66,20 +60,16 @@ from model_config  import ModelConfig
 from train_config  import TrainConfig
 from train_config  import PreprocessingConfig
 
-from train_config  import MEAN_RGB
-from train_config  import STDDEV_RGB
 from train_config  import FLAGS
 
-# import aux functions
 
 from train_aux_fn import get_loss_heatmap
 from train_aux_fn import learning_rate_schedule
 from train_aux_fn import learning_rate_exp_decay
 from train_aux_fn import get_heatmap_activation
 from train_aux_fn import metric_fn
+from train_aux_fn import summary_fn
 
-
-from tensorflow.contrib import summary
 from tensorflow.contrib.training.python.training import evaluation
 from tensorflow.python.estimator import estimator
 
@@ -94,32 +84,16 @@ train_config_dict   = train_config.__dict__
 model_config_dict   = model_config.__dict__
 preproc_config_dict = preproc_config.__dict__
 
+
+
 def model_fn(features,
              labels,
              mode,
              params):
     """
-    The model_fn for dontbeturtle model to be used with TPUEstimator.
-
-    Args:
-        features:   `Tensor` of batched input images <batchNum x M x M x 3>.
-        labels: labels_heatmap_list
-        labels =
-                        [ [labels_head],
-                          [label_neck],
-                          [label_rshoulder],
-                          [label_lshoulder] ]
-                        where has shape <batchNum N x N x 4>
-
-        mode:       one of `tf.estimator.ModeKeys.
-                    {
-                     - TRAIN (default)  : for weight training ( running forward + backward + metric)
-                     - EVAL,            : for validation (running forward + metric)
-                     - PREDICT          : for prediction ( running forward only )
-                     }`
-
+    The model_fn for dontbeturtle model to be used with Estimator.
         Returns:
-        A `TPUEstimatorSpec` for the model
+        A `EstimatorSpec` for the model
     """
     del params # unused
 
@@ -132,21 +106,17 @@ def model_fn(features,
         features = tf.transpose(features, [3, 0, 1, 2])  # HWCN to NHWC
 
 
-
-
-    with tf.name_scope(name='feature_norm',values=[features]):
+    # with tf.name_scope(name='feature_norm',values=[features]):
         # Standardization to the image by zero mean and unit variance.
-        features -= tf.constant(MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
-        features /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+        # features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
+        # features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
-        # set input_shape
-        features.set_shape(features.get_shape().merge_with(
-            tf.TensorShape([None,
-                            model_config.input_height,
-                            model_config.input_width,
-                            None])))
-
-
+    # set input_shape
+    features.set_shape(features.get_shape().merge_with(
+        tf.TensorShape([None,
+                        model_config.input_height,
+                        model_config.input_width,
+                        None])))
 
 
     # Model building ============================
@@ -178,18 +148,17 @@ def model_fn(features,
             tf.logging.info('[model_fn] out_heatmap  shape=%s' % out_heatmap.get_shape().as_list())
             tf.logging.info('-----------------------------------------------------------')
 
-            for n in range(0,model_config.num_of_hgstacking):
+            for n in range(0,model_config.num_of_hgstacking - 1):
                 tf.logging.info('[model_fn] mid_heatmap%d  shape=%s'
                                 % (n,mid_heatmap[n].get_shape().as_list()))
 
-            # weight init from ckpt
+                # weight init from ckpt
             if FLAGS.is_ckpt_init:
                 tf.logging.info('[model_fn] ckpt loading from %s' % FLAGS.ckptinit_dir)
                 tf.train.init_from_checkpoint(ckpt_dir_or_file=FLAGS.ckptinit_dir,
-                                              assignment_map={"model/":"model/"})
+                                              assignment_map={"model/": "model/"})
 
         return out_heatmap, mid_heatmap,end_points
-
 
 
 
@@ -221,55 +190,48 @@ def model_fn(features,
         # heatmap activation of output layer out
         act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
                                                   scope='out_heatmap')
-        # heatmap loss
+        # heatmap losses
         total_out_losssum = \
             get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                              label_heatmaps=labels,
                              scope='out_loss')
 
-
-
-
-    ### middle layer ===
+    ### middle layers ===
     with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
                                                      labels]):
         ### supervision layers ===
         total_mid_losssum_list = []
         total_mid_losssum_acc = 0.0
 
-        for stacked_hg_index in range(0, model_config.num_of_hgstacking):
-            # heatmap activation of supervision layer out
+        for stacked_hg_index in range(0, model_config.num_of_hgstacking - 1):
+            ## heatmap activation of supervision layer out
             act_mid_heatmap_temp = \
-                get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
-                                       scope='mid_heatmap_' + str(stacked_hg_index))
+                get_heatmap_activation(logits   =logits_mid_heatmap[stacked_hg_index],
+                                       scope    ='mid_heatmap_' + str(stacked_hg_index))
             # heatmap loss
             total_mid_losssum_temp = \
-                get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp,
-                                 label_heatmaps=labels,
-                                 scope='mid_loss_' + str(stacked_hg_index))
+                get_loss_heatmap(pred_heatmaps  =act_mid_heatmap_temp,
+                                 label_heatmaps =labels,
+                                 scope          ='mid_loss_' + str(stacked_hg_index))
 
             # collect loss and heatmap in list
             total_mid_losssum_list.append(total_mid_losssum_temp)
             total_mid_losssum_acc += total_mid_losssum_temp
 
 
-
-
-
-
     ### total loss ===
-    with tf.name_scope(name='total_loss',values=[total_out_losssum,
-                                                 total_mid_losssum_acc]):
+    with tf.name_scope(name='total_loss', values=[total_out_losssum,
+                                                  total_mid_losssum_acc]):
         # Collect weight regularizer loss =====
         loss_regularizer = tf.losses.get_regularization_loss()
-        # sum up all losses =====
-        loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
+        loss = (total_out_losssum + total_mid_losssum_acc ) / FLAGS.train_batch_size \
+               + loss_regularizer
+
 
 
 
     extra_summary_hook = None
     train_op     = None
-
     if mode == tf.estimator.ModeKeys.TRAIN:
         # Compute the current epoch and associated learning rate from global_step.
         global_step         = tf.train.get_global_step()
@@ -278,13 +240,16 @@ def model_fn(features,
         current_epoch       = (tf.cast(global_step, tf.float32) /
                                 batchnum_per_epoch)
         # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-        learning_rate = learning_rate_exp_decay(current_epoch=current_epoch)
+        # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
 
-        optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
-                                                        name='RMSprop_opt')
+        learning_rate = tf.train.exponential_decay(learning_rate    =train_config.learning_rate_base,
+                                                   global_step      =global_step,
+                                                   decay_steps      =train_config.learning_rate_decay_step,
+                                                   decay_rate       =train_config.learning_rate_decay_rate,
+                                                   staircase        =True)
 
-        # wrapping to use multiple GPUs
-        optimizer = tf.contrib.estimator.TowerOptimizer(optimizer)
+        optimizer           = train_config.opt_fn(learning_rate=learning_rate,
+                                                   name='opt_op')
 
         '''
             # Batch normalization requires UPDATE_OPS to be added as a dependency to
@@ -295,74 +260,24 @@ def model_fn(features,
         with tf.control_dependencies(update_ops):
             train_op = optimizer.minimize(loss, global_step)
 
-
-
         if FLAGS.is_extra_summary:
-            # To log the loss, current learning rate, and epoch for Tensorboard, the
-            # summary op needs to be run on the host CPU via host_call. host_call
-            # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
-            # dimension. These Tensors are implicitly concatenated to
-            # [model_config['batch_size']].
+            summary_op = summary_fn(loss                    =loss,
+                                    total_out_losssum       =total_out_losssum,
+                                    total_mid_losssum_list  =total_mid_losssum_list,
+                                    learning_rate           =learning_rate,
+                                    input_images            =features,
+                                    label_heatmap           =labels,
+                                    pred_out_heatmap        =logits_out_heatmap,
+                                    pred_mid_heatmap        =logits_mid_heatmap)
 
-            tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
-            tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')
-            tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
-
-            if FLAGS.is_summary_heatmap:
-                tf.summary.image(name='out_heatmat_head',
-                                 tensor=logits_out_heatmap[:,:,:,0:1],
-                                 max_outputs=1,
-                                 family='out_featmaps')
-                tf.summary.image(name='out_heatmat_neck',
-                                 tensor=logits_out_heatmap[:,:,:,1:2],
-                                 max_outputs=1,
-                                 family='out_featmaps')
-                tf.summary.image(name='out_heatmat_Rshoulder',
-                                 tensor=logits_out_heatmap[:,:,:,2:3],
-                                 max_outputs=1,
-                                 family='out_featmaps')
-                tf.summary.image(name='out_heatmat_Lshoulder',
-                                 tensor=logits_out_heatmap[:,:,:,3:4],
-                                 max_outputs=1,
-                                 family='out_featmaps')
-
-
-
-            for n in range(0, model_config.num_of_hgstacking):
-
-                tf.summary.scalar(name='mid_loss' + str(n),
-                                  tensor=total_mid_losssum_list[n],
-                                  family='midlayer')
-
-                if FLAGS.is_summary_heatmap:
-                    tf.summary.image(name='mid_heatmat_head'+str(n),
-                                     tensor=logits_mid_heatmap[n][:, :, :, 0:1],
-                                     max_outputs=1,
-                                     family='mid_featmaps'+str(n))
-
-                    tf.summary.image(name='out_heatmat_neck'+str(n),
-                                     tensor=logits_mid_heatmap[n][:, :, :, 1:2],
-                                     max_outputs=1,
-                                     family='mid_featmaps'+str(n))
-
-                    tf.summary.image(name='out_heatmat_Rshoulder',
-                                     tensor=logits_mid_heatmap[n][:, :, :, 2:3],
-                                     max_outputs=1,
-                                     family='mid_featmaps'+str(n))
-
-                    tf.summary.image(name='out_heatmat_Lshoulder',
-                                     tensor=logits_mid_heatmap[n][:, :, :, 3:4],
-                                     max_outputs=1,
-                                     family='mid_featmaps'+str(n))
-
-                tf.logging.info('Create SummarySaveHook.')
-                extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+            tf.logging.info('Create SummarySaveHook.')
+            extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
                                                          output_dir=FLAGS.model_dir,
-                                                         summary_op=tf.summary.merge_all())
+                                                         summary_op=summary_op)
 
 
         # in case of Estimator metric_ops must be in a form of dictionary
-        metric_ops = metric_fn(labels, logits_out_heatmap,pck_threshold=FLAGS.pck_threshold)
+        metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
@@ -370,7 +285,7 @@ def model_fn(features,
                                                  training_hooks = [extra_summary_hook])
 
     elif mode == tf.estimator.ModeKeys.EVAL:
-        metric_ops = metric_fn(labels, logits_out_heatmap,pck_threshold=FLAGS.pck_threshold)
+        metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
@@ -383,9 +298,6 @@ def model_fn(features,
 
 
 
-
-
-
 def main(unused_argv):
 
     model_config.show_info()
@@ -394,7 +306,7 @@ def main(unused_argv):
 
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    curr_model_dir = "{}/run-{}/".format(FLAGS.model_dir, now)
+    curr_model_dir      = "{}/run-{}/".format(FLAGS.model_dir, now)
 
     tf.logging.info('[main] data dir = %s'%FLAGS.data_dir)
     tf.logging.info('[main] model dir = %s'%curr_model_dir)
@@ -406,20 +318,14 @@ def main(unused_argv):
     FLAGS.model_dir = curr_model_dir
 
     # # logging config information
-    # curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
-    # with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
-    #     json.dump(train_config_dict, fp)
-    #
-    # with open(curr_model_dir_local + 'model_config' + '.json', 'w') as fp:
-    #     json.dump(model_config_dict, fp)
-    #
-    # with open(curr_model_dir_local + 'preproc_config' + '.json', 'w') as fp:
-    #     json.dump(preproc_config_dict, fp)
-
+    tf.logging.info(str(train_config_dict))
+    tf.logging.info(str(model_config_dict))
+    tf.logging.info(str(preproc_config_dict))
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
                             log_device_placement=True)
+
     config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
@@ -433,13 +339,13 @@ def main(unused_argv):
                 log_step_count_steps            =FLAGS.log_step_count_steps,
                 train_distribute                =None)
 
+
     dontbeturtle_estimator  = tf.estimator.Estimator(
                 model_dir          = FLAGS.model_dir,
-                model_fn           = tf.contrib.estimator.replicate_model_fn(model_fn),
+                model_fn=tf.contrib.estimator.replicate_model_fn(model_fn),
                 config             = config,
                 params             = None,
                 warm_start_from    = None)
-
 
     '''
     # data loader
@@ -447,11 +353,12 @@ def main(unused_argv):
     # preprocessing) between training and evaluation.
     '''
     dataset_train, dataset_eval = \
-        [data_loader_tpu.DataSetInput(
+        [data_loader_coco.DataSetInput(
         is_training     =is_training,
         data_dir        =FLAGS.data_dir,
         transpose_input =FLAGS.transpose_input,
         use_bfloat16    =False) for is_training in [True, False]]
+
 
 
     if FLAGS.mode == 'eval':
@@ -481,8 +388,8 @@ def main(unused_argv):
                     break
 
             except tf.errors.NotFoundError:
-                # Since the coordinator is on a different job than the TPU worker,
-                # sometimes the TPU worker does not finish initializing until long after
+                # Since the coordinator is on a different job than the GPU worker,
+                # sometimes the GPU worker does not finish initializing until long after
                 # the CPU job tells it to start evaluating. In this case, the checkpoint
                 # file could have been deleted already.
                 tf.logging.info(
@@ -495,7 +402,6 @@ def main(unused_argv):
         tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)
         tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
         tf.logging.info('[main] batchnum_per_epoch=%s' % batchnum_per_epoch)
-
         tf.logging.info('[main] Training for %d steps (%.2f epochs in total). Current'
                         ' step %d.' % (FLAGS.train_steps,
                                        FLAGS.train_steps / batchnum_per_epoch,
@@ -548,8 +454,7 @@ def main(unused_argv):
 
 
 
-
-
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run()
+

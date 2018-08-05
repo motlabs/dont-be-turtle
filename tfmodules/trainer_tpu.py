@@ -14,8 +14,11 @@
 # ==============================================================================
 # -*- coding: utf-8 -*-
 
-"""Train a dont be turtle model on TPU."""
-# code reference : https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/resnet_main.py
+"""Train a dont be turtle model on TPU.
+    under construction since 2018 8
+    code reference : https://github.com/tensorflow/tpu/blob/1fe0a9b8b8df3e2eb370b0ebb2f80eded6a9e2b6/models/official/resnet/resnet_main.py
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,7 +39,6 @@ from datetime import datetime
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
-from path_manager import EXPORT_TFLOG_DIR
 from path_manager import TF_CNN_MODULE_DIR
 
 from path_manager import TENSORBOARD_BUCKET
@@ -46,7 +48,6 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
-sys.path.insert(0,EXPORT_TFLOG_DIR)
 
 
 # custom python packages

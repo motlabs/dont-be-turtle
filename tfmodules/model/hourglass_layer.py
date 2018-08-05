@@ -51,11 +51,6 @@ def get_hourglass_layer(ch_in,
 
         #----------------------------------------
         # bottem-up convolutional blocks
-        # 64(256) --conv+pool-->
-        # 16(256) --conv+pool-->
-        # 8(256)  --conv+pool-->
-        # 4(256)
-
         for conv_index in range(0,model_config.num_of_stacking):
 
             net_shape   = net.get_shape().as_list()
@@ -85,10 +80,6 @@ def get_hourglass_layer(ch_in,
 
         #----------------------------------------
         # A sequence of convolutional block at the bottom
-        # 4(256) --conv-->
-        # 4(256) --conv-->
-        # 4(256) --conv-->
-        # 4(256)
         net_shape_at_bottom     = net.get_shape().as_list()
         ch_out_num_at_bottom    = net_shape_at_bottom[3]
 
@@ -101,10 +92,6 @@ def get_hourglass_layer(ch_in,
 
         #----------------------------------------
         # Top- down deconvolutional blocks
-        # 4(256) + shortcut --unpool-->
-        # 8(256) + shortcut --unpool-->
-        # 16(256) + shortcut --unpool-->
-        # 64(256)
 
         scope = 'hg_deconv'
         for deconv_index in range(0, model_config.num_of_stacking):

@@ -17,65 +17,50 @@
 import tensorflow as tf
 from absl import flags
 
-from path_manager import TFRECORD_REALSET_DIR
-from path_manager import TFRECORD_TESTSET_DIR
-from path_manager import TFRECORD_TESTIMAGE_DIR
-from path_manager import EXPORT_MODEL_DIR
-from path_manager import EXPORT_SAVEMODEL_DIR
-from path_manager import EXPORT_TFLOG_DIR
 
+from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
-from path_manager import TENSORBOARD_BUCKET
 
-# multiple of 8,batchsize
-
-
-## testdate
-# TRAININGSET_SIZE     = 48
-# VALIDATIONSET_SIZE   = 48
-# BATCH_SIZE           = 16 # multiple of 8
-# TRAIN_FILE_BYTE      = 6 * 1024 * 1024  # 6MB for lsp train dataset file
 
 ## realtestdata
 TRAININGSET_SIZE     = 1920
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 8 # multiple of 8
-TRAIN_FILE_BYTE      = 265 * 1024 * 1024  # 6MB for lsp train dataset file
-
-
-
-EPOCH_NUM                   = 100
-DEFAULT_SUMMARY_STEP        = 20
-DEFAULT_LOG_STPE_COUNT_STEP = 50
-
-STEP_PER_EVAL               = DEFAULT_SUMMARY_STEP
-DEFAULT_BASE_LEARNING_RATE  = 1e-1
-LR_DECAY_RATE               = 0.95 # not used 180724
-
-GCP_PROJ_NAME           = 'ordinal-virtue-208004'
-GCE_TPU_ZONE            = 'us-central1-f'
-DEFAULT_GCP_TPU_NAME    = 'jwkangmacpro2-tpu'
-
-TOTAL_TRAIN_STEP = TRAININGSET_SIZE / BATCH_SIZE * EPOCH_NUM
-
-ITER_PER_LOOP_BEFORE_OUTDEEDING = 100
-if TOTAL_TRAIN_STEP < ITER_PER_LOOP_BEFORE_OUTDEEDING:
-    ITER_PER_LOOP_BEFORE_OUTDEEDING = TOTAL_TRAIN_STEP
-
+BATCH_SIZE           = 32 # multiple of 8
 
 
 
 class TrainConfig(object):
     def __init__(self):
 
-        # self.is_learning_rate_decay = True
-        # self.learning_rate_decay_rate =0.99
+
+        self.learning_rate_base       = 1e-3
+        self.learning_rate_decay_rate = 0.95
+        self.learning_rate_decay_step = 2000
+
+        self.epoch_num                  = 100
+        self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
+        self.iter_per_before_outfeeding = 100
+
+
+        self.step_interval_for_eval         = 20
+        self.step_interval_for_summary      = 20
+        self.step_interval_for_display_loss = 50
+
+
+        if self.total_train_steps < self.iter_per_before_outfeeding:
+            self.iter_per_before_outfeeding = self.total_train_steps
+
+
         # self.opt_fn                 = tf.train.RMSPropOptimizer
         self.opt_fn                 = tf.train.AdamOptimizer
+
         self.occlusion_loss_fn      = None
-        self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        # self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        self.heatmap_loss_fn        = tf.nn.l2_loss
+
         self.metric_fn              = tf.metrics.root_mean_squared_error
+
         # self.activation_fn_out      = tf.nn.sigmoid
         self.activation_fn_out      = None
 
@@ -92,53 +77,61 @@ class TrainConfig(object):
 
 
 
-
 class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_random_crop             = False # not implemented yet
+        self.is_crop                    = True # not implemented yet
         self.is_rotate                  = True
         self.is_flipping                = True
+        self.is_scale                   = True
+        self.is_resize_shortest_edge    = True
 
         # this is when classification task
         # which has an input as pose coordinate
-        self.is_label_coordinate_norm   = False
+        # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 1
-        self.heatmap_pdf_type   = 'gaussian'
+        self.heatmap_std        = 6.0
 
-        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
-        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
+        self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
+        self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
 
+        # For normalize the image to zero mean and unit variance.
+        self.MEAN_RGB = [0.485, 0.456, 0.406]
+        self.STDDEV_RGB = [0.229, 0.224, 0.225]
 
 
     def show_info(self):
         tf.logging.info('------------------------')
-        tf.logging.info('[train_config] Use is_random_crop: %s' % str(self.is_random_crop))
+        tf.logging.info('[train_config] Use is_crop: %s'        % str(self.is_crop))
         tf.logging.info('[train_config] Use is_rotate  : %s'    % str(self.is_rotate))
         tf.logging.info('[train_config] Use is_flipping: %s'    % str(self.is_flipping))
+        tf.logging.info('[train_config] Use is_scale: %s'       % str(self.is_scale))
+        tf.logging.info('[train_config] Use is_resize_shortest_edge: %s' % str(self.is_resize_shortest_edge))
 
         if self.is_rotate:
+
             tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
             tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
-
-        tf.logging.info('[train_config] Use heatmap_std     : %s' % str(self.heatmap_std))
-        tf.logging.info('[train_config] Use heatmap_pdf_type: %s' % self.heatmap_pdf_type)
+        tf.logging.info('[train_config] Use heatmap_std: %s'    % str(self.heatmap_std))
         tf.logging.info('------------------------')
 
 
 
-# Learning rate schedule
-LR_SCHEDULE = [
-    # (multiplier, epoch to start) tuples
-    (1.0, 5), (0.1, 20), (0.01, 60), (0.001, 80), (1e-6, 300)
-]
+class GCPConfig(object):
 
-# For normalize the image to zero mean and unit variance.
-MEAN_RGB    = [0.485, 0.456, 0.406]
-STDDEV_RGB  = [0.229, 0.224, 0.225]
+    def __init__(self):
+        self.GCP_PROJ_NAME          = 'ordinal-virtue-208004'
+        self.GCE_TPU_ZONE           = 'us-central1-f'
+        self.DEFAULT_GCP_TPU_NAME   = 'jwkangmacpro2-tpu'
+
+
+
+
+
+train_config    = TrainConfig()
+gcp_config      = GCPConfig()
 
 
 flags.DEFINE_bool(
@@ -168,18 +161,18 @@ flags.DEFINE_bool(
 
 # Cloud TPU Cluster Resolvers
 flags.DEFINE_string(
-    'tpu', default=DEFAULT_GCP_TPU_NAME,
+    'tpu', default=gcp_config.DEFAULT_GCP_TPU_NAME,
     help='The Cloud TPU to use for training. This should be either the name '
     'used when creating the Cloud TPU, or a grpc://ip.address.of.tpu:8470 url.')
 
 
 flags.DEFINE_string(
-    'gcp_project', default=GCP_PROJ_NAME,
+    'gcp_project', default=gcp_config.GCP_PROJ_NAME,
     help='Project name for the Cloud TPU-enabled project. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
 flags.DEFINE_string(
-    'tpu_zone', default=GCE_TPU_ZONE,
+    'tpu_zone', default=gcp_config.GCE_TPU_ZONE,
     help='GCE zone where the Cloud TPU is located in. If not specified, we '
     'will attempt to automatically detect the GCE project from metadata.')
 
@@ -194,10 +187,6 @@ flags.DEFINE_string(
     'model_dir', default=MODEL_BUCKET,
     help=('The directory where the model and training/evaluation ckeckpoint are stored'))
 
-# flags.DEFINE_string(
-#     'tflogs_dir', default=TENSORBOARD_BUCKET,
-#     help=('The directory where the tensorboard summary are stored')
-# )
 
 flags.DEFINE_string(
     'ckptinit_dir', default='',
@@ -212,11 +201,11 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train_and_eval',
+    'mode', default='train',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
-    'train_steps', default=TRAININGSET_SIZE/BATCH_SIZE*EPOCH_NUM,
+    'train_steps', default=train_config.total_train_steps,
     help=('The number of steps to use for training. Default is 112603 steps'
           ' which is approximately 90 epochs at batch size 1024. This flag'
           ' should be adjusted according to the --train_batch_size flag.'))
@@ -235,7 +224,7 @@ flags.DEFINE_integer(
 
 
 flags.DEFINE_integer(
-    'steps_per_eval', default=STEP_PER_EVAL,
+    'steps_per_eval', default=train_config.step_interval_for_eval,
     help=('Controls how often evaluation is performed. Since evaluation is'
           ' fairly expensive, it is advised to evaluate as infrequently as'
           ' possible (i.e. up to --train_steps, which evaluates the model only'
@@ -256,17 +245,16 @@ flags.DEFINE_integer(
 #           ' keep up with the TPU-side computation.'))
 #
 flags.DEFINE_integer(
-    'summary_step', default=DEFAULT_SUMMARY_STEP,
+    'summary_step', default=train_config.step_interval_for_summary,
     help=('Tensorboard summary step'))
 flags.DEFINE_integer(
-    'log_step_count_steps',default=DEFAULT_LOG_STPE_COUNT_STEP,
+    'log_step_count_steps',default=train_config.step_interval_for_display_loss,
     help=('Step interval for disply loss'))
 
 
 
-
 flags.DEFINE_integer(
-    'iterations_per_loop', default=ITER_PER_LOOP_BEFORE_OUTDEEDING,
+    'iterations_per_loop', default=train_config.iter_per_before_outfeeding,
     help=('Number of steps to run on TPU before outfeeding metrics to the CPU.'
           ' If the number of iterations in the loop would exceed the number of'
           ' train steps, the loop will exit before reaching'
@@ -305,7 +293,7 @@ flags.DEFINE_string(
     help=('Precision to use; one of: {bfloat16, float32}'))
 
 flags.DEFINE_float(
-    'base_learning_rate', default=DEFAULT_BASE_LEARNING_RATE,
+    'base_learning_rate', default=train_config.learning_rate_base,
     help=('Base learning rate when train batch size is 256.'))
 
 # flags.DEFINE_float(
@@ -322,11 +310,4 @@ flags.DEFINE_float(
     'pck_threshold', default=0.2,
     help=('Threshold to measure percentage for correct keypoints')
 )
-
-
-
-
-
-
-#-----------------------------------------------
 

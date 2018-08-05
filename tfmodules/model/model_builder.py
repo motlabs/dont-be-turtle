@@ -24,6 +24,8 @@ from reception_layer    import get_reception_layer
 from supervision_layer  import get_supervision_layer
 from output_layer       import get_output_layer
 
+
+
 def get_model(ch_in,model_config,scope=None):
 
     '''
@@ -66,17 +68,19 @@ def get_model(ch_in,model_config,scope=None):
                 tf.logging.info('[model_builder] hourglass%d out shape=%s' % (stacking_index,
                                                                          net.get_shape().as_list()))
 
-                # supervision layer
-                net, end_points_sv,heatmaps = get_layer(ch_in           = net,
-                                                        model_config    = model_config.sv_config,
-                                                        layer_index     = stacking_index,
-                                                        layer_type      = 'supervision')
-                end_points.update(end_points_sv)
-                tf.logging.info('[model_builder] supervision%d out shape=%s' % (stacking_index,
-                                                                         net.get_shape().as_list()))
 
-                # intermediate heatmap save
-                intermediate_heatmaps.append(heatmaps)
+                if stacking_index < model_config.num_of_hgstacking - 1:
+                    # supervision layer
+                    net, end_points_sv,heatmaps = get_layer(ch_in           = net,
+                                                            model_config    = model_config.sv_config,
+                                                            layer_index     = stacking_index,
+                                                            layer_type      = 'supervision')
+                    end_points.update(end_points_sv)
+                    tf.logging.info('[model_builder] supervision%d out shape=%s' % (stacking_index,
+                                                                             net.get_shape().as_list()))
+
+                    # intermediate heatmap save
+                    intermediate_heatmaps.append(heatmaps)
 
                 # shortcut sum
                 net = tf.add(x=net, y=shorcut,
@@ -95,7 +99,7 @@ def get_model(ch_in,model_config,scope=None):
         out = tf.identity(input=net, name= sc.name + '_out')
         end_points[sc.name + '_out'] = out
         end_points[sc.name + '_in'] = ch_in
-        tf.logging.info('[model_builder] buiding hg model complete')
+        tf.logging.info('[model_builder] building hg model complete')
 
         return out, intermediate_heatmaps, end_points
 

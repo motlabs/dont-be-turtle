@@ -26,12 +26,15 @@ echo ${OS}
 
 if [ "$OS" == "$OS_X" ]; then
     export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/
-    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/tfrecords/realdataset/
+#    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/youtube_turtle_lsp
+    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_multigpu.py
 else
     rm -rf /tmp/gcs_filesystem*
-    export MODEL_BUCKET=gs://dontbeturtle_ckpt
-    export DATA_BUCKET=/home/jwkangmacpro2/dont-be-turtle/dataset/tfrecords/realdataset/
+    export MODEL_BUCKET=gs://dontbeturtle_ckpt4
+#    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/youtube_turtle_lsp
+    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle
+
 #    export DATA_BUCKET=null
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_multigpu.py
 fi
