@@ -86,7 +86,7 @@ class DeconvModuleConfig(object):
         self.batch_norm_fused   = True
 
     def show_info(self):
-        tf.logging.info('[deconv_config] conv_type = %s' % self.deconv_type)
+        tf.logging.info('[deconv_config] deconv_type = %s' % self.deconv_type)
         tf.logging.info('[deconv_config] is_trainable = %s' % self.is_trainable)
         # tf.logging.info('[conv_config] weights_regularizer = %s' % str(self.weights_regularizer))
         tf.logging.info('[deconv_config] act_fn = %s' % str(self.activation_fn))

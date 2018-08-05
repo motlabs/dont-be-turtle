@@ -28,6 +28,8 @@ print ('getcwd() = %s' % getcwd())
 import tensorflow as tf
 
 import numpy as np
+# import matplotlib
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # image processing tools
@@ -50,7 +52,7 @@ from train_config import TrainConfig
 from train_aux_fn import metric_fn
 from train_aux_fn import argmax_2d
 from model_config  import DEFAULT_HG_INOUT_RESOL
-
+import tfplot
 
 
 
@@ -94,11 +96,13 @@ class DataLoaderTest(tf.test.TestCase):
 
         favorite_image_index = 5
 
+
         with self.test_session() as sess:
             sess.run(iterator_train.initializer)
 
             # init variable used in metric_fn_var_init
             sess.run(metric_fn_var_init)
+
             for n in range(0,50):
 
                 # argmax2d find coordinate of head
@@ -172,6 +176,7 @@ class DataLoaderTest(tf.test.TestCase):
 
                 print (metric_dict)
                 # print('---------------------------------------------------------')
+
 
                 plt.figure(1)
                 plt.imshow(feature_numpy[favorite_image_index].astype(np.uint8))

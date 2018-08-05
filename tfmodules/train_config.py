@@ -35,6 +35,7 @@ VALIDATIONSET_SIZE   = 192
 BATCH_SIZE           = 32 # multiple of 8
 
 
+
 class TrainConfig(object):
     def __init__(self):
 
@@ -73,7 +74,6 @@ class TrainConfig(object):
         self.is_image_summary = False
 
 
-
     def show_info(self):
         tf.logging.info('------------------------')
         tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
@@ -108,7 +108,6 @@ class PreprocessingConfig(object):
         self.STDDEV_RGB = [0.229, 0.224, 0.225]
 
 
-
     def show_info(self):
         tf.logging.info('------------------------')
         tf.logging.info('[train_config] Use is_crop: %s'        % str(self.is_crop))
@@ -118,12 +117,12 @@ class PreprocessingConfig(object):
         tf.logging.info('[train_config] Use is_resize_shortest_edge: %s' % str(self.is_resize_shortest_edge))
 
         if self.is_rotate:
+
             tf.logging.info('[train_config] MIN_ROTATE_ANGLE_DEG: %s' % str(self.MIN_AUGMENT_ROTATE_ANGLE_DEG))
             tf.logging.info('[train_config] MAX_ROTATE_ANGLE_DEG: %s' % str(self.MAX_AUGMENT_ROTATE_ANGLE_DEG))
-
-
         tf.logging.info('[train_config] Use heatmap_std: %s'    % str(self.heatmap_std))
         tf.logging.info('------------------------')
+
 
 
 class GCPConfig(object):
@@ -132,6 +131,7 @@ class GCPConfig(object):
         self.GCP_PROJ_NAME          = 'ordinal-virtue-208004'
         self.GCE_TPU_ZONE           = 'us-central1-f'
         self.DEFAULT_GCP_TPU_NAME   = 'jwkangmacpro2-tpu'
+
 
 
 

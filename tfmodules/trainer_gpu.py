@@ -71,7 +71,7 @@ from train_aux_fn import learning_rate_schedule
 from train_aux_fn import learning_rate_exp_decay
 from train_aux_fn import get_heatmap_activation
 from train_aux_fn import metric_fn
-
+from train_aux_fn import summary_fn
 
 from tensorflow.contrib import summary
 from tensorflow.contrib.tpu.python.tpu import bfloat16
@@ -94,27 +94,9 @@ def model_fn(features,
              mode,
              params):
     """
-    The model_fn for dontbeturtle model to be used with TPUEstimator.
-
-    Args:
-        features:   `Tensor` of batched input images <batchNum x M x M x 3>.
-        labels: labels_heatmap_list
-        labels =
-                        [ [labels_head],
-                          [label_neck],
-                          [label_rshoulder],
-                          [label_lshoulder] ]
-                        where has shape <batchNum N x N x 4>
-
-        mode:       one of `tf.estimator.ModeKeys.
-                    {
-                     - TRAIN (default)  : for weight training ( running forward + backward + metric)
-                     - EVAL,            : for validation (running forward + metric)
-                     - PREDICT          : for prediction ( running forward only )
-                     }`
-
+    The model_fn for dontbeturtle model to be used with Estimator.
         Returns:
-        A `TPUEstimatorSpec` for the model
+        A `EstimatorSpec` for the model
     """
     del params # unused
 
@@ -212,15 +194,13 @@ def model_fn(features,
             # heatmap activation of output layer out
             act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
                                                       scope='out_heatmap')
-            # heatmap loss
+            # heatmap losses
             total_out_losssum = \
                 get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                                  label_heatmaps=labels,
                                  scope='out_loss')
 
-
-
-        ### middle layer ===
+        ### middle layers ===
         with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
                                                          labels]):
             ### supervision layers ===
@@ -230,18 +210,17 @@ def model_fn(features,
             for stacked_hg_index in range(0, model_config.num_of_hgstacking - 1):
                 ## heatmap activation of supervision layer out
                 act_mid_heatmap_temp = \
-                    get_heatmap_activation(logits=logits_mid_heatmap[stacked_hg_index],
-                                           scope='mid_heatmap_' + str(stacked_hg_index))
+                    get_heatmap_activation(logits   =logits_mid_heatmap[stacked_hg_index],
+                                           scope    ='mid_heatmap_' + str(stacked_hg_index))
                 # heatmap loss
                 total_mid_losssum_temp = \
-                    get_loss_heatmap(pred_heatmaps=act_mid_heatmap_temp,
-                                     label_heatmaps=labels,
-                                     scope='mid_loss_' + str(stacked_hg_index))
+                    get_loss_heatmap(pred_heatmaps  =act_mid_heatmap_temp,
+                                     label_heatmaps =labels,
+                                     scope          ='mid_loss_' + str(stacked_hg_index))
 
                 # collect loss and heatmap in list
                 total_mid_losssum_list.append(total_mid_losssum_temp)
                 total_mid_losssum_acc += total_mid_losssum_temp
-
 
 
         ### total loss ===
@@ -249,15 +228,14 @@ def model_fn(features,
                                                       total_mid_losssum_acc]):
             # Collect weight regularizer loss =====
             loss_regularizer = tf.losses.get_regularization_loss()
-            # sum up all losses =====
-            loss = (total_out_losssum + total_mid_losssum_acc + loss_regularizer) / FLAGS.train_batch_size
+            loss = (total_out_losssum + total_mid_losssum_acc ) / FLAGS.train_batch_size \
+                   + loss_regularizer
+
+
+
 
         extra_summary_hook = None
         train_op     = None
-
-
-
-
         if mode == tf.estimator.ModeKeys.TRAIN:
             # Compute the current epoch and associated learning rate from global_step.
             global_step         = tf.train.get_global_step()
@@ -267,15 +245,15 @@ def model_fn(features,
                                     batchnum_per_epoch)
             # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
             # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
+
             learning_rate = tf.train.exponential_decay(learning_rate    =train_config.learning_rate_base,
                                                        global_step      =global_step,
                                                        decay_steps      =train_config.learning_rate_decay_step,
                                                        decay_rate       =train_config.learning_rate_decay_rate,
                                                        staircase        =True)
 
-            optimizer           = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
-                                                            name='RMSprop_opt')
-
+            optimizer           = train_config.opt_fn(learning_rate=learning_rate,
+                                                       name='opt_op')
 
             '''
                 # Batch normalization requires UPDATE_OPS to be added as a dependency to
@@ -287,70 +265,19 @@ def model_fn(features,
                 train_op = optimizer.minimize(loss, global_step)
 
             if FLAGS.is_extra_summary:
-                # To log the loss, current learning rate, and epoch for Tensorboard, the
-                # summary op needs to be run on the host CPU via host_call. host_call
-                # expects [batch_size, ...] Tensors, thus reshape to introduce a batch
-                # dimension. These Tensors are implicitly concatenated to
-                # [model_config['batch_size']].
-
-                tf.summary.scalar(name='loss', tensor=loss,family='outlayer')
-                tf.summary.scalar(name='out_loss', tensor=total_out_losssum,family='outlayer')
-                tf.summary.scalar(name='learning_rate', tensor=learning_rate,family='outlayer')
-
-
-                if FLAGS.is_summary_heatmap:
-
-                    tf.summary.image(name='out_heatmat_head',
-                                     tensor=logits_out_heatmap[:, :, :, 0:1],
-                                     max_outputs=1,
-                                     family='out_featmaps')
-                    tf.summary.image(name='out_heatmat_neck',
-                                     tensor=logits_out_heatmap[:, :, :, 1:2],
-                                     max_outputs=1,
-                                     family='out_featmaps')
-                    tf.summary.image(name='out_heatmat_Rshoulder',
-                                     tensor=logits_out_heatmap[:, :, :, 2:3],
-                                     max_outputs=1,
-                                     family='out_featmaps')
-                    tf.summary.image(name='out_heatmat_Lshoulder',
-                                     tensor=logits_out_heatmap[:, :, :, 3:4],
-                                     max_outputs=1,
-                                     family='out_featmaps')
-
-
-                for n in range(0, model_config.num_of_hgstacking - 1):
-
-                    tf.summary.scalar(name='mid_loss' + str(n),
-                                      tensor=total_mid_losssum_list[n],
-                                      family='midlayer')
-
-                    if FLAGS.is_summary_heatmap:
-                        tf.summary.image(name='mid_heatmat_head' + str(n),
-                                         tensor=logits_mid_heatmap[n][:, :, :, 0:1],
-                                         max_outputs=1,
-                                         family='mid_featmaps' + str(n))
-
-                        tf.summary.image(name='out_heatmat_neck' + str(n),
-                                         tensor=logits_mid_heatmap[n][:, :, :, 1:2],
-                                         max_outputs=1,
-                                         family='mid_featmaps' + str(n))
-
-                        tf.summary.image(name='out_heatmat_Rshoulder',
-                                         tensor=logits_mid_heatmap[n][:, :, :, 2:3],
-                                         max_outputs=1,
-                                         family='mid_featmaps' + str(n))
-
-                        tf.summary.image(name='out_heatmat_Lshoulder',
-                                         tensor=logits_mid_heatmap[n][:, :, :, 3:4],
-                                         max_outputs=1,
-                                         family='mid_featmaps' + str(n))
+                summary_op = summary_fn(loss                    =loss,
+                                        total_out_losssum       =total_out_losssum,
+                                        total_mid_losssum_list  =total_mid_losssum_list,
+                                        learning_rate           =learning_rate,
+                                        input_images            =features,
+                                        label_heatmap           =labels,
+                                        pred_out_heatmap        =logits_out_heatmap,
+                                        pred_mid_heatmap        =logits_mid_heatmap)
 
                 tf.logging.info('Create SummarySaveHook.')
                 extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
                                                              output_dir=FLAGS.model_dir,
-                                                             summary_op=tf.summary.merge_all())
-
-
+                                                             summary_op=summary_op)
 
 
             # in case of Estimator metric_ops must be in a form of dictionary
@@ -371,8 +298,6 @@ def model_fn(features,
             tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
     return tfestimator
-
-
 
 
 
@@ -487,7 +412,6 @@ def main(unused_argv):
         tf.logging.info('[main] num_train_images=%s' % FLAGS.num_train_images)
         tf.logging.info('[main] train_batch_size=%s' % FLAGS.train_batch_size)
         tf.logging.info('[main] batchnum_per_epoch=%s' % batchnum_per_epoch)
-
         tf.logging.info('[main] Training for %d steps (%.2f epochs in total). Current'
                         ' step %d.' % (FLAGS.train_steps,
                                        FLAGS.train_steps / batchnum_per_epoch,

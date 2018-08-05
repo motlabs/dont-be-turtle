@@ -13,9 +13,9 @@
 # ===================================================================================
 # -*- coding: utf-8 -*-
 #! /usr/bin/env python
-
+import tfplot
+import tfplot.summary
 import tensorflow as tf
-
 
 ### models
 from model_config  import ModelConfig
@@ -117,22 +117,11 @@ def get_heatmap_activation(logits,scope=None):
     '''
     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
-        # ### 1) split logit to head, neck, Rshoulder, Lshoulder
-        # logits_heatmap_head, \
-        # logits_heatmap_neck, \
-        # logits_heatmap_rshoulder, \
-        # logits_heatmap_lshoulder = tf.split(logits,
-        #                                     num_or_size_splits=model_config.num_of_labels,
-        #                                     axis=3)
-        ### 2) activation
         activation_fn = train_config.activation_fn_out
 
         if train_config.activation_fn_out == None:
             ''' linear activation case'''
-            act_heatmap_head        = logits[:,:,:,0:1]
-            act_heatmap_neck        = logits[:,:,:,1:2]
-            act_heatmap_rshoulder   = logits[:,:,:,2:3]
-            act_heatmap_lshoulder   = logits[:,:,:,3:4]
+            act_heatmaps = logits
         else:
             act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
                                                   name='act_head')
@@ -143,10 +132,10 @@ def get_heatmap_activation(logits,scope=None):
             act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
                                                   name='act_lshoulder')
 
-        act_heatmaps = tf.concat([act_heatmap_head, \
-                                 act_heatmap_neck, \
-                                 act_heatmap_rshoulder, \
-                                 act_heatmap_lshoulder],axis=3)
+            act_heatmaps = tf.concat([act_heatmap_head, \
+                                     act_heatmap_neck, \
+                                     act_heatmap_rshoulder, \
+                                     act_heatmap_lshoulder],axis=3)
     return act_heatmaps
 
 
@@ -301,3 +290,115 @@ def metric_fn(labels, logits,pck_threshold):
     return metric_dict
 
 
+
+
+def summary_fn(loss,
+               total_out_losssum,
+               total_mid_losssum_list,
+               learning_rate,
+               input_images,
+               label_heatmap,
+               pred_out_heatmap,
+               pred_mid_heatmap):
+
+
+    tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
+    tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')
+    tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
+
+
+    batch_size      = FLAGS.train_batch_size
+
+    if FLAGS.is_summary_heatmap:
+        summary_name = "true_heatmap_summary"
+        tfplot.summary.plot_many(name           =summary_name + '_0',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[label_heatmap[:,:,:,0:1], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_1',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[label_heatmap[:,:,:,1:2], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_2',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[label_heatmap[:,:,:,2:3], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_3',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[label_heatmap[:,:,:,3:4], input_images],
+                                 max_outputs    =batch_size)
+
+        summary_name = "pred_out_heatmap_summary"
+        tfplot.summary.plot_many(name           =summary_name + '_0',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[pred_out_heatmap[:,:,:,0:1], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_1',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[pred_out_heatmap[:,:,:,1:2], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_2',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[pred_out_heatmap[:,:,:,2:3], input_images],
+                                 max_outputs    =batch_size)
+
+        tfplot.summary.plot_many(name           =summary_name + '_3',
+                                 plot_func      =overlay_attention_batch,
+                                 in_tensors     =[pred_out_heatmap[:,:,:,3:4], input_images],
+                                 max_outputs    =batch_size)
+
+
+
+    for n in range(0, model_config.num_of_hgstacking - 1):
+
+        tf.summary.scalar(name='mid_loss' + str(n),
+                          tensor=total_mid_losssum_list[n],
+                          family='midlayer')
+
+        if FLAGS.is_summary_heatmap:
+            summary_name = "pred_mid_heatmap_summary"
+            tfplot.summary.plot_many(name       =summary_name + '_0',
+                                     plot_func  =overlay_attention_batch,
+                                     in_tensors =[pred_mid_heatmap[:, :, :, 0:1], input_images],
+                                     max_outputs=batch_size)
+
+            tfplot.summary.plot_many(name       =summary_name + '_1',
+                                     plot_func  =overlay_attention_batch,
+                                     in_tensors =[pred_mid_heatmap[:, :, :, 1:2], input_images],
+                                     max_outputs=batch_size)
+
+            tfplot.summary.plot_many(name       =summary_name + '_2',
+                                     plot_func  =overlay_attention_batch,
+                                     in_tensors =[pred_mid_heatmap[:, :, :, 2:3], input_images],
+                                     max_outputs=batch_size)
+
+            tfplot.summary.plot_many(name       =summary_name + '_3',
+                                     plot_func  =overlay_attention_batch,
+                                     in_tensors =[pred_mid_heatmap[:, :, :, 3:4], input_images],
+                                     max_outputs=batch_size)
+
+
+    return tf.summary.merge_all()
+
+
+
+
+def overlay_attention_batch(attention, image,
+                            alpha=0.5, cmap='jet'):
+
+    fig = tfplot.Figure(figsize=(4, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis('off')
+    fig.subplots_adjust(0, 0, 1, 1)  # get rid of margins
+
+    H, W = attention.shape
+    ax.imshow(image, extent=[0, H, 0, W])
+    ax.imshow(attention, cmap=cmap,
+              alpha=alpha, extent=[0, H, 0, W])
+
+    return fig
