@@ -291,7 +291,7 @@ class ModelConfig(object):
         self.hg_config          = HourGlassConfig   (self.depth_multiplier, self.resol_multiplier)
         self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
         self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
-        self.out_config         = OutputConfig      (self.depth_multiplier)
+        self.out_config         = OutputConfig      (self.resol_multiplier)
 
 
     def show_info(self):

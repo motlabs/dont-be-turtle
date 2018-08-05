@@ -318,16 +318,15 @@ def main(unused_argv):
 
     FLAGS.model_dir = curr_model_dir
 
-    # # logging config information
-    # curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR, now)
-    # with open(curr_model_dir_local + 'train_config' + '.json', 'w') as fp:
-    #     json.dump(train_config_dict, fp)
-    #
-    # with open(curr_model_dir_local + 'model_config' + '.json', 'w') as fp:
-    #     json.dump(model_config_dict, fp)
-    #
-    # with open(curr_model_dir_local + 'preproc_config' + '.json', 'w') as fp:
-    #     json.dump(preproc_config_dict, fp)
+    # logging config information
+    with open(curr_model_dir + 'train_config' + '.json', 'w') as fp:
+        json.dump(str(train_config_dict), fp)
+
+    with open(curr_model_dir + 'model_config' + '.json', 'w') as fp:
+        json.dump(str(model_config_dict), fp)
+
+    with open(curr_model_dir + 'preproc_config' + '.json', 'w') as fp:
+        json.dump(str(preproc_config_dict), fp)
 
 
     # for CPU or GPU use

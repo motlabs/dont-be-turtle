@@ -54,9 +54,9 @@ def get_output_layer(ch_in,
                                       num_outputs= num_ch_out,
                                       scope      = scope + '_conv1x1_' + str(conv_index))
 
-                net = slim.conv2d(inputs     = net,
-                                  num_outputs= model_config.num_of_channels_out,
-                                  scope      = scope + '_conv1x1_out')
+                net = slim.conv2d(inputs        = net,
+                                  num_outputs   = model_config.num_of_channels_out,
+                                  scope         = scope + '_conv1x1_out')
 
         # Convert end_points_collection into a dictionary of end_points.
         end_points = slim.utils.convert_collection_to_dict(
