@@ -6,7 +6,7 @@ libreadline-dev libsqlite3-dev wget curl llvm
 
 echo INSTALL PIP
 sudo apt-get install python-pip python-numpy swig python-dev python-wheel
-
+sudo apt-get install  python-tk
 
 # 2) GUI + X window off
 sudo rm /etc/X11/xorg.conf
