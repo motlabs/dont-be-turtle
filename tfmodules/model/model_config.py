@@ -167,7 +167,7 @@ class HourGlassConfig(object):
 
         # hourglass layer config
 
-        self.num_of_stacking            = 4 # shold be less than or equal to 4
+        self.num_of_stage               = 2 # shold be less than or equal to 4
         self.input_output_height        = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_output_width         = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out        = int(DEFAULT_CHANNEL_NUM * depth_multiplier)

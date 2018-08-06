@@ -51,7 +51,7 @@ def get_hourglass_layer(ch_in,
 
         #----------------------------------------
         # bottem-up convolutional blocks
-        for conv_index in range(0,model_config.num_of_stacking):
+        for conv_index in range(0,model_config.num_of_stage):
 
             net_shape   = net.get_shape().as_list()
             ch_out_num  = net_shape[3]

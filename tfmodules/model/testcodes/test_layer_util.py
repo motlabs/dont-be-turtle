@@ -174,7 +174,7 @@ class LayerEndpointName(object):
                 unittest LayerTestConfig configuration
     
                 self.pooling_factor             = 2
-                self.num_of_stacking            = 4
+                self.num_of_stage               = 4
                 self.num_of_convseq_atbottom    = 3
     
             '''
@@ -433,7 +433,7 @@ class HourGlassTestConfig(object):
 
         # hourglass layer config
 
-        self.num_of_stacking            = 4
+        self.num_of_stage               = 4
         self.input_output_width         = 64
         self.input_output_height        = 64
         self.num_of_channels_out        = 256

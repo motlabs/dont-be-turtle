@@ -124,7 +124,9 @@ def get_hourglass_deconv_module(ch_in,
 
     with tf.variable_scope(name_or_scope=scope,default_name='hg_deconv',values=[ch_in]):
 
-
+        '''
+            note that only bilinear resize module support tflite conversion (2018 July)
+        '''
         if model_config.deconv_type is 'nearest_neighbor_resize':
             net,end_points = get_nearest_neighbor_resize_module(inputs=net,
                                                                resize_rate=unpool_rate,
