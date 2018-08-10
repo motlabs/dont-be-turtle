@@ -28,7 +28,6 @@ if [ "$OS" == "$OS_X" ]; then
     export MODEL_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/
 #    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/youtube_turtle_lsp
     export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle
-
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_gpu.py
 else
     rm -rf /tmp/gcs_filesystem*

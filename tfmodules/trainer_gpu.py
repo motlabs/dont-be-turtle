@@ -30,12 +30,13 @@ import absl.logging as _logging  # pylint: disable=unused-import
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
-
+from subprocess import check_output
 
 # directory path addition
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
+from path_manager import EXPORT_MODEL_DIR
 from path_manager import TF_CNN_MODULE_DIR
 from path_manager import COCO_DATALOAD_DIR
 
@@ -44,6 +45,7 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
+sys.path.insert(0,EXPORT_MODEL_DIR)
 sys.path.insert(0,COCO_DATALOAD_DIR)
 
 
@@ -83,6 +85,9 @@ preproc_config  = PreprocessingConfig()
 train_config_dict   = train_config.__dict__
 model_config_dict   = model_config.__dict__
 preproc_config_dict = preproc_config.__dict__
+
+
+
 
 def model_fn(features,
              labels,
@@ -306,13 +311,18 @@ def main(unused_argv):
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     curr_model_dir      = "{}/run-{}/".format(FLAGS.model_dir, now)
+    curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR,now)
 
     tf.logging.info('[main] data dir = %s'%FLAGS.data_dir)
     tf.logging.info('[main] model dir = %s'%curr_model_dir)
+    tf.logging.info('[main] config logging dir  = %s'%curr_model_dir_local)
     tf.logging.info('------------------------')
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
+
+    if not tf.gfile.Exists(curr_model_dir_local):
+        tf.gfile.MakeDirs(curr_model_dir_local)
 
     FLAGS.model_dir = curr_model_dir
 
@@ -320,6 +330,30 @@ def main(unused_argv):
     tf.logging.info(str(train_config_dict))
     tf.logging.info(str(model_config_dict))
     tf.logging.info(str(preproc_config_dict))
+
+    train_config_filename   = curr_model_dir_local + 'train_config' + '.json'
+    model_config_filename   = curr_model_dir_local + 'model_config' + '.json'
+    preproc_config_filename = curr_model_dir_local + 'preproc_config' + '.json'
+
+    with open(train_config_filename, 'w') as fp:
+        json.dump(str(train_config_dict), fp)
+
+    with open(model_config_filename, 'w') as fp:
+        json.dump(str(model_config_dict), fp)
+
+    with open(preproc_config_filename, 'w') as fp:
+        json.dump(str(preproc_config_dict), fp)
+
+
+    try:
+        cmd1 = "gsutil cp -r {} {}".format(train_config_filename, curr_model_dir_local)
+        cmd2 = "gsutil cp -r {} {}".format(model_config_filename, curr_model_dir_local)
+        cmd3 = "gsutil cp -r {} {}".format(preproc_config_filename, curr_model_dir_local)
+        check_output(cmd1,shell=True)
+        check_output(cmd2,shell=True)
+        check_output(cmd3,shell=True)
+    except:
+        tf.logging.info('[main] failure logging config in bucket')
 
 
     # for CPU or GPU use

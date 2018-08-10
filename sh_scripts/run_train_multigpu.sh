@@ -31,7 +31,7 @@ if [ "$OS" == "$OS_X" ]; then
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_multigpu.py
 else
     rm -rf /tmp/gcs_filesystem*
-    export MODEL_BUCKET=gs://dontbeturtle_ckpt4
+    export MODEL_BUCKET=gs://dontbeturtle_multigpu
 #    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/youtube_turtle_lsp
     export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle
 
