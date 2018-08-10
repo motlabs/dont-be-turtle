@@ -45,8 +45,8 @@ class ConvModuleConfig(object):
 
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -77,8 +77,8 @@ class DeconvModuleConfig(object):
         # for unpooling
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -108,8 +108,8 @@ class ConvBottomModuleConfig(object):
 
 
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer  = slim.init_ops.zeros_initializer()
         self.normalizer_fn       = slim.batch_norm
@@ -141,8 +141,8 @@ class ReceptionConfig(object):
 
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -228,8 +228,8 @@ class SupervisionConfig(object):
 
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -261,8 +261,8 @@ class OutputConfig(object):
         self.is_trainable                  = True
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        # self.weights_regularizer    = None
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -294,7 +294,8 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        # self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
 
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_hgstacking  = 1
