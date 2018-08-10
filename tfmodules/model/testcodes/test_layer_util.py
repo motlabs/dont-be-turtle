@@ -193,8 +193,8 @@ class LayerEndpointName(object):
                     'unittest0/hourglass0/hg_conv3/'+ conv_type +'_in',
                     'unittest0/hourglass0/hg_conv3/'+ conv_type +'_out',
                     'hg_conv_maxpool3',
-                    'unittest0/hourglass0/hg_convseq_in',
-                    'unittest0/hourglass0/hg_convseq_out',
+                    'unittest0/hourglass0/hg_convbottom_in',
+                    'unittest0/hourglass0/hg_convbottom_out',
                     # 'hg_deconv_shortcut_sum0',
                     # 'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_in',
                     # 'unittest0/hourglass0/hg_deconv0/'+ deconv_type +'_out',
@@ -403,7 +403,7 @@ class DeconvModuleConfig(object):
 
 
 
-class ConvSeqModuleConfig(object):
+class ConvBottomModuleConfig(object):
 
     def __init__(self):
 
@@ -422,6 +422,7 @@ class ConvSeqModuleConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
+        self.conv_type  = 'inverted_bottleneck'
 
 
 
@@ -441,7 +442,7 @@ class HourGlassTestConfig(object):
 
         self.conv_config    = ConvModuleConfig()
         self.deconv_config  = DeconvModuleConfig()
-        self.convseq_config = ConvSeqModuleConfig()
+        self.convseq_config = ConvBottomModuleConfig()
 
 
         self.pooling_type           = 'maxpool'
