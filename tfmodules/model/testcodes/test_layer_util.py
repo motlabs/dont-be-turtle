@@ -357,19 +357,19 @@ class ConvModuleConfig(object):
 
         # for convolution modules===================
         # self.conv_type           = 'inceptionv2'
-        # self.conv_type           = 'inverted_bottleneck'
+        self.conv_type           = 'inverted_bottleneck'
         # self.conv_type           = 'linear_bottleneck'
         # self.conv_type           = 'separable_conv2d'
-        self.conv_type              = 'residual'
+        # self.conv_type              = 'residual'
         self.kernel_size            = 3
 
 
         self.is_trainable = True
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
         self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.biases_initializer = slim.init_ops.zeros_initializer()
-        self.normalizer_fn = slim.batch_norm
-        self.activation_fn = tf.nn.relu6
+        self.biases_initializer     = slim.init_ops.zeros_initializer()
+        self.normalizer_fn          = slim.batch_norm
+        self.activation_fn          = tf.nn.relu6
 
         # batch_norm
         self.batch_norm_decay = 0.999
@@ -384,7 +384,7 @@ class DeconvModuleConfig(object):
     def __init__(self):
 
         # for deconvolution modules====================
-        self.deconv_type                = 'nearest_neighbor_unpool'
+        self.deconv_type                = 'bilinear_resize'
 
         # for unpooling
         self.is_trainable = True
@@ -436,7 +436,7 @@ class HourGlassTestConfig(object):
         self.num_of_stage               = 4
         self.input_output_width         = 64
         self.input_output_height        = 64
-        self.num_of_channels_out        = 256
+        self.num_of_channels_out        = int(256/8)
         self.is_trainable               = True
 
         self.conv_config    = ConvModuleConfig()

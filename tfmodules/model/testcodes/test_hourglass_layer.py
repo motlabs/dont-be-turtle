@@ -50,9 +50,10 @@ class HourGlassLayerTest(tf.test.TestCase):
             - whether name and shape are correctly set.
         '''
 
-        ch_in_num       = 256
         batch_size      = 1
         model_config    = HourGlassTestConfig()
+        ch_in_num       = model_config.num_of_channels_out
+
         scope           = 'unittest'
         TEST_LAYER_NAME = 'hourglass'
 
@@ -158,8 +159,9 @@ class HourGlassLayerTest(tf.test.TestCase):
             check whether the model output has a proper batch_size given by an input
         '''
 
-        ch_in_num       = 256
         model_config    = HourGlassTestConfig()
+        ch_in_num       = model_config.num_of_channels_out
+
         scope           = 'unittest'
         TEST_LAYER_NAME = 'hourglass'
 
