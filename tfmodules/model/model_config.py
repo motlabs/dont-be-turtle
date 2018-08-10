@@ -43,10 +43,11 @@ class ConvModuleConfig(object):
         self.conv_type              = conv_type
         self.kernel_size            = 3
 
-
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
         self.activation_fn          = tf.nn.relu
@@ -76,7 +77,9 @@ class DeconvModuleConfig(object):
         # for unpooling
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
         self.activation_fn          = tf.nn.relu
@@ -105,7 +108,9 @@ class ConvSeqModuleConfig(object):
 
 
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer  = slim.init_ops.zeros_initializer()
         self.normalizer_fn       = slim.batch_norm
         self.activation_fn       = tf.nn.relu
@@ -134,7 +139,9 @@ class ReceptionConfig(object):
 
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
         self.activation_fn          = tf.nn.relu
@@ -167,7 +174,7 @@ class HourGlassConfig(object):
 
         # hourglass layer config
 
-        self.num_of_stage               = 2 # shold be less than or equal to 4
+        self.num_of_stage               = 4 # shold be less than or equal to 4
         self.input_output_height        = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_output_width         = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out        = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
@@ -219,7 +226,9 @@ class SupervisionConfig(object):
 
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
         self.activation_fn          = tf.nn.relu
@@ -250,7 +259,9 @@ class OutputConfig(object):
         self.is_trainable                  = True
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
+        self.weights_regularizer    = None
+
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
         self.activation_fn          = tf.nn.relu
@@ -281,7 +292,7 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.25 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_hgstacking  = 1
         self.num_of_labels      = NUM_OF_KEYPOINTS
