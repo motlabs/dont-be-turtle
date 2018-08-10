@@ -27,6 +27,7 @@ from tf_conv_module import get_separable_conv2d_module
 from tf_conv_module import get_linear_bottleneck_module
 from tf_conv_module import get_inverted_bottleneck_module
 from tf_conv_module import get_residual_module
+from tf_conv_module import get_conv2d_seq
 
 from tf_deconv_module import get_nearest_neighbor_unpool2d_module
 from tf_deconv_module import get_transconv_unpool2d_module
@@ -134,6 +135,7 @@ def get_hourglass_deconv_module(ch_in,
         elif model_config.deconv_type is 'bilinear_resize':
             net, end_points = get_bilinear_resize_module(inputs=net,
                                                          resize_rate=unpool_rate,
+                                                         model_config=model_config,
                                                          scope= model_config.deconv_type)
 
         elif model_config.deconv_type is 'bicubic_resize':
@@ -151,6 +153,7 @@ def get_hourglass_deconv_module(ch_in,
             net, end_points = get_nearest_neighbor_unpool2d_module(inputs=net,
                                                                    unpool_rate=unpool_rate,
                                                                    scope=model_config.deconv_type)
+
     return net,end_points
 
 
@@ -158,49 +161,35 @@ def get_hourglass_deconv_module(ch_in,
 
 
 
-
-def get_conv2d_seq(ch_in,
-                  ch_out_num,
-                  model_config,
-                  scope= None):
-
+def get_hourglass_convbottom_module(ch_in,
+                                    ch_out_num,
+                                   model_config=None,
+                                   scope=None):
     net         = ch_in
     end_points  = {}
 
-    with tf.variable_scope(name_or_scope=scope,default_name='conv2d_seq',values=[ch_in]) as sc:
-        scope = 'conv2d_seq'
+    with tf.variable_scope(name_or_scope=scope,default_name='hg_convbottom',values=[ch_in]) as sc:
 
-        endpoint_collection = sc.original_name_scope + '_end_points'
-        with slim.arg_scope([slim.conv2d],
-                            kernel_size         = [model_config.kernel_size,model_config.kernel_size],
-                            weights_initializer = model_config.weights_initializer,
-                            weights_regularizer = model_config.weights_regularizer,
-                            biases_initializer  = model_config.biases_initializer,
-                            trainable           = model_config.is_trainable,
-                            normalizer_fn       = model_config.normalizer_fn,
-                            padding             = 'SAME',
-                            stride              = [1,1],
-                            activation_fn       = None,
-                            outputs_collections = endpoint_collection):
+        if model_config.conv_type is 'inverted_bottleneck':
+            expand_ch_num = np.floor( ch_out_num * 6.0)
+            net, end_points = get_inverted_bottleneck_module(ch_in          = ch_in,
+                                                             ch_out_num     = ch_out_num,
+                                                             expand_ch_num  = expand_ch_num,
+                                                             model_config   = model_config,
+                                                             scope          = model_config.conv_type)
 
-            with slim.arg_scope([model_config.normalizer_fn],
-                                decay           = model_config.batch_norm_decay,
-                                fused           = model_config.batch_norm_fused,
-                                is_training     = model_config.is_trainable,
-                                activation_fn   = model_config.activation_fn):
+        elif model_config.conv_type is 'conv2d_seq':
+            net,end_points = get_conv2d_seq(ch_in           = ch_in,
+                                            ch_out_num      = ch_out_num,
+                                            model_config    = model_config,
+                                            scope           = model_config.conv_type)
 
-                # N sequence of conv2d
-                for conv_index in range(model_config.num_of_conv):
-                    net = slim.conv2d(inputs        = net,
-                                      num_outputs   = ch_out_num,
-                                      scope         = scope + '_conv2d_' + str(conv_index))
+        end_points[sc.name + '_out'] = net
+        end_points[sc.name + '_in'] = ch_in
 
-        # Convert end_points_collection into a dictionary of end_points.
-        end_points = slim.utils.convert_collection_to_dict(
-            endpoint_collection, clear_collection=True)
-
-    end_points[sc.name + '_out']    = net
-    end_points[sc.name + '_in']     = ch_in
+    return net,end_points
 
 
-    return net, end_points
+
+
+

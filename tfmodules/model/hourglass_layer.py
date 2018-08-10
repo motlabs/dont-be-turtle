@@ -23,8 +23,10 @@ import tensorflow.contrib.slim as slim
 
 from hourglass_module import get_hourglass_conv_module
 from hourglass_module import get_hourglass_deconv_module
-from hourglass_module import get_conv2d_seq
-
+from hourglass_module import get_hourglass_convbottom_module
+from tf_conv_module import get_inverted_bottleneck_module
+from tf_conv_module import get_linear_bottleneck_module
+import numpy as np
 
 
 def get_hourglass_layer(ch_in,
@@ -34,7 +36,7 @@ def get_hourglass_layer(ch_in,
 
     scope       = scope + str(layer_index)
     net         = ch_in
-    net_array   = [] # for shorcut connection
+    shortcut_array   = [] # for shorcut connection
     end_points  = {}
     with tf.variable_scope(name_or_scope=scope,default_name='hglayer',values=[ch_in]) as sc:
 
@@ -73,9 +75,44 @@ def get_hourglass_layer(ch_in,
                 conv_end_points[scope + '_maxpool' + str(conv_index)] = net
 
 
-            # store tf tensor for shortcut connection
-            net_array.append(net)
+            with tf.variable_scope(name_or_scope='shortcut_conv' + str(conv_index)):
+                # store tf tensor for shortcut connection
+                expand_ch_num = np.floor(ch_out_num * 6.0)
+                shortcut,end_points0 = get_inverted_bottleneck_module(ch_in         =net,
+                                                                     ch_out_num     =ch_out_num,
+                                                                     expand_ch_num  =expand_ch_num,
+                                                                     model_config   =model_config.conv_config,
+                                                                     scope=scope + '_shortcut_' + str(conv_index)+'0')
+
+                shortcut,end_points1 = get_inverted_bottleneck_module(ch_in         =shortcut,
+                                                                     ch_out_num     =ch_out_num,
+                                                                     expand_ch_num  =expand_ch_num,
+                                                                     model_config   =model_config.conv_config,
+                                                                     scope=scope + '_shortcut_' + str(conv_index)+'1')
+
+                shortcut,end_points2 = get_inverted_bottleneck_module(ch_in         =shortcut,
+                                                                     ch_out_num     =ch_out_num,
+                                                                     expand_ch_num  =expand_ch_num,
+                                                                     model_config   =model_config.conv_config,
+                                                                     scope=scope + '_shortcut_' + str(conv_index)+'2')
+
+                shortcut,end_points3 = get_inverted_bottleneck_module(ch_in         =shortcut,
+                                                                     ch_out_num     =ch_out_num,
+                                                                     expand_ch_num  =expand_ch_num,
+                                                                     model_config   =model_config.conv_config,
+                                                                     scope=scope + '_shortcut_' + str(conv_index)+'3')
+
+                shortcut,end_points4 = get_linear_bottleneck_module(ch_in           = shortcut,
+                                                                    ch_out_num      =ch_out_num,
+                                                                    model_config    =model_config.conv_config,
+                                                                    scope=scope + '_shortcut_' + str(conv_index) +'4')
+            shortcut_array.append(shortcut)
             # end points update
+            end_points.update(end_points0)
+            end_points.update(end_points1)
+            end_points.update(end_points2)
+            end_points.update(end_points3)
+            end_points.update(end_points4)
             end_points.update(conv_end_points)
 
         #----------------------------------------
@@ -83,23 +120,24 @@ def get_hourglass_layer(ch_in,
         net_shape_at_bottom     = net.get_shape().as_list()
         ch_out_num_at_bottom    = net_shape_at_bottom[3]
 
-        scope = 'hg_convseq'
-        net,convseq_end_points= get_conv2d_seq(ch_in        = net,
-                                               ch_out_num   = ch_out_num_at_bottom,
-                                               model_config = model_config.convseq_config,
-                                               scope        = scope)
+        scope = 'hg_convbottom'
+        net,convseq_end_points= get_hourglass_convbottom_module(ch_in        = net,
+                                                               ch_out_num   = ch_out_num_at_bottom,
+                                                               model_config = model_config.convseq_config,
+                                                               scope        = scope)
+
         end_points.update(convseq_end_points)
 
         #----------------------------------------
         # Top- down deconvolutional blocks
 
         scope = 'hg_deconv'
-        for deconv_index in range(0, model_config.num_of_stacking):
+        for deconv_index in range(0, model_config.num_of_stage):
             # print ('[hglayer] deconv_index = %s'% deconv_index)
 
             # 1) elementwise sum for shortcut connection
             net = tf.add(x=net,
-                         y=net_array.pop(),
+                         y=shortcut_array.pop(),
                          name=scope + '_shortcut_sum' + str(deconv_index))
             end_points[scope + '_shortcut_sum' + str(deconv_index)] = net
 
@@ -109,6 +147,7 @@ def get_hourglass_layer(ch_in,
                                                                 model_config    = model_config.deconv_config,
                                                                 layer_index     = deconv_index,
                                                                 scope           = scope)
+
             # 3) end point update
             end_points.update(deconv_end_points)
 

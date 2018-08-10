@@ -98,11 +98,11 @@ class DeconvModuleConfig(object):
 
 
 
-class ConvSeqModuleConfig(object):
+class ConvBottomModuleConfig(object):
 
     def __init__(self):
 
-        self.num_of_conv         = 3
+        self.num_of_conv         = 3 # only when conv_type == conv2d_seq
         self.kernel_size         = 3
         self.is_trainable        = True
 
@@ -119,6 +119,8 @@ class ConvSeqModuleConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
+        self.conv_type = 'inverted_bottleneck'
+        # self.conv_type  = 'conv2d_seq'
 
 
 
@@ -193,7 +195,7 @@ class HourGlassConfig(object):
 
         self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
         self.deconv_config  = DeconvModuleConfig(deconv_type=self.deconv_type)
-        self.convseq_config = ConvSeqModuleConfig()
+        self.convseq_config = ConvBottomModuleConfig()
 
         self.pooling_type           = 'maxpool'
         # self.pooling_type         = 'convpool'
