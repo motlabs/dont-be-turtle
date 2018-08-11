@@ -37,7 +37,9 @@ NUM_OF_KEYPOINTS        = 4
 
 class ConvModuleConfig(object):
 
-    def __init__(self,conv_type='residual'):
+    def __init__(self,conv_type='residual',
+                 weights_regularizer=None,
+                 invbottle_expansion_rate =6.0):
 
         # for convolution modules===================
         self.conv_type              = conv_type
@@ -45,8 +47,7 @@ class ConvModuleConfig(object):
 
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -55,6 +56,7 @@ class ConvModuleConfig(object):
         # batch_norm
         self.batch_norm_decay = 0.999
         self.batch_norm_fused = True
+        self.invbottle_expansion_rate = invbottle_expansion_rate
 
 
     def show_info(self):
@@ -69,7 +71,9 @@ class ConvModuleConfig(object):
 
 
 class DeconvModuleConfig(object):
-    def __init__(self,deconv_type='nearest_neighbor_unpool'):
+    def __init__(self,deconv_type='nearest_neighbor_unpool',
+                 weights_regularizer=None,
+                 invbottle_expansion_rate=6.0):
 
         # for deconvolution modules====================
         self.deconv_type                = deconv_type
@@ -77,8 +81,7 @@ class DeconvModuleConfig(object):
         # for unpooling
         self.is_trainable = True
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -87,6 +90,8 @@ class DeconvModuleConfig(object):
         # batch_norm
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
+
+        self.invbottle_expansion_rate = invbottle_expansion_rate
 
     def show_info(self):
         tf.logging.info('[deconv_config] deconv_type = %s' % self.deconv_type)
@@ -100,7 +105,9 @@ class DeconvModuleConfig(object):
 
 class ConvBottomModuleConfig(object):
 
-    def __init__(self):
+    def __init__(self,weights_regularizer=None,
+                 conv_type='inverted_bottleneck',
+                 invbottle_expansion_rate = 6.0):
 
         self.num_of_conv         = 3 # only when conv_type == conv2d_seq
         self.kernel_size         = 3
@@ -108,8 +115,7 @@ class ConvBottomModuleConfig(object):
 
 
         self.weights_initializer = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer  = slim.init_ops.zeros_initializer()
         self.normalizer_fn       = slim.batch_norm
@@ -119,14 +125,15 @@ class ConvBottomModuleConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
-        self.conv_type = 'inverted_bottleneck'
+        self.conv_type = conv_type
         # self.conv_type  = 'conv2d_seq'
 
+        self.invbottle_expansion_rate = invbottle_expansion_rate
 
 
 class ReceptionConfig(object):
 
-    def __init__(self,depth_multiplier, resol_multiplier):
+    def __init__(self,depth_multiplier, resol_multiplier,weights_regularizer=None):
         self.input_height    = int(DEFAULT_INPUT_RESOL * resol_multiplier)
         self.input_width     = int(DEFAULT_INPUT_RESOL * resol_multiplier)
 
@@ -139,10 +146,8 @@ class ReceptionConfig(object):
         # the kernel_size of the first conv block
         self.kernel_size            = 7
 
-
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -172,7 +177,14 @@ class ReceptionConfig(object):
 
 class HourGlassConfig(object):
 
-    def __init__(self,depth_multiplier, resol_multiplier):
+    def __init__(self,depth_multiplier, resol_multiplier,
+                 conv_type = 'inverted_bottleneck',
+                 convbottom_type = 'inverted_bottleneck',
+                 deconv_type = 'bilinear_resize',
+                 weights_regularizer=None,
+                 is_hglayer_shortcut_conv=False,
+                 is_hglayer_conv_after_resize=True,
+                 invbottle_expansion_rate   = 6.0):
 
         # hourglass layer config
 
@@ -181,7 +193,9 @@ class HourGlassConfig(object):
         self.input_output_width         = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out        = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
         self.is_trainable               = True
-
+        self.is_hglayer_shortcut_conv   = is_hglayer_shortcut_conv
+        self.is_hglayer_conv_after_resize = is_hglayer_conv_after_resize
+        self.invbottle_expansion_rate       = invbottle_expansion_rate
 
         # self.conv_type           = 'inceptionv2'
         # self.conv_type           = 'inverted_bottleneck'
@@ -190,12 +204,20 @@ class HourGlassConfig(object):
 
         # self.conv_type = 'linear_bottleneck'
         # self.conv_type = 'residual'
-        self.conv_type = 'inverted_bottleneck'
-        self.deconv_type = 'bilinear_resize'
+        self.conv_type          = conv_type
+        self.convbottom_type    = convbottom_type
+        self.deconv_type        = deconv_type
 
-        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
-        self.deconv_config  = DeconvModuleConfig(deconv_type=self.deconv_type)
-        self.convseq_config = ConvBottomModuleConfig()
+        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type,
+                                               weights_regularizer=weights_regularizer,
+                                               invbottle_expansion_rate=self.invbottle_expansion_rate)
+        self.deconv_config  = DeconvModuleConfig(deconv_type=self.deconv_type,
+                                                 weights_regularizer=weights_regularizer,
+                                                 invbottle_expansion_rate=self.invbottle_expansion_rate)
+
+        self.convseq_config = ConvBottomModuleConfig(weights_regularizer=weights_regularizer,
+                                                     conv_type=self.convbottom_type,
+                                                     invbottle_expansion_rate=self.invbottle_expansion_rate)
 
         self.pooling_type           = 'maxpool'
         # self.pooling_type         = 'convpool'
@@ -214,7 +236,7 @@ class HourGlassConfig(object):
 
 class SupervisionConfig(object):
 
-    def __init__(self,depth_multiplier, resol_multiplier):
+    def __init__(self,depth_multiplier, resol_multiplier,weights_regularizer=None):
 
         self.input_output_height    = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_output_width     = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
@@ -228,8 +250,7 @@ class SupervisionConfig(object):
 
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -251,7 +272,7 @@ class SupervisionConfig(object):
 
 class OutputConfig(object):
 
-    def __init__(self, resol_multiplier):
+    def __init__(self, resol_multiplier,weights_regularizer=None):
         self.input_height           = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_width            = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out    = NUM_OF_KEYPOINTS
@@ -261,8 +282,7 @@ class OutputConfig(object):
         self.is_trainable                  = True
 
         self.weights_initializer    = tf.contrib.layers.xavier_initializer()
-        # self.weights_regularizer    = tf.contrib.layers.l2_regularizer(4E-5)
-        self.weights_regularizer    = None
+        self.weights_regularizer    = weights_regularizer
 
         self.biases_initializer     = slim.init_ops.zeros_initializer()
         self.normalizer_fn          = slim.batch_norm
@@ -294,27 +314,56 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        # self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
-        self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
-
+        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        # self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
-        self.num_of_hgstacking  = 1
         self.num_of_labels      = NUM_OF_KEYPOINTS
+
+        self.weights_regularizer    = None
+
+        # hglayer
+        self.is_hglayer_shortcut_conv = True
+        self.is_hglayer_conv_after_resize = False
+        self.hglayer_invbottle_expansion_rate = 6.0
+        self.num_of_hgstacking  = 1
+
+        self.hglayer_conv_type          = 'inverted_bottleneck'
+        self.hglayer_convbottom_type    = 'inverted_bottleneck'
+        self.hglayer_deconv_type        = 'bilinear_resize'
 
         self.dtype              = tf.float32
 
-        self.hg_config          = HourGlassConfig   (self.depth_multiplier, self.resol_multiplier)
-        self.sv_config          = SupervisionConfig (self.depth_multiplier, self.resol_multiplier)
-        self.rc_config          = ReceptionConfig   (self.depth_multiplier, self.resol_multiplier)
-        self.out_config         = OutputConfig      (self.resol_multiplier)
+        self.hg_config          = HourGlassConfig   (depth_multiplier           =self.depth_multiplier,
+                                                     resol_multiplier           =self.resol_multiplier,
+                                                     conv_type                  =self.hglayer_conv_type,
+                                                     convbottom_type            =self.hglayer_convbottom_type,
+                                                     deconv_type                =self.hglayer_deconv_type,
+                                                     weights_regularizer        =self.weights_regularizer,
+                                                     is_hglayer_shortcut_conv   =self.is_hglayer_shortcut_conv,
+                                                     is_hglayer_conv_after_resize=self.is_hglayer_conv_after_resize,
+                                                     invbottle_expansion_rate=self.hglayer_invbottle_expansion_rate)
+
+        self.sv_config          = SupervisionConfig (self.depth_multiplier,
+                                                     self.resol_multiplier,
+                                                     self.weights_regularizer)
+
+        self.rc_config          = ReceptionConfig   (self.depth_multiplier,
+                                                     self.resol_multiplier,
+                                                     self.weights_regularizer)
+
+        self.out_config         = OutputConfig      (self.resol_multiplier,
+                                                     self.weights_regularizer)
 
 
     def show_info(self):
         tf.logging.info('---------------------------------------')
-        tf.logging.info('[model_config] num of hg stacking = %s' % self.num_of_hgstacking)
         tf.logging.info('[model_config] num of labels      = %s' % self.num_of_labels)
         tf.logging.info('[model_config] depth multiplier = %s' % self.depth_multiplier)
         tf.logging.info('[model_config] resol multiplier = %s' % self.resol_multiplier)
+        tf.logging.info('[model_config] weights_regularizer = %s' % str(self.weights_regularizer))
+        tf.logging.info('[model_config] num of hg stacking = %s' % self.num_of_hgstacking)
+        tf.logging.info('[model_config] is_hglayer_shortcut_conv = %s' % self.is_hglayer_shortcut_conv)
+        tf.logging.info('[model_config] is_hglayer_conv_after_resize = %s' % self.is_hglayer_conv_after_resize)
 
         self.rc_config.show_info()
         self.hg_config.show_info()

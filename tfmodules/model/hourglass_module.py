@@ -97,7 +97,7 @@ def get_hourglass_conv_module(ch_in,
 
         elif model_config.conv_type is 'inverted_bottleneck':
 
-            expand_ch_num = np.floor( ch_in_num * 6.0)
+            expand_ch_num = np.floor( ch_in_num * model_config.invbottle_expansion_rate)
             net,end_points = get_inverted_bottleneck_module(ch_in         = net,
                                                              ch_out_num    = ch_out_num,
                                                              expand_ch_num = expand_ch_num,
@@ -117,6 +117,7 @@ def get_hourglass_deconv_module(ch_in,
                                 unpool_rate,
                                model_config=None,
                                layer_index=0,
+                               is_conv_after_resize=True,
                                scope=None):
 
     scope       = scope + str(layer_index)
@@ -136,6 +137,7 @@ def get_hourglass_deconv_module(ch_in,
             net, end_points = get_bilinear_resize_module(inputs=net,
                                                          resize_rate=unpool_rate,
                                                          model_config=model_config,
+                                                         is_conv_after_resize=is_conv_after_resize,
                                                          scope= model_config.deconv_type)
 
         elif model_config.deconv_type is 'bicubic_resize':
@@ -171,7 +173,7 @@ def get_hourglass_convbottom_module(ch_in,
     with tf.variable_scope(name_or_scope=scope,default_name='hg_convbottom',values=[ch_in]) as sc:
 
         if model_config.conv_type is 'inverted_bottleneck':
-            expand_ch_num = np.floor( ch_out_num * 6.0)
+            expand_ch_num = np.floor( ch_out_num * model_config.invbottle_expansion_rate)
             net, end_points = get_inverted_bottleneck_module(ch_in          = ch_in,
                                                              ch_out_num     = ch_out_num,
                                                              expand_ch_num  = expand_ch_num,

@@ -375,6 +375,7 @@ class ConvModuleConfig(object):
         self.batch_norm_decay = 0.999
         self.batch_norm_fused = True
 
+        self.invbottle_expansion_rate = 6.0
 
 
 
@@ -398,6 +399,7 @@ class DeconvModuleConfig(object):
         self.batch_norm_decay   = 0.999
         self.batch_norm_fused   = True
 
+        self.invbottle_expansion_rate = 6.0
 
 
 
@@ -423,6 +425,7 @@ class ConvBottomModuleConfig(object):
         self.batch_norm_fused   = True
 
         self.conv_type  = 'inverted_bottleneck'
+        self.invbottle_expansion_rate = 6.0
 
 
 
@@ -433,12 +436,14 @@ class HourGlassTestConfig(object):
     def __init__(self):
 
         # hourglass layer config
-
         self.num_of_stage               = 4
         self.input_output_width         = 64
         self.input_output_height        = 64
         self.num_of_channels_out        = int(256/8)
         self.is_trainable               = True
+        self.is_hglayer_shortcut_conv   = False
+        self.is_hglayer_conv_after_resize = True
+
 
         self.conv_config    = ConvModuleConfig()
         self.deconv_config  = DeconvModuleConfig()
