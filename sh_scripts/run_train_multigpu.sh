@@ -1,7 +1,7 @@
 #! /bin/bash
 
 echo =============================================
-echo RUN DONBE-TURTLE-MODEL TRAINING  BY TWO GPU
+echo RUN DONBE-TURTLE-MODEL TRAINING  BY MULTI GPU
 echo JAEWOOK KANG JEJU GOOGLE CAMP 2018
 echo =============================================
 
