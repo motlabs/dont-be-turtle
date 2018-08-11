@@ -349,7 +349,7 @@ def main(unused_argv):
 
 
     try:
-        cmd = "sudo gstuil cp -r {} {}".format(curr_model_dir_local + '* ', curr_model_dir)
+        cmd = "sudo gsutil cp -r {} {}".format(curr_model_dir_local + '* ', curr_model_dir)
         print ('[main] cmd=%s'%cmd)
         check_output(cmd,shell=True)
         # cmd1 = "sudo gsutil cp -r {} {}".format(train_config_filename, curr_model_dir)
