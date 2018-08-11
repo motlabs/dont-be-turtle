@@ -272,10 +272,10 @@ def model_fn(features,
                                     pred_out_heatmap        =logits_out_heatmap,
                                     pred_mid_heatmap        =logits_mid_heatmap)
 
-            tf.logging.info('Create SummarySaveHook.')
-            extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                                                         output_dir=FLAGS.model_dir,
-                                                         summary_op=summary_op)
+            # tf.logging.info('Create SummarySaveHook.')
+            # extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+            #                                              output_dir=FLAGS.model_dir,
+            #                                              summary_op=summary_op)
 
 
         # in case of Estimator metric_ops must be in a form of dictionary
@@ -283,7 +283,8 @@ def model_fn(features,
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
-                                                 training_hooks = [extra_summary_hook])
+                                                 # training_hooks = [extra_summary_hook]
+                                                 )
 
     elif mode == tf.estimator.ModeKeys.EVAL:
         metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
