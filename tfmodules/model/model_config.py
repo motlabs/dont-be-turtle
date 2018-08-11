@@ -185,11 +185,12 @@ class HourGlassConfig(object):
                  is_hglayer_shortcut_conv=False,
                  is_hglayer_conv_after_resize=True,
                  invbottle_expansion_rate   = 6.0,
-                 num_of_shorcut_invbottleneck_stacking =4):
+                 num_of_shorcut_invbottleneck_stacking =4,
+                 num_of_stage = 4):
 
         # hourglass layer config
 
-        self.num_of_stage               = 4 # shold be less than or equal to 4
+        self.num_of_stage               = num_of_stage # shold be less than or equal to 4
         self.input_output_height        = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.input_output_width         = int(DEFAULT_HG_INOUT_RESOL * resol_multiplier)
         self.num_of_channels_out        = int(DEFAULT_CHANNEL_NUM * depth_multiplier)
@@ -323,14 +324,16 @@ class ModelConfig(object):
         self.weights_regularizer    = None
 
         # hglayer
-        self.is_hglayer_shortcut_conv = True
-        self.is_hglayer_conv_after_resize = True
-        self.hglayer_invbottle_expansion_rate = 6.0
-        self.num_of_hgstacking  = 1
-        self.num_of_shorcut_invbottleneck_stacking = 1
+        self.is_hglayer_shortcut_conv           = True
+        self.is_hglayer_conv_after_resize       = True
+        self.hglayer_invbottle_expansion_rate   = 6.0
+        self.num_of_shorcut_invbottleneck_stacking = 4
+        self.hglayer_num_of_stage               = 4
+        self.num_of_hgstacking                  = 2
+
 
         self.hglayer_conv_type          = 'inverted_bottleneck'
-        self.hglayer_convbottom_type    = 'conv2d_seq'
+        self.hglayer_convbottom_type    = 'inverted_bottleneck'
         self.hglayer_deconv_type        = 'bilinear_resize'
 
         self.dtype              = tf.float32
@@ -344,7 +347,8 @@ class ModelConfig(object):
                                                      is_hglayer_shortcut_conv   =self.is_hglayer_shortcut_conv,
                                                      is_hglayer_conv_after_resize=self.is_hglayer_conv_after_resize,
                                                      invbottle_expansion_rate=self.hglayer_invbottle_expansion_rate,
-                                                     num_of_shorcut_invbottleneck_stacking=self.num_of_shorcut_invbottleneck_stacking)
+                                                     num_of_shorcut_invbottleneck_stacking=self.num_of_shorcut_invbottleneck_stacking,
+                                                     num_of_stage                          = self.hglayer_num_of_stage)
 
         self.sv_config          = SupervisionConfig (self.depth_multiplier,
                                                      self.resol_multiplier,
@@ -365,6 +369,7 @@ class ModelConfig(object):
         tf.logging.info('[model_config] resol multiplier = %s' % self.resol_multiplier)
         tf.logging.info('[model_config] weights_regularizer = %s' % str(self.weights_regularizer))
         tf.logging.info('[model_config] num of hg stacking = %s' % self.num_of_hgstacking)
+        tf.logging.info('[model_config] hglayer_num_of_stage = %s' % self.hglayer_num_of_stage)
         tf.logging.info('[model_config] num_of_shorcut_invbottleneck_stacking = %s' % self.num_of_shorcut_invbottleneck_stacking)
         tf.logging.info('[model_config] is_hglayer_shortcut_conv = %s' % self.is_hglayer_shortcut_conv)
         tf.logging.info('[model_config] is_hglayer_conv_after_resize = %s' % self.is_hglayer_conv_after_resize)
