@@ -283,7 +283,7 @@ def model_fn(features,
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
-                                                 training_chief_hooks = [extra_summary_hook])
+                                                 training_hooks = [extra_summary_hook])
 
     elif mode == tf.estimator.ModeKeys.EVAL:
         metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
@@ -361,9 +361,9 @@ def main(unused_argv):
 
 
     # for CPU or GPU use
-    config = tf.ConfigProto(allow_soft_placement=True,
-                            log_device_placement=True)
-    config.gpu_options.allow_growth=True
+    # config = tf.ConfigProto(allow_soft_placement=True,
+    #                         log_device_placement=True)
+    # config.gpu_options.allow_growth=True
 
     distribution = tf.contrib.distribute.MirroredStrategy(num_gpus=4)
 
@@ -372,7 +372,7 @@ def main(unused_argv):
                 tf_random_seed                  =None,
                 save_summary_steps              =FLAGS.summary_step,
                 save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
-                session_config                  = config,
+                # session_config                  = config,
                 keep_checkpoint_max             =5,
                 keep_checkpoint_every_n_hours   =10000,
                 log_step_count_steps            =FLAGS.log_step_count_steps,
