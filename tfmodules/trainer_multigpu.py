@@ -232,7 +232,6 @@ def model_fn(features,
 
 
 
-    extra_summary_hook = None
     train_op     = None
     if mode == tf.estimator.ModeKeys.TRAIN:
         # Compute the current epoch and associated learning rate from global_step.
@@ -253,9 +252,6 @@ def model_fn(features,
         optimizer           = train_config.opt_fn(learning_rate=learning_rate,
                                                    name='opt_op')
 
-        # wrapping for use multiple gpu
-        # optimizer           = tf.contrib.estimator.TowerOptimizer(optimizer)
-
         '''
             # Batch normalization requires UPDATE_OPS to be added as a dependency to
             # the train operation.
@@ -265,6 +261,7 @@ def model_fn(features,
         with tf.control_dependencies(update_ops):
             train_op = optimizer.minimize(loss, global_step)
 
+        extra_summary_hook = None
         if FLAGS.is_extra_summary:
             summary_op = summary_fn(loss                    =loss,
                                     total_out_losssum       =total_out_losssum,
@@ -286,7 +283,7 @@ def model_fn(features,
         tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                  loss        =loss,
                                                  train_op    =train_op,
-                                                 training_hooks = [extra_summary_hook])
+                                                 training_chief_hooks = [extra_summary_hook])
 
     elif mode == tf.estimator.ModeKeys.EVAL:
         metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
