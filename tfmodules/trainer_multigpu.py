@@ -349,15 +349,16 @@ def main(unused_argv):
 
 
     try:
-        cmd1 = "gsutil cp -r {} {}".format(train_config_filename, curr_model_dir_local)
-        cmd2 = "gsutil cp -r {} {}".format(model_config_filename, curr_model_dir_local)
-        cmd3 = "gsutil cp -r {} {}".format(preproc_config_filename, curr_model_dir_local)
-        check_output(cmd1,shell=True)
-        check_output(cmd2,shell=True)
-        check_output(cmd3,shell=True)
+        cmd = "sudo gstuil cp -r {} {}".format(curr_model_dir_local + '*', curr_model_dir)
+        # cmd1 = "sudo gsutil cp -r {} {}".format(train_config_filename, curr_model_dir)
+        # cmd2 = "sudo gsutil cp -r {} {}".format(model_config_filename, curr_model_dir)
+        # cmd3 = "sudo gsutil cp -r {} {}".format(preproc_config_filename, curr_model_dir)
+        # check_output(cmd1,shell=True)
+        # check_output(cmd2,shell=True)
+        # check_output(cmd3,shell=True)
+        tf.logging.info('[main] success logging config in bucket')
     except:
         tf.logging.info('[main] failure logging config in bucket')
-
 
 
 
