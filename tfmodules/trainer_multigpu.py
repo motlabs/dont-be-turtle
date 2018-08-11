@@ -254,7 +254,7 @@ def model_fn(features,
                                                    name='opt_op')
 
         # wrapping for use multiple gpu
-        optimizer           = tf.contrib.estimator.TowerOptimizer(optimizer)
+        # optimizer           = tf.contrib.estimator.TowerOptimizer(optimizer)
 
         '''
             # Batch normalization requires UPDATE_OPS to be added as a dependency to
@@ -365,26 +365,27 @@ def main(unused_argv):
 
 
     # for CPU or GPU use
-    config = tf.ConfigProto(allow_soft_placement=True,
-                            log_device_placement=True)
+    # config = tf.ConfigProto(allow_soft_placement=True,
+    #                         log_device_placement=True)
+    # config.gpu_options.allow_growth=True
 
-    config.gpu_options.allow_growth=True
+    distribution = tf.contrib.distribute.MirroredStrategy()
 
     config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
                 tf_random_seed                  =None,
                 save_summary_steps              =FLAGS.summary_step,
                 save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
-                session_config                  = config,
+                # session_config                  = config,
                 keep_checkpoint_max             =5,
                 keep_checkpoint_every_n_hours   =10000,
                 log_step_count_steps            =FLAGS.log_step_count_steps,
-                train_distribute                =None)
+                train_distribute                =distribution)
 
 
     dontbeturtle_estimator  = tf.estimator.Estimator(
                 model_dir          = FLAGS.model_dir,
-                model_fn=tf.contrib.estimator.replicate_model_fn(model_fn),
+                model_fn           =model_fn,
                 config             = config,
                 params             = None,
                 warm_start_from    = None)
