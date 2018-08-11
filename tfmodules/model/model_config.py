@@ -184,7 +184,8 @@ class HourGlassConfig(object):
                  weights_regularizer=None,
                  is_hglayer_shortcut_conv=False,
                  is_hglayer_conv_after_resize=True,
-                 invbottle_expansion_rate   = 6.0):
+                 invbottle_expansion_rate   = 6.0,
+                 num_of_shorcut_invbottleneck_stacking =4):
 
         # hourglass layer config
 
@@ -196,6 +197,7 @@ class HourGlassConfig(object):
         self.is_hglayer_shortcut_conv   = is_hglayer_shortcut_conv
         self.is_hglayer_conv_after_resize = is_hglayer_conv_after_resize
         self.invbottle_expansion_rate       = invbottle_expansion_rate
+        self.num_of_shorcut_invbottleneck_stacking  = num_of_shorcut_invbottleneck_stacking
 
         # self.conv_type           = 'inceptionv2'
         # self.conv_type           = 'inverted_bottleneck'
@@ -326,6 +328,7 @@ class ModelConfig(object):
         self.is_hglayer_conv_after_resize = False
         self.hglayer_invbottle_expansion_rate = 6.0
         self.num_of_hgstacking  = 1
+        self.num_of_shorcut_invbottleneck_stacking = 1
 
         self.hglayer_conv_type          = 'inverted_bottleneck'
         self.hglayer_convbottom_type    = 'inverted_bottleneck'
@@ -341,7 +344,8 @@ class ModelConfig(object):
                                                      weights_regularizer        =self.weights_regularizer,
                                                      is_hglayer_shortcut_conv   =self.is_hglayer_shortcut_conv,
                                                      is_hglayer_conv_after_resize=self.is_hglayer_conv_after_resize,
-                                                     invbottle_expansion_rate=self.hglayer_invbottle_expansion_rate)
+                                                     invbottle_expansion_rate=self.hglayer_invbottle_expansion_rate,
+                                                     num_of_shorcut_invbottleneck_stacking=self.num_of_shorcut_invbottleneck_stacking)
 
         self.sv_config          = SupervisionConfig (self.depth_multiplier,
                                                      self.resol_multiplier,

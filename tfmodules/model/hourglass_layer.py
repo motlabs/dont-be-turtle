@@ -74,44 +74,32 @@ def get_hourglass_layer(ch_in,
                                       scope      = scope + '_maxpool' + str(conv_index))
                 conv_end_points[scope + '_maxpool' + str(conv_index)] = net
 
+
+
+            # shortcut connections
             if model_config.is_hglayer_shortcut_conv:
                 with tf.variable_scope(name_or_scope='shortcut_conv' + str(conv_index)):
-                    # store tf tensor for shortcut connection
+                    # shortcut connection with convolution
                     expand_ch_num = np.floor(ch_out_num * model_config.invbottle_expansion_rate)
-                    shortcut,end_points0 = get_inverted_bottleneck_module(ch_in         =net,
-                                                                         ch_out_num     =ch_out_num,
-                                                                         expand_ch_num  =expand_ch_num,
-                                                                         model_config   =model_config.conv_config,
-                                                                         scope=scope + '_shortcut_' + str(conv_index)+'0')
+                    shortcut    = net
 
-                    shortcut,end_points1 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                         ch_out_num     =ch_out_num,
-                                                                         expand_ch_num  =expand_ch_num,
-                                                                         model_config   =model_config.conv_config,
-                                                                         scope=scope + '_shortcut_' + str(conv_index)+'1')
+                    for shortcut_conv_index in range(0,model_config.num_of_shorcut_invbottleneck_stacking):
+                        # stacking of inverted bottleneck blocks
+                        shortcut,end_points_shortcut = get_inverted_bottleneck_module(ch_in         =shortcut,
+                                                                             ch_out_num     =ch_out_num,
+                                                                             expand_ch_num  =expand_ch_num,
+                                                                             model_config   =model_config.conv_config,
+                                                                             scope=scope + '_shortcut_' + str(conv_index)+str(shortcut_conv_index))
+                        end_points.update(end_points_shortcut)
 
-                    shortcut,end_points2 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                         ch_out_num     =ch_out_num,
-                                                                         expand_ch_num  =expand_ch_num,
-                                                                         model_config   =model_config.conv_config,
-                                                                         scope=scope + '_shortcut_' + str(conv_index)+'2')
-
-                    shortcut,end_points3 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                         ch_out_num     =ch_out_num,
-                                                                         expand_ch_num  =expand_ch_num,
-                                                                         model_config   =model_config.conv_config,
-                                                                         scope=scope + '_shortcut_' + str(conv_index)+'3')
-
-                    shortcut,end_points4 = get_linear_bottleneck_module(ch_in           = shortcut,
+                    # adding linear bottleneck block at the end of the shortcut
+                    shortcut,end_points_shortcut = get_linear_bottleneck_module(ch_in   = shortcut,
                                                                         ch_out_num      =ch_out_num,
                                                                         model_config    =model_config.conv_config,
-                                                                        scope=scope + '_shortcut_' + str(conv_index) +'4')
-                shortcut_array.append(shortcut)
-                end_points.update(end_points0)
-                end_points.update(end_points1)
-                end_points.update(end_points2)
-                end_points.update(end_points3)
-                end_points.update(end_points4)
+                                                                        scope=scope + '_shortcut_' + str(conv_index) +'linearbottle')
+                    end_points.update(end_points_shortcut)
+                    shortcut_array.append(shortcut)
+
             else:
                 # just adding
                 shortcut_array.append(net)

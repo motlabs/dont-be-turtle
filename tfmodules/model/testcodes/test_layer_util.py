@@ -441,8 +441,10 @@ class HourGlassTestConfig(object):
         self.input_output_height        = 64
         self.num_of_channels_out        = int(256/8)
         self.is_trainable               = True
-        self.is_hglayer_shortcut_conv   = False
+        self.is_hglayer_shortcut_conv   = True
         self.is_hglayer_conv_after_resize = True
+        self.num_of_shorcut_invbottleneck_stacking = 1
+        self.invbottle_expansion_rate = 6.0
 
 
         self.conv_config    = ConvModuleConfig()
