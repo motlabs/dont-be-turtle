@@ -253,6 +253,9 @@ def model_fn(features,
         optimizer           = train_config.opt_fn(learning_rate=learning_rate,
                                                    name='opt_op')
 
+        # wrapping for use multiple gpu
+        optimizer           = tf.contrib.estimator.TowerOptimizer(optimizer)
+
         '''
             # Batch normalization requires UPDATE_OPS to be added as a dependency to
             # the train operation.
