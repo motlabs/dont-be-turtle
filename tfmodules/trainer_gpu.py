@@ -358,7 +358,7 @@ def main(unused_argv):
     config = tf.ConfigProto(allow_soft_placement=True,
                             log_device_placement=True)
 
-    config.gpu_options.allow_growth=True
+    # config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
