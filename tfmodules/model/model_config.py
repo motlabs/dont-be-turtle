@@ -324,13 +324,13 @@ class ModelConfig(object):
 
         # hglayer
         self.is_hglayer_shortcut_conv = True
-        self.is_hglayer_conv_after_resize = False
+        self.is_hglayer_conv_after_resize = True
         self.hglayer_invbottle_expansion_rate = 6.0
         self.num_of_hgstacking  = 1
         self.num_of_shorcut_invbottleneck_stacking = 1
 
         self.hglayer_conv_type          = 'inverted_bottleneck'
-        self.hglayer_convbottom_type    = 'inverted_bottleneck'
+        self.hglayer_convbottom_type    = 'conv2d_seq'
         self.hglayer_deconv_type        = 'bilinear_resize'
 
         self.dtype              = tf.float32
