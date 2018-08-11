@@ -75,44 +75,45 @@ def get_hourglass_layer(ch_in,
                 conv_end_points[scope + '_maxpool' + str(conv_index)] = net
 
 
-            with tf.variable_scope(name_or_scope='shortcut_conv' + str(conv_index)):
-                # store tf tensor for shortcut connection
-                expand_ch_num = np.floor(ch_out_num * 6.0)
-                shortcut,end_points0 = get_inverted_bottleneck_module(ch_in         =net,
-                                                                     ch_out_num     =ch_out_num,
-                                                                     expand_ch_num  =expand_ch_num,
-                                                                     model_config   =model_config.conv_config,
-                                                                     scope=scope + '_shortcut_' + str(conv_index)+'0')
-
-                shortcut,end_points1 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                     ch_out_num     =ch_out_num,
-                                                                     expand_ch_num  =expand_ch_num,
-                                                                     model_config   =model_config.conv_config,
-                                                                     scope=scope + '_shortcut_' + str(conv_index)+'1')
-
-                shortcut,end_points2 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                     ch_out_num     =ch_out_num,
-                                                                     expand_ch_num  =expand_ch_num,
-                                                                     model_config   =model_config.conv_config,
-                                                                     scope=scope + '_shortcut_' + str(conv_index)+'2')
-
-                shortcut,end_points3 = get_inverted_bottleneck_module(ch_in         =shortcut,
-                                                                     ch_out_num     =ch_out_num,
-                                                                     expand_ch_num  =expand_ch_num,
-                                                                     model_config   =model_config.conv_config,
-                                                                     scope=scope + '_shortcut_' + str(conv_index)+'3')
-
-                shortcut,end_points4 = get_linear_bottleneck_module(ch_in           = shortcut,
-                                                                    ch_out_num      =ch_out_num,
-                                                                    model_config    =model_config.conv_config,
-                                                                    scope=scope + '_shortcut_' + str(conv_index) +'4')
-            shortcut_array.append(shortcut)
-            # end points update
-            end_points.update(end_points0)
-            end_points.update(end_points1)
-            end_points.update(end_points2)
-            end_points.update(end_points3)
-            end_points.update(end_points4)
+            # with tf.variable_scope(name_or_scope='shortcut_conv' + str(conv_index)):
+            #     # store tf tensor for shortcut connection
+            #     expand_ch_num = np.floor(ch_out_num * 6.0)
+            #     shortcut,end_points0 = get_inverted_bottleneck_module(ch_in         =net,
+            #                                                          ch_out_num     =ch_out_num,
+            #                                                          expand_ch_num  =expand_ch_num,
+            #                                                          model_config   =model_config.conv_config,
+            #                                                          scope=scope + '_shortcut_' + str(conv_index)+'0')
+            #
+            #     shortcut,end_points1 = get_inverted_bottleneck_module(ch_in         =shortcut,
+            #                                                          ch_out_num     =ch_out_num,
+            #                                                          expand_ch_num  =expand_ch_num,
+            #                                                          model_config   =model_config.conv_config,
+            #                                                          scope=scope + '_shortcut_' + str(conv_index)+'1')
+            #
+            #     shortcut,end_points2 = get_inverted_bottleneck_module(ch_in         =shortcut,
+            #                                                          ch_out_num     =ch_out_num,
+            #                                                          expand_ch_num  =expand_ch_num,
+            #                                                          model_config   =model_config.conv_config,
+            #                                                          scope=scope + '_shortcut_' + str(conv_index)+'2')
+            #
+            #     shortcut,end_points3 = get_inverted_bottleneck_module(ch_in         =shortcut,
+            #                                                          ch_out_num     =ch_out_num,
+            #                                                          expand_ch_num  =expand_ch_num,
+            #                                                          model_config   =model_config.conv_config,
+            #                                                          scope=scope + '_shortcut_' + str(conv_index)+'3')
+            #
+            #     shortcut,end_points4 = get_linear_bottleneck_module(ch_in           = shortcut,
+            #                                                         ch_out_num      =ch_out_num,
+            #                                                         model_config    =model_config.conv_config,
+            #                                                         scope=scope + '_shortcut_' + str(conv_index) +'4')
+            # shortcut_array.append(shortcut)
+            shortcut_array.append(net)
+            # # end points update
+            # end_points.update(end_points0)
+            # end_points.update(end_points1)
+            # end_points.update(end_points2)
+            # end_points.update(end_points3)
+            # end_points.update(end_points4)
             end_points.update(conv_end_points)
 
         #----------------------------------------
