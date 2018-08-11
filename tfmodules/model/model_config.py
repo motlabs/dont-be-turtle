@@ -317,7 +317,6 @@ class ModelConfig(object):
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
         self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
-        # self.depth_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_labels      = NUM_OF_KEYPOINTS
 
@@ -366,8 +365,10 @@ class ModelConfig(object):
         tf.logging.info('[model_config] resol multiplier = %s' % self.resol_multiplier)
         tf.logging.info('[model_config] weights_regularizer = %s' % str(self.weights_regularizer))
         tf.logging.info('[model_config] num of hg stacking = %s' % self.num_of_hgstacking)
+        tf.logging.info('[model_config] num_of_shorcut_invbottleneck_stacking = %s' % self.num_of_shorcut_invbottleneck_stacking)
         tf.logging.info('[model_config] is_hglayer_shortcut_conv = %s' % self.is_hglayer_shortcut_conv)
         tf.logging.info('[model_config] is_hglayer_conv_after_resize = %s' % self.is_hglayer_conv_after_resize)
+        tf.logging.info('[model_config] hglayer_invbottle_expansion_rate = %s' % self.hglayer_invbottle_expansion_rate)
 
         self.rc_config.show_info()
         self.hg_config.show_info()
