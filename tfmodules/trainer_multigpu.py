@@ -362,18 +362,20 @@ def main(unused_argv):
 
 
     # for CPU or GPU use
-    config = tf.ConfigProto(allow_soft_placement=True,
-                            log_device_placement=True)
-    config.gpu_options.allow_growth=True
+    # config = tf.ConfigProto(allow_soft_placement=True)
+    # config.gpu_options.allow_growth=True
 
-    distribution = tf.contrib.distribute.MirroredStrategy(num_gpus=4)
+    distribution = tf.contrib.distribute.MirroredStrategy(["/device:GPU:0",
+                                                           "/device:GPU:1",
+                                                           "/device:GPU:2",
+                                                           "/device:GPU:3"])
 
     run_config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
                 tf_random_seed                  =None,
                 save_summary_steps              =FLAGS.summary_step,
                 save_checkpoints_steps          =max(600, FLAGS.iterations_per_loop),
-                session_config                  = config,
+                # session_config                  = config,
                 keep_checkpoint_max             =5,
                 keep_checkpoint_every_n_hours   =10000,
                 log_step_count_steps            =FLAGS.log_step_count_steps,
