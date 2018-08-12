@@ -317,7 +317,7 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 0.25 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_labels      = NUM_OF_KEYPOINTS
 
@@ -326,7 +326,7 @@ class ModelConfig(object):
         # hglayer
         self.is_hglayer_shortcut_conv           = True
         self.is_hglayer_conv_after_resize       = True
-        self.hglayer_invbottle_expansion_rate   = 4.0
+        self.hglayer_invbottle_expansion_rate   = 6.0
         self.num_of_shorcut_invbottleneck_stacking = 4
         self.hglayer_num_of_stage               = 4
         self.num_of_hgstacking                  = 1
