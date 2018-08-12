@@ -81,7 +81,7 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_crop                    = True # not implemented yet
+        self.is_crop                    = True
         self.is_rotate                  = True
         self.is_flipping                = True
         self.is_scale                   = True
