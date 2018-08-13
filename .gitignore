@@ -85,3 +85,5 @@ freeline_project_description.json
 *.meta
 
 *.tflite
+*.tfrecord
+checkpoint
