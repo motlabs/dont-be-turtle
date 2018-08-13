@@ -328,7 +328,7 @@ class ModelConfig(object):
         self.is_hglayer_conv_after_resize       = False
         self.hglayer_invbottle_expansion_rate   = 3.0
         self.num_of_shorcut_invbottleneck_stacking = 1
-        self.hglayer_num_of_stage               = 3
+        self.hglayer_num_of_stage               = 2
         self.num_of_hgstacking                  = 1
 
 
