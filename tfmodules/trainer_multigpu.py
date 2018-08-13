@@ -197,6 +197,7 @@ def model_fn(features,
             get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                              label_heatmaps=labels,
                              scope='out_loss')
+        total_out_losssum = total_out_losssum / FLAGS.train_batch_size
 
     ### middle layers ===
     with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
@@ -217,8 +218,9 @@ def model_fn(features,
                                  scope          ='mid_loss_' + str(stacked_hg_index))
 
             # collect loss and heatmap in list
-            total_mid_losssum_list.append(total_mid_losssum_temp)
-            total_mid_losssum_acc += total_mid_losssum_temp
+            total_mid_losssum_list.append(total_mid_losssum_temp / FLAGS.train_batch_size)
+            total_mid_losssum_acc += total_mid_losssum_temp / FLAGS.train_batch_size
+
 
 
     ### total loss ===
@@ -226,9 +228,7 @@ def model_fn(features,
                                                   total_mid_losssum_acc]):
         # Collect weight regularizer loss =====
         loss_regularizer = tf.losses.get_regularization_loss()
-        loss = (total_out_losssum + total_mid_losssum_acc ) / FLAGS.train_batch_size \
-               + loss_regularizer
-
+        loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
 
 
 
