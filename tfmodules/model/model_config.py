@@ -133,7 +133,11 @@ class ConvBottomModuleConfig(object):
 
 class ReceptionConfig(object):
 
-    def __init__(self,depth_multiplier, resol_multiplier,weights_regularizer=None):
+    def __init__(self,depth_multiplier,
+                 resol_multiplier,
+                 weights_regularizer=None,
+                 invbottle_expansion_rate=6.0):
+
         self.input_height    = int(DEFAULT_INPUT_RESOL * resol_multiplier)
         self.input_width     = int(DEFAULT_INPUT_RESOL * resol_multiplier)
 
@@ -158,8 +162,10 @@ class ReceptionConfig(object):
         self.batch_norm_fused   = True
 
         self.conv_type = 'inverted_bottleneck'
+        self.invbottle_expansion_rate = invbottle_expansion_rate
         # self.conv_type = 'residual'
-        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type)
+        self.conv_config    = ConvModuleConfig(conv_type=self.conv_type,
+                                               invbottle_expansion_rate=self.invbottle_expansion_rate)
 
 
 
@@ -170,6 +176,8 @@ class ReceptionConfig(object):
         tf.logging.info('[RecepLayer] weights_regularizer = %s' % str(self.weights_regularizer))
         tf.logging.info('[RecepLayer] act_fn = %s' % str(self.activation_fn))
         tf.logging.info('[RecepLayer] batch_norm decay = %s' % self.batch_norm_decay)
+        tf.logging.info('[RecepLayer] invbottle_expansion_rate = %s' % self.invbottle_expansion_rate)
+
         self.conv_config.show_info()
 
 
@@ -317,7 +325,7 @@ class ModelConfig(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.25 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_labels      = NUM_OF_KEYPOINTS
 
@@ -326,7 +334,8 @@ class ModelConfig(object):
         # hglayer
         self.is_hglayer_shortcut_conv           = True
         self.is_hglayer_conv_after_resize       = False
-        self.hglayer_invbottle_expansion_rate   = 12.0
+        self.hglayer_invbottle_expansion_rate   = 24.0
+        self.rclayer_invbottle_expansion_rate   = 24.0
         self.num_of_shorcut_invbottleneck_stacking = 4
         self.hglayer_num_of_stage               = 4
         self.num_of_hgstacking                  = 1
@@ -354,9 +363,11 @@ class ModelConfig(object):
                                                      self.resol_multiplier,
                                                      self.weights_regularizer)
 
-        self.rc_config          = ReceptionConfig   (self.depth_multiplier,
-                                                     self.resol_multiplier,
-                                                     self.weights_regularizer)
+        self.rc_config          = ReceptionConfig   (depth_multiplier=self.depth_multiplier,
+                                                     resol_multiplier=self.resol_multiplier,
+                                                     weights_regularizer=self.weights_regularizer,
+                                                     invbottle_expansion_rate=self.rclayer_invbottle_expansion_rate)
+
 
         self.out_config         = OutputConfig      (self.resol_multiplier,
                                                      self.weights_regularizer)
