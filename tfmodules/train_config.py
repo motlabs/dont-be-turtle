@@ -26,7 +26,7 @@ from path_manager import MODEL_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 865
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 16  # multiple of 8
+BATCH_SIZE           = 32  # multiple of 8
 
 
 
@@ -34,11 +34,11 @@ class TrainConfig(object):
     def __init__(self):
 
 
-        self.learning_rate_base       = 1e-3
+        self.learning_rate_base       = 1e-4
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
-        self.epoch_num                  = 700
+        self.epoch_num                  = 1000
         self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
         self.iter_per_before_outfeeding = 100
 
@@ -92,7 +92,7 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 6.0
+        self.heatmap_std        = 3.0
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
