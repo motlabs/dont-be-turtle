@@ -333,7 +333,7 @@ class ModelConfig(object):
 
         # hglayer
         self.is_hglayer_shortcut_conv           = True
-        self.is_hglayer_conv_after_resize       = False
+        self.is_hglayer_conv_after_resize       = True
         self.hglayer_invbottle_expansion_rate   = 5.0
         self.rclayer_invbottle_expansion_rate   = 5.0
         self.num_of_shorcut_invbottleneck_stacking = 4
