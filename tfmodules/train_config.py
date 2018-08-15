@@ -34,7 +34,7 @@ class TrainConfig(object):
     def __init__(self):
 
 
-        self.learning_rate_base       = 1e-4
+        self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
