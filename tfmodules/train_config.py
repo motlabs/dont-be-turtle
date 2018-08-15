@@ -38,7 +38,7 @@ class TrainConfig(object):
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
-        self.epoch_num                  = 500
+        self.epoch_num                  = 700
         self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
         self.iter_per_before_outfeeding = 100
 
