@@ -331,19 +331,37 @@ class ModelConfig(object):
 
         self.weights_regularizer    = None
 
-        # hglayer
+        ### hglayer
         self.is_hglayer_shortcut_conv           = True
         self.is_hglayer_conv_after_resize       = True
         self.hglayer_invbottle_expansion_rate   = 7.0
         self.rclayer_invbottle_expansion_rate   = 7.0
         self.num_of_shorcut_invbottleneck_stacking = 4
-        self.hglayer_num_of_stage               = 4
+        self.hglayer_num_of_stage               = 2
         self.num_of_hgstacking                  = 1
 
 
         self.hglayer_conv_type          = 'inverted_bottleneck'
         self.hglayer_convbottom_type    = 'inverted_bottleneck'
         self.hglayer_deconv_type        = 'bilinear_resize'
+
+        # self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        # self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
+        # self.num_of_labels      = NUM_OF_KEYPOINTS
+        #
+        # self.weights_regularizer    = None
+        #
+        # self.is_hglayer_shortcut_conv           = True
+        # self.is_hglayer_conv_after_resize       = True
+        # self.hglayer_invbottle_expansion_rate   = 5.0
+        # self.rclayer_invbottle_expansion_rate   = 5.0
+        # self.num_of_shorcut_invbottleneck_stacking = 4
+        # self.hglayer_num_of_stage               = 4
+        # self.num_of_hgstacking                  = 1
+        #
+        # self.hglayer_conv_type          = 'inverted_bottleneck'
+        # self.hglayer_convbottom_type    = 'inverted_bottleneck'
+        # self.hglayer_deconv_type        = 'bilinear_resize'
 
         self.dtype              = tf.float32
 

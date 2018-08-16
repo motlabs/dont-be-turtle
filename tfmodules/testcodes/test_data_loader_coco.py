@@ -179,30 +179,30 @@ class DataLoaderTest(tf.test.TestCase):
                 plt.show()
 
                 #-----------
-                # labels_top_numpy        = labels_numpy[favorite_image_index, :, :, 0] \
-                #                           * IMAGE_MAX_VALUE
-                # labels_neck_numpy       = labels_numpy[favorite_image_index, :, :, 1] \
-                #                           * IMAGE_MAX_VALUE
-                # labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
-                #                           * IMAGE_MAX_VALUE
-                # labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
-                #                           * IMAGE_MAX_VALUE
-                # heatmaps
-                # plt.figure(3)
-                # plt.imshow(labels_top_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(4)
-                # plt.imshow(labels_neck_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(5)
-                # plt.imshow(labels_rshoulder_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(6)
-                # plt.imshow(labels_lshoulder_numpy.astype(np.uint8))
-                # plt.show()
+                labels_top_numpy        = labels_numpy[favorite_image_index, :, :, 0] \
+                                          * IMAGE_MAX_VALUE
+                labels_neck_numpy       = labels_numpy[favorite_image_index, :, :, 1] \
+                                          * IMAGE_MAX_VALUE
+                labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
+                                          * IMAGE_MAX_VALUE
+                labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
+                                          * IMAGE_MAX_VALUE
+                ### heatmaps
+                plt.figure(3)
+                plt.imshow(labels_top_numpy.astype(np.uint8))
+                plt.show()
+
+                plt.figure(4)
+                plt.imshow(labels_neck_numpy.astype(np.uint8))
+                plt.show()
+
+                plt.figure(5)
+                plt.imshow(labels_rshoulder_numpy.astype(np.uint8))
+                plt.show()
+
+                plt.figure(6)
+                plt.imshow(labels_lshoulder_numpy.astype(np.uint8))
+                plt.show()
 
 if __name__ == '__main__':
     tf.test.main()

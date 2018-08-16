@@ -123,7 +123,11 @@ class DataSetInput(object):
         filename_item_list = img_meta['file_name'].split('/')
         filename = filename_item_list[1] +'/' + filename_item_list[2]
 
+        # for actual training   -----------------------
         img_path = join(FLAGS.data_dir, filename)
+
+        # for test_data_loader_coco.py  -----------------------
+        # img_path = join(self.data_dir, filename)
 
         img_meta_data   = CocoMetadata(idx=idx,
                                        img_path=img_path,
@@ -152,16 +156,28 @@ class DataSetInput(object):
             doc reference: https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
         """
         tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
-        json_filename_split = FLAGS.data_dir.split('/')
 
+        # for actual training   -----------------------
+        json_filename_split = FLAGS.data_dir.split('/')
         if self.is_training:
             json_filename       = json_filename_split[-1] + '_train.json'
         else:
             json_filename       = json_filename_split[-1] + '_valid.json'
 
         global TRAIN_ANNO
-
         TRAIN_ANNO      = COCO(join(FLAGS.data_dir,json_filename))
+        #--------------------------------------------------------
+        # for test_data_loader_coco.py  -----------------------
+        # json_filename_split = self.data_dir.split('/')
+        # if self.is_training:
+        #     json_filename       = json_filename_split[-2] + '_train.json'
+        # else:
+        #     json_filename       = json_filename_split[-2] + '_valid.json'
+        #
+        # global TRAIN_ANNO
+        # TRAIN_ANNO      = COCO(join(self.data_dir,json_filename))
+        #--------------------------------------------------------
+
         imgIds          = TRAIN_ANNO.getImgIds()
         dataset         = tf.data.Dataset.from_tensor_slices(imgIds)
 
