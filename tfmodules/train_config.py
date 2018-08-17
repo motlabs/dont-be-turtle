@@ -26,7 +26,7 @@ from path_manager import MODEL_BUCKET
 ## realtestdata
 TRAININGSET_SIZE     = 865
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 256  # multiple of 8
+BATCH_SIZE           = 192  # multiple of 8
 
 
 
