@@ -32,7 +32,7 @@ insert demo gif
 - Percentage of correct keypoint (pck)
 - Tflite model size (MB)
 - Frame per sec (FPS) on Google Pixel 2
-
+- [Over the Hourglass (HG) model](https://arxiv.org/abs/1603.06937)
 
 ### wrt Number of HG stacking
 | # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
