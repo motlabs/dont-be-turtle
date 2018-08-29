@@ -23,7 +23,8 @@ insert demo gif
 - [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
 
 
-![alt text]()
+![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/model.jpg)
+![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/model_hg.jpg)
 
 
 ### Mobile Apps 
