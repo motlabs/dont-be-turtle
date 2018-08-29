@@ -72,7 +72,6 @@ freeline_project_description.json
 # wrt Python files
 *.pyc
 
-*.png
 *.jpg
 *.jpeg
 *.json
