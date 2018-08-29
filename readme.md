@@ -20,7 +20,9 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 ### Baselines Model
 - [MobileNet v2](https://arxiv.org/abs/1801.04381)
-- [StackedHourglass](https://arxiv.org/abs/1603.06937)
+- [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
+
+![alt text]()
 
 
 ### Mobile Apps 
@@ -31,23 +33,23 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ## Benchmarks
 - Percentage of correct keypoint (pck)
 - Tflite model size (MB)
-- Frame per sec (FPS) over Google Pixel 2
+- Frame per sec (FPS) on Google Pixel 2
 
 
 ### wrt Number of HG stacking
 | # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
 |-----------------|-------------------|-----------|------------------|---------|
-| 4                 4           
-| 4                 2           
-| 4                 1           
+| 4               |  4                |           |                  |         |  
+| 4               |  2                |           |                  |         |
+| 4               |  1                |           |                  |         |
 
 
 ### wrt Number of HG stages
 | # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
 |-----------------|-------------------|-----------|------------------|---------|
-| 4                 2           
-| 3                 2           
-| 2                 2           
+| 4               |  2                |           |                  |         |          
+| 3               |  2                |           |                  |         |              
+| 2               |  2                |           |                  |         |             
 
 
 
@@ -55,24 +57,24 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 ### Technical Stacks
 - Tensorflow >= 1.9
-- Tf slim 
+- Tf Slim 
 - Android + Tflite 
 - iOS + CoreML 
 
 
-
+### Components
 ```bash
 .
 ├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
-├── note                # Some meeting notes under Google Camps
-├── sh_scripts          # A collection of shell scripts for easy training 
+├── note                # Some notes under Google Camps
+├── sh_scripts          # A collection of shell scripts for easy operations 
 └── tfmodules           # A collection of TF python files
 ```
 
 ### Run training
 ```bash
-export MODEL_BUCKET=./tfmodules/export/model/       # set path for export ckpt and tfsummary
-export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for dataset
+export MODEL_BUCKET=./tfmodules/export/model/       # set path for exporting ckpt and tfsummary
+export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for unzipping dataset
 export SOURCE=./tfmodules/trainer_gpu.py            # set path for tensorflow trainer
 
 python ${SOURCE}\
@@ -84,15 +86,16 @@ python ${SOURCE}\
 
 
 ### Dataset
+- Download link
 - Training set (>15000)
-    - Youtubepose (4000)
-    - Sampled Shortbbcpose (7000)
-    - FLIC_train (4000)
+    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
+    - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (7000)
+    - [FLIC_train](https://bensapp.github.io/flic-dataset.html) (4000)
     - Custom  (216+462)
 
 - Evaluation set (2000)
-    - FLIC_eval (1000)
-    - Youtubepose (1000)
+    - [FLIC_eval](https://bensapp.github.io/flic-dataset.html) (1000)
+    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (1000)
 
 
 ## Related  Materials
@@ -104,12 +107,12 @@ python ${SOURCE}\
 
 
 ## Project Contributors
-Modulabs, Machine Learning of Things (MoT) labs members:
-- *[Jaewook Kang](https://github.com/jwkanggist/)
-- [Doyoung Gwak](https://github.com/tucan9389/)
-- [Jeongah Shin](https://github.com/Jeongah-Shin)
-- [YongGeunLee](https://github.com/YongGeunLee)
-- [Joonho Lee](https://github.com/junhoning)
+- Dontbeturtle v1.0
+    - [Jaewook Kang](https://github.com/jwkanggist/) (PI)
+    - [Doyoung Gwak](https://github.com/tucan9389/)
+    - [Jeongah Shin](https://github.com/Jeongah-Shin)
+    - [YongGeunLee](https://github.com/YongGeunLee)
+    - [Joonho Lee](https://github.com/junhoning)
 
 
 ## Acknowledgement
