@@ -14,13 +14,14 @@ For this purpose, we monitor neck, detecting
 whether you are maintaining good working posture. 
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
-
+insert demo gif 
 ![alt text]()
 
 
 ### Baselines Model
 - [MobileNet v2](https://arxiv.org/abs/1801.04381)
 - [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
+
 
 ![alt text]()
 
@@ -65,6 +66,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ### Components
 ```bash
 .
+├── images              # some images for documentation
 ├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
 ├── note                # Some notes under Google Camps
 ├── sh_scripts          # A collection of shell scripts for easy operations 
@@ -74,7 +76,7 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ### Run training
 ```bash
 export MODEL_BUCKET=./tfmodules/export/model/       # set path for exporting ckpt and tfsummary
-export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for unzipping dataset
+export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for placing dataset
 export SOURCE=./tfmodules/trainer_gpu.py            # set path for tensorflow trainer
 
 python ${SOURCE}\
@@ -101,9 +103,8 @@ python ${SOURCE}\
 ## Related  Materials
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
 - [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
-- [Jaewook Kang, "_Mobile Vision Learning_," Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
 - [Jaewook Kang, "_Mobile Vision Learning: Model Compression and Efficient Convolution perspective_," ETRI, 2018 June 12th](https://docs.google.com/presentation/d/1_spnxEttqiTTh31c8S7xvHoSdZ3k4Rhm1f7GM7wNMdw/edit#slide=id.p1)
-
+- [Jaewook Kang, "_Let's use Cloud TPU_", Aug 2018](https://docs.google.com/presentation/d/1LqlZc8IjXzp255UIXWQRBRGvvqwnLzkz1qAoq5YD1hs/edit?usp=drive_web&ouid=105579430994700782636)
 
 
 ## Project Contributors
