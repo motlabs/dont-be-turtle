@@ -96,6 +96,9 @@ python ${SOURCE}\
     - [FLIC_eval](https://bensapp.github.io/flic-dataset.html) (1000)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (1000)
 
+- Keypoint annotator repos
+    - [For iOS Mobile](https://github.com/motlabs/KeypointAnnotation)
+    - [For OSX](https://github.com/motlabs/dont-be-turtle-pose-annotation-tool)
 
 ## Related  Materials
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
