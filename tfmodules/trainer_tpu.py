@@ -837,9 +837,7 @@ def main(unused_argv):
         start_timestamp = time.time()  # This time will include compilation time
 
         if FLAGS.mode == 'train':
-            dontbeturtle_estimator.train(
-                input_fn    =dataset_train.input_fn,
-                max_steps   =FLAGS.train_steps)
+            dontbeturtle_estimator.train(input_fn    =dataset_train.input_fn,max_steps   =FLAGS.train_steps)
             tf.logging.info('[main] Training only')
 
         else:
@@ -851,9 +849,7 @@ def main(unused_argv):
                 # At the end of training, a checkpoint will be written to --model_dir.
                 next_checkpoint = min(current_step + FLAGS.steps_per_eval,
                                       FLAGS.train_steps)
-                dontbeturtle_estimator.train(
-                    input_fn    =dataset_train.input_fn,
-                    max_steps   =next_checkpoint)
+                dontbeturtle_estimator.train(input_fn    =dataset_train.input_fn,max_steps   =next_checkpoint)
 
                 current_step = next_checkpoint
 
@@ -861,10 +857,7 @@ def main(unused_argv):
                 # Since evaluation happens in batches of --eval_batch_size, some images
                 # may be consistently excluded modulo the batch size.
                 tf.logging.info('Starting to evaluate.')
-                eval_results    = dontbeturtle_estimator.evaluate(
-                    input_fn    =dataset_eval.input_fn,
-                    steps       =FLAGS.num_eval_images // FLAGS.eval_batch_size)
-
+                eval_results    = dontbeturtle_estimator.evaluate(input_fn=dataset_eval.input_fn,steps=FLAGS.num_eval_images // FLAGS.eval_batch_size)
                 tf.logging.info('Eval results: %s' % eval_results)
 
         elapsed_time = int(time.time() - start_timestamp)
@@ -878,8 +871,6 @@ def main(unused_argv):
         #     dontbeturtle_estimator.export_savedmodel(
         #         export_dir_base             =FLAGS.export_dir,
         #         serving_input_receiver_fn   =data_loader_tpu.image_serving_input_fn)
-
-
 
 
 

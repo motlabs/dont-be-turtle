@@ -23,8 +23,10 @@ import tensorflow.contrib.slim as slim
 
 from hourglass_module import get_hourglass_conv_module
 from hourglass_module import get_hourglass_deconv_module
-from hourglass_module import get_conv2d_seq
-
+from hourglass_module import get_hourglass_convbottom_module
+from tf_conv_module import get_inverted_bottleneck_module
+from tf_conv_module import get_linear_bottleneck_module
+import numpy as np
 
 
 def get_hourglass_layer(ch_in,
@@ -34,7 +36,7 @@ def get_hourglass_layer(ch_in,
 
     scope       = scope + str(layer_index)
     net         = ch_in
-    net_array   = [] # for shorcut connection
+    shortcut_array   = [] # for shorcut connection
     end_points  = {}
     with tf.variable_scope(name_or_scope=scope,default_name='hglayer',values=[ch_in]) as sc:
 
@@ -51,7 +53,7 @@ def get_hourglass_layer(ch_in,
 
         #----------------------------------------
         # bottem-up convolutional blocks
-        for conv_index in range(0,model_config.num_of_stacking):
+        for conv_index in range(0,model_config.num_of_stage):
 
             net_shape   = net.get_shape().as_list()
             ch_out_num  = net_shape[3]
@@ -73,9 +75,36 @@ def get_hourglass_layer(ch_in,
                 conv_end_points[scope + '_maxpool' + str(conv_index)] = net
 
 
-            # store tf tensor for shortcut connection
-            net_array.append(net)
-            # end points update
+
+            # shortcut connections
+            if model_config.is_hglayer_shortcut_conv:
+                with tf.variable_scope(name_or_scope='shortcut_conv' + str(conv_index)):
+                    # shortcut connection with convolution
+                    expand_ch_num = np.floor(ch_out_num * model_config.invbottle_expansion_rate)
+                    shortcut    = net
+
+                    for shortcut_conv_index in range(0,model_config.num_of_shorcut_invbottleneck_stacking):
+                        # stacking of inverted bottleneck blocks
+                        shortcut,end_points_shortcut = get_inverted_bottleneck_module(ch_in         =shortcut,
+                                                                             ch_out_num     =ch_out_num,
+                                                                             expand_ch_num  =expand_ch_num,
+                                                                             model_config   =model_config.conv_config,
+                                                                             scope=scope + '_shortcut_' + str(conv_index)+str(shortcut_conv_index))
+                        end_points.update(end_points_shortcut)
+
+                    # adding linear bottleneck block at the end of the shortcut
+                    shortcut,end_points_shortcut = get_linear_bottleneck_module(ch_in   = shortcut,
+                                                                        ch_out_num      =ch_out_num,
+                                                                        model_config    =model_config.conv_config,
+                                                                        scope=scope + '_shortcut_' + str(conv_index) +'linearbottle')
+                    end_points.update(end_points_shortcut)
+                    shortcut_array.append(shortcut)
+
+            else:
+                # just adding
+                shortcut_array.append(net)
+
+            # # end points update
             end_points.update(conv_end_points)
 
         #----------------------------------------
@@ -83,23 +112,24 @@ def get_hourglass_layer(ch_in,
         net_shape_at_bottom     = net.get_shape().as_list()
         ch_out_num_at_bottom    = net_shape_at_bottom[3]
 
-        scope = 'hg_convseq'
-        net,convseq_end_points= get_conv2d_seq(ch_in        = net,
-                                               ch_out_num   = ch_out_num_at_bottom,
-                                               model_config = model_config.convseq_config,
-                                               scope        = scope)
+        scope = 'hg_convbottom'
+        net,convseq_end_points= get_hourglass_convbottom_module(ch_in        = net,
+                                                               ch_out_num   = ch_out_num_at_bottom,
+                                                               model_config = model_config.convseq_config,
+                                                               scope        = scope)
+
         end_points.update(convseq_end_points)
 
         #----------------------------------------
         # Top- down deconvolutional blocks
 
         scope = 'hg_deconv'
-        for deconv_index in range(0, model_config.num_of_stacking):
+        for deconv_index in range(0, model_config.num_of_stage):
             # print ('[hglayer] deconv_index = %s'% deconv_index)
 
             # 1) elementwise sum for shortcut connection
             net = tf.add(x=net,
-                         y=net_array.pop(),
+                         y=shortcut_array.pop(),
                          name=scope + '_shortcut_sum' + str(deconv_index))
             end_points[scope + '_shortcut_sum' + str(deconv_index)] = net
 
@@ -108,7 +138,9 @@ def get_hourglass_layer(ch_in,
                                                                 unpool_rate     = model_config.pooling_factor,
                                                                 model_config    = model_config.deconv_config,
                                                                 layer_index     = deconv_index,
+                                                                is_conv_after_resize = model_config.is_hglayer_conv_after_resize,
                                                                 scope           = scope)
+
             # 3) end point update
             end_points.update(deconv_end_points)
 

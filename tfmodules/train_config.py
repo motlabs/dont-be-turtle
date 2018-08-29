@@ -24,9 +24,9 @@ from path_manager import MODEL_BUCKET
 
 
 ## realtestdata
-TRAININGSET_SIZE     = 1920
+TRAININGSET_SIZE     = 865
 VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 32 # multiple of 8
+BATCH_SIZE           = 192  # multiple of 8
 
 
 
@@ -38,7 +38,7 @@ class TrainConfig(object):
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
-        self.epoch_num                  = 100
+        self.epoch_num                  = 10000
         self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
         self.iter_per_before_outfeeding = 100
 
@@ -81,7 +81,7 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_crop                    = True # not implemented yet
+        self.is_crop                    = True
         self.is_rotate                  = True
         self.is_flipping                = True
         self.is_scale                   = True

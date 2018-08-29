@@ -30,12 +30,13 @@ import absl.logging as _logging  # pylint: disable=unused-import
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
-
+from subprocess import check_output
 
 # directory path addition
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import EXPORT_DIR
+from path_manager import EXPORT_MODEL_DIR
 from path_manager import TF_CNN_MODULE_DIR
 from path_manager import COCO_DATALOAD_DIR
 
@@ -44,6 +45,7 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TF_CNN_MODULE_DIR)
 sys.path.insert(0,EXPORT_DIR)
+sys.path.insert(0,EXPORT_MODEL_DIR)
 sys.path.insert(0,COCO_DATALOAD_DIR)
 
 
@@ -83,6 +85,9 @@ preproc_config  = PreprocessingConfig()
 train_config_dict   = train_config.__dict__
 model_config_dict   = model_config.__dict__
 preproc_config_dict = preproc_config.__dict__
+
+
+
 
 def model_fn(features,
              labels,
@@ -194,6 +199,7 @@ def model_fn(features,
                 get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                                  label_heatmaps=labels,
                                  scope='out_loss')
+            total_out_losssum = total_out_losssum / FLAGS.train_batch_size
 
         ### middle layers ===
         with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
@@ -214,8 +220,8 @@ def model_fn(features,
                                      scope          ='mid_loss_' + str(stacked_hg_index))
 
                 # collect loss and heatmap in list
-                total_mid_losssum_list.append(total_mid_losssum_temp)
-                total_mid_losssum_acc += total_mid_losssum_temp
+                total_mid_losssum_list.append(total_mid_losssum_temp/ FLAGS.train_batch_size)
+                total_mid_losssum_acc += total_mid_losssum_temp / FLAGS.train_batch_size
 
 
         ### total loss ===
@@ -223,8 +229,7 @@ def model_fn(features,
                                                       total_mid_losssum_acc]):
             # Collect weight regularizer loss =====
             loss_regularizer = tf.losses.get_regularization_loss()
-            loss = (total_out_losssum + total_mid_losssum_acc ) / FLAGS.train_batch_size \
-                   + loss_regularizer
+            loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
 
 
 
@@ -261,7 +266,7 @@ def model_fn(features,
 
             if FLAGS.is_extra_summary:
                 summary_op = summary_fn(loss                    =loss,
-                                        total_out_losssum       =total_out_losssum,
+                                        total_out_losssum       =total_out_losssum ,
                                         total_mid_losssum_list  =total_mid_losssum_list,
                                         learning_rate           =learning_rate,
                                         input_images            =features,
@@ -306,13 +311,18 @@ def main(unused_argv):
     ## ckpt dir create
     now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     curr_model_dir      = "{}/run-{}/".format(FLAGS.model_dir, now)
+    curr_model_dir_local= "{}/run-{}/".format(EXPORT_MODEL_DIR,now)
 
     tf.logging.info('[main] data dir = %s'%FLAGS.data_dir)
     tf.logging.info('[main] model dir = %s'%curr_model_dir)
+    tf.logging.info('[main] config logging dir  = %s'%curr_model_dir_local)
     tf.logging.info('------------------------')
 
     if not tf.gfile.Exists(curr_model_dir):
         tf.gfile.MakeDirs(curr_model_dir)
+
+    if not tf.gfile.Exists(curr_model_dir_local):
+        tf.gfile.MakeDirs(curr_model_dir_local)
 
     FLAGS.model_dir = curr_model_dir
 
@@ -321,12 +331,34 @@ def main(unused_argv):
     tf.logging.info(str(model_config_dict))
     tf.logging.info(str(preproc_config_dict))
 
+    train_config_filename   = curr_model_dir_local + 'train_config' + '.json'
+    model_config_filename   = curr_model_dir_local + 'model_config' + '.json'
+    preproc_config_filename = curr_model_dir_local + 'preproc_config' + '.json'
+
+    with open(train_config_filename, 'w') as fp:
+        json.dump(str(train_config_dict), fp)
+
+    with open(model_config_filename, 'w') as fp:
+        json.dump(str(model_config_dict), fp)
+
+    with open(preproc_config_filename, 'w') as fp:
+        json.dump(str(preproc_config_dict), fp)
+
+
+    try:
+        cmd = "sudo gsutil cp -r {} {}".format(curr_model_dir_local + '* ', curr_model_dir)
+        print ('[main] cmd=%s'%cmd)
+        check_output(cmd,shell=True)
+        tf.logging.info('[main] success logging config in bucket')
+    except:
+        tf.logging.info('[main] failure logging config in bucket')
+
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
                             log_device_placement=True)
 
-    config.gpu_options.allow_growth=True
+    # config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
