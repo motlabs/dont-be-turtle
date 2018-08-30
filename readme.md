@@ -24,8 +24,8 @@ insert demo gif
 
 
 ### Mobile Apps 
-- Android repo
-- iOS repo
+- Android repo (Android + Tflite) 
+- iOS repo (iOS + CoreML)
 
 
 ## Benchmarks
@@ -33,6 +33,7 @@ insert demo gif
 - Tflite model size (MB)
 - Frame per sec (FPS) on Google Pixel 2
 - [Over the Hourglass (HG) model](https://arxiv.org/abs/1603.06937)
+
 
 ### wrt Number of HG stacking
 | # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
@@ -54,10 +55,14 @@ insert demo gif
 ## Tensorflow Training Frameworks
 
 ### Technical Stacks
-- Tensorflow >= 1.9
-- Tf Slim 
-- Android + Tflite 
-- iOS + CoreML 
+- Tensorflow (+ Tf Slim) >= 1.9
+- Tf plot       == 0.2.0.dev0 
+- opencv-python >= 3.4.2
+- pycocotools   == 2.0.0
+- Cython        == 0.28.4
+- tensorpack    == 0.8.0 
+
+### Installation
 
 
 ### Components
