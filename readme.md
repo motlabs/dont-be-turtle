@@ -14,63 +14,76 @@ For this purpose, we monitor neck, detecting
 whether you are maintaining good working posture. 
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
-insert demo gif 
-![alt text]()
+![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
 
+### Release Benchmarks
+- Pose Estimation Accuracy (PCKh): xx.xx %
 
-### Baselines Model
-- [MobileNet v2](https://arxiv.org/abs/1801.04381)
-- [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
+| Version | Framework            |  Device           | size (MB) | avg FPS |
+|---------|----------------------|-------------------|-----------|---------|
+| 1.0.0   | Android Pie + Tflite | Google Pixel2     |  1.4MB    |   TBU   |
+| 1.0.0   | iOS 11.4.1  + CoreML | iPhoneX           |  1.5MB    |   TBU   |
 
-
-### Mobile Apps 
-- Android repo
-- iOS repo
-
-
-## Benchmarks
-- Percentage of correct keypoint (pck)
-- Tflite model size (MB)
-- Frame per sec (FPS) on Google Pixel 2
-- [Over the Hourglass (HG) model](https://arxiv.org/abs/1603.06937)
-
-### wrt Number of HG stacking
-| # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
-|-----------------|-------------------|-----------|------------------|---------|
-| 4               |  4                |           |                  |         |  
-| 4               |  2                |           |                  |         |
-| 4               |  1                |           |                  |         |
-
-
-### wrt Number of HG stages
-| # of HG stages  |  # of HG stacking |  pck (%)  | tflite size (MB) | avg FPS |
-|-----------------|-------------------|-----------|------------------|---------|
-| 4               |  2                |           |                  |         |          
-| 3               |  2                |           |                  |         |              
-| 2               |  2                |           |                  |         |             
-
-
-
-## Tensorflow Training Frameworks
-
-### Technical Stacks
-- Tensorflow >= 1.9
-- Tf Slim 
-- Android + Tflite 
-- iOS + CoreML 
-
-
-### Components
+### Repository Components
 ```bash
 .
 ├── images              # some images for documentation
 ├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
 ├── note                # Some notes under Google Camps
-├── sh_scripts          # A collection of shell scripts for easy operations 
+├── sh_scripts          # A collection of shell scripts for easy operations
+├── release             # dontbe turtle tflite and mlmodel here
 └── tfmodules           # A collection of TF python files
 ```
 
-### Run training
+
+## Mobile Frameworks
+
+
+### How to Get .tflite and .mlmodel
+```bash
+python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
+# Args:
+#  1) is-summary==True : collect tf summary for model graph
+#     is-summary==False: None
+#  2) --import-ckpt-dir: global path directory .ckpt stored
+#
+# An example:
+# python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/run-20180815075050/
+#
+```
+
+### Mobile Apps 
+- Android repo : TBU 
+- [iOS repo](https://github.com/motlabs/dont-be-turtle-ios) 
+
+
+## Tensorflow Training Frameworks
+
+### Technical Stacks
+- Tensorflow (+ Tf Slim) >= 1.9
+- Tf plot       == 0.2.0.dev0 
+- opencv-python >= 3.4.2
+- pycocotools   == 2.0.0
+- Cython        == 0.28.4
+- tensorpack    == 0.8.0
+- tfcoreml      == 0.2.0
+
+### Repository Installation 
+
+```bash
+git clone https://github.com/motlabs/dont-be-turtle
+# cd dont-be-turtle/
+git init
+git submodule init
+git submodule update
+
+pip install -r requirement.txt
+./sh_scripts/install_tensorflow_gpu.sh
+```
+
+
+
+### How to Run Training
 ```bash
 export MODEL_BUCKET=./tfmodules/export/model/       # set path for exporting ckpt and tfsummary
 export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for placing dataset
@@ -82,10 +95,12 @@ python ${SOURCE}\
   --is_ckpt_init=False\
   --ckptinit_dir=None
 ```
+- You have an option to use `./sh_scripts/run_train_gpu.sh` with some custormization
 
 
-### Dataset
-- Download link
+## Dataset
+> You need to create `./dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
+
 - Training set (>15000)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
     - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (7000)
@@ -99,6 +114,35 @@ python ${SOURCE}\
 - Keypoint annotator repos
     - [For iOS Mobile](https://github.com/motlabs/KeypointAnnotation)
     - [For OSX](https://github.com/motlabs/dont-be-turtle-pose-annotation-tool)
+
+
+## Benchmarks wrt Model Config
+- Percentage of correct keypoint (PCKh)
+- Tflite model size (MB)
+- Frame per sec (FPS) on Google Pixel 2
+
+#### Baselines Model
+- [MobileNet v2](https://arxiv.org/abs/1801.04381)
+- [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
+
+#### wrt Number of HG stacking
+- TBU 
+
+| # of HG stages  |  # of HG stacking |  PCKh (%)  | tflite size (MB) | avg FPS |
+|-----------------|-------------------|-----------|-------------------|---------|
+| 4               |  4                |           |                   |         |  
+| 4               |  2                |           |                   |         |
+| 4               |  1                |           |                   |         |
+
+
+#### wrt Number of HG stages
+| # of HG stages  |  # of HG stacking |  PCKh (%)  | tflite size (MB) | avg FPS |
+|-----------------|-------------------|-----------|-------------------|---------|
+| 4               |  2                |           |                   |         |          
+| 3               |  2                |           |                   |         |              
+| 2               |  2                |           |                   |         |             
+
+
 
 ## Related  Materials
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)

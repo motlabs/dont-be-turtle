@@ -69,24 +69,9 @@ class ModelTest(tf.test.TestCase):
                                         get_model(ch_in         = inputs,
                                                   model_config  = model_config,
                                                   scope         = TEST_LAYER_NAME)
-
-
-        # tensorboard graph summary =============
-        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        tb_logdir_path = getcwd() + '/tf_logs'
-        tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
-
-        if not tf.gfile.Exists(tb_logdir_path):
-            tf.gfile.MakeDirs(tb_logdir_path)
-
-
-        # summary
-        tb_summary_writer = tf.summary.FileWriter(logdir=tb_logdir)
-        tb_summary_writer.add_graph(module_graph)
-        tb_summary_writer.close()
-
+            init        = tf.global_variables_initializer()
+            ckpt_saver  = tf.train.Saver(tf.global_variables())
         #----------------------------------------------------------
-
         expected_output_shape   = [batch_size,
                                    model_config.out_config.input_height,
                                    model_config.out_config.input_width,
@@ -114,24 +99,55 @@ class ModelTest(tf.test.TestCase):
         #
         print ('[tfTest] mid_points = %s' % mid_points)
 
+        # tensorboard graph summary =============
+        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        tb_logdir_path = getcwd() + '/tf_logs'
+        tb_logdir = "{}/run-{}/".format(tb_logdir_path, now)
 
-        # write pbfile of graph_def
-        savedir = getcwd() + '/pbfiles/'
-        if not tf.gfile.Exists(savedir):
-            tf.gfile.MakeDirs(savedir)
+        if not tf.gfile.Exists(tb_logdir_path):
+            tf.gfile.MakeDirs(tb_logdir_path)
 
-        pbfilename      = 'model_'+ model_config.hg_config.conv_config.conv_type + '.pb'
-        pbtxtfilename   = 'model_'+ model_config.hg_config.conv_config.conv_type + '.pbtxt'
+
+        # summary
+        tb_summary_writer = tf.summary.FileWriter(logdir=tb_logdir)
+        tb_summary_writer.add_graph(module_graph)
+        tb_summary_writer.close()
+
 
         with self.test_session(graph=module_graph) as sess:
-            print("TF graph_def is saved in pb at %s" % savedir + pbfilename)
-            tf.train.write_graph(graph_or_graph_def=sess.graph_def,
-                                 logdir=savedir,
-                                 name=pbfilename)
-            tf.train.write_graph(graph_or_graph_def=sess.graph_def,
-                                 logdir=savedir,
-                                 name=pbtxtfilename,as_text=True)
 
+            output_node_name = TEST_LAYER_NAME + '/'  + expected_output_name
+
+            pbsavedir, pbfilename, ckptfilename,pbtxtfilename = \
+                save_pb_ckpt(module_name    = TEST_LAYER_NAME,
+                             init           = init,
+                             sess           = sess,
+                             ckpt_saver     = ckpt_saver)
+
+            # frozen graph generation
+            convert_to_frozen_pb(module_name= TEST_LAYER_NAME,
+                                 pbsavedir  = pbsavedir,
+                                 pbfilename = pbfilename,
+                                 ckptfilename=ckptfilename,
+                                 output_node_name=output_node_name,
+                                 input_shape    = input_shape)
+
+            # # check tflite compatibility
+            print('------------------------------------------------')
+            print('[tfTest] convert to tflite')
+
+            tflitedir = getcwd() + '/tflite_files/'
+            if not tf.gfile.Exists(tflitedir):
+                tf.gfile.MakeDirs(tflitedir)
+            tflitefilename = TEST_LAYER_NAME + '.tflite'
+
+            toco = tf.contrib.lite.TocoConverter.from_session(sess=sess,
+                                                              input_tensors=[inputs],
+                                                              output_tensors=[model_out])
+
+            tflite_model = toco.convert()
+            open(tflitedir + tflitefilename, 'wb').write(tflite_model)
+            print('[tfTest] tflite conversion successful')
 
 
 

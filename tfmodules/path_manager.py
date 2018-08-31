@@ -44,6 +44,7 @@ EXPORT_MODEL_DIR        = EXPORT_DIR             + '/model'
 TF_LAYER_TEST_DIR       = TF_MODEL_DIR           + '/testcodes'
 TF_CNN_MODULE_DIR       = TF_MODEL_DIR           + '/tf-cnn-model'
 TF_CNN_TEST_DIR         = TF_CNN_MODULE_DIR      + '/testcodes'
+TFLITE_CUSTOM_TOCO_DIR  = TF_CNN_TEST_DIR        + '/tflite_convertor'
 
 # data path
 DATASET_DIR                 = PROJ_HOME     + '/dataset'

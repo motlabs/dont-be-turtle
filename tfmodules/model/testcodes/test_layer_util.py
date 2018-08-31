@@ -66,7 +66,7 @@ def save_pb_ckpt(module_name,init,sess,ckpt_saver):
 
     print('[tftest] pb and ckpt are generated successful')
 
-    return pbsavedir,pbfilename,ckptfilename
+    return pbsavedir,pbfilename,ckptfilename,pbtxtfilename
 
 
 
