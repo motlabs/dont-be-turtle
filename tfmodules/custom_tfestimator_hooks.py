@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
 from path_manager import TFLITE_CUSTOM_TOCO_DIR
 sys.path.insert(0,TFLITE_CUSTOM_TOCO_DIR)
 
@@ -32,7 +33,16 @@ from tflite_convertor           import TFliteConvertor as CustomTocoConverter
 
 
 class TfliteSaverHook(session_run_hook.SessionRunHook):
-    '''Save Tflite file from session'''
+    '''Save Tflite file from session
+        - Use example:
+
+        tflite_export_hook = TfliteSaverHook(input_tensor       = features,
+                                             output_tensor      = logits_out_heatmap,
+                                             output_node_name   ='build_network/model/model_out',
+                                             savedir            =FLAGS.model_dir)
+
+    '''
+
 
     def __init__(self,
                  input_tensors,

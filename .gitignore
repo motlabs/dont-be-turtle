@@ -75,7 +75,9 @@ freeline_project_description.json
 *.png
 *.jpg
 *.jpeg
+*.json
 
+*.pb
 *.pbtxt
 
 *.ckpt*
