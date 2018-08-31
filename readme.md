@@ -25,6 +25,17 @@ insert demo gif
 | 1.0.0   | Android Pie + Tflite | Google Pixel2     |  1.4MB    |   TBU   |
 | 1.0.0   | iOS 11.4.1  + CoreML | iPhoneX           |  1.5MB    |   TBU   |
 
+### Repository Components
+```bash
+.
+├── images              # some images for documentation
+├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
+├── note                # Some notes under Google Camps
+├── sh_scripts          # A collection of shell scripts for easy operations
+├── release             # dontbe turtle tflite and mlmodel here
+└── tfmodules           # A collection of TF python files
+```
+
 
 ## Mobile Frameworks
 
@@ -73,33 +84,6 @@ $ ./sh_scripts/install_tensorflow_gpu.sh
 ```
 
 
-- 2) training setup
-```bash
-    export MODEL_BUCKET=~/dont-be-turtle/tfmodules/export/model/
-    export DATA_BUCKET=~/dont-be-turtle/dataset/coco_form/dontbeturtle
-    export SOURCE=~/dont-be-turtle/tfmodules/trainer_gpu.py
-    
-$ python ${SOURCE}\
-  --data_dir=${DATA_BUCKET}\
-  --model_dir=${MODEL_BUCKET}\
-  --is_ckpt_init=False\
-  --ckptinit_dir=None
-
-```
-> You need to create `dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
-> Otherwise use `./sh_scripts/run_train_gpu.sh` with some custormization
-
-
-### Components
-```bash
-.
-├── images              # some images for documentation
-├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
-├── note                # Some notes under Google Camps
-├── sh_scripts          # A collection of shell scripts for easy operations
-├── release             # dontbe turtle tflite and mlmodel here
-└── tfmodules           # A collection of TF python files
-```
 
 ### How to Run Training
 ```bash
@@ -113,9 +97,12 @@ python ${SOURCE}\
   --is_ckpt_init=False\
   --ckptinit_dir=None
 ```
+- You have an option to use `./sh_scripts/run_train_gpu.sh` with some custormization
+
+> You need to create `dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
+
 
 ## Dataset
-- Download link (TBU)
 - Training set (>15000)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
     - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (7000)
