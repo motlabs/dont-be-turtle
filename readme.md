@@ -14,11 +14,10 @@ For this purpose, we monitor neck, detecting
 whether you are maintaining good working posture. 
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
-insert demo gif 
-![alt text]()
+![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
 
 ### Release Benchmarks
-- Pose Estimation Accuracy (PCKh):  %
+- Pose Estimation Accuracy (PCKh): xx.xx %
 
 | Version | Framework            |  Device           | size (MB) | avg FPS |
 |---------|----------------------|-------------------|-----------|---------|
