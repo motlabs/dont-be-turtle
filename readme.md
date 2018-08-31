@@ -42,7 +42,7 @@ insert demo gif
 
 ### How to Get .tflite and .mlmodel
 ```bash
-$ python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
+python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
 # Args:
 #  1) is-summary==True : collect tf summary for model graph
 #     is-summary==False: None
@@ -100,7 +100,7 @@ python ${SOURCE}\
 
 
 ## Dataset
-> You need to create `dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
+> You need to create `./dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
 
 - Training set (>15000)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
