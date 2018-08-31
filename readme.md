@@ -69,18 +69,17 @@ $ python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path d
 - tensorpack    == 0.8.0
 - tfcoreml      == 0.2.0
 
-### Installation
+### Repository Installation 
 
-- 1) Repository setup
 ```bash
-$ git clone https://github.com/motlabs/dont-be-turtle
+git clone https://github.com/motlabs/dont-be-turtle
 # cd dont-be-turtle/
-$ git init
-$ git submodule init
-$ git submodule update
+git init
+git submodule init
+git submodule update
 
-$ pip install -r requirement.txt
-$ ./sh_scripts/install_tensorflow_gpu.sh
+pip install -r requirement.txt
+./sh_scripts/install_tensorflow_gpu.sh
 ```
 
 
@@ -99,10 +98,10 @@ python ${SOURCE}\
 ```
 - You have an option to use `./sh_scripts/run_train_gpu.sh` with some custormization
 
-> You need to create `dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
-
 
 ## Dataset
+> You need to create `dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
+
 - Training set (>15000)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
     - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (7000)
@@ -118,7 +117,7 @@ python ${SOURCE}\
     - [For OSX](https://github.com/motlabs/dont-be-turtle-pose-annotation-tool)
 
 
-## Benchmarks upto Model Config
+## Benchmarks wrt Model Config
 - Percentage of correct keypoint (PCKh)
 - Tflite model size (MB)
 - Frame per sec (FPS) on Google Pixel 2
