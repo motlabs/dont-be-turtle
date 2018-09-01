@@ -15,6 +15,7 @@ whether you are maintaining good working posture.
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
 ![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
+> Above model is trained by 870 custom dataset, and will be updated as soon as a new dataset is prepared.
 
 ### Release Benchmarks
 - Pose Estimation Accuracy (PCKh): xx.xx %
@@ -98,7 +99,7 @@ python ${SOURCE}\
 - You have an option to use `./sh_scripts/run_train_gpu.sh` with some custormization
 
 
-## Dataset
+## Dataset (Under Preparation)
 > You need to create `./dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
 
 - Training set (>15000)
