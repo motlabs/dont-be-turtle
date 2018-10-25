@@ -64,7 +64,7 @@ class ConvertorToMobileFormat(object):
         self._ckptfile_name      = ckptfilename
         self._frozen_pb_name     = 'frozen_' + ckptfilename.split('.')[0] + '.pb'
         self._pb_name            = ckptfilename.split('.')[0] + '.pb'
-        self._tflite_name       = ckptfilename.split('.')[0] + '.tflite'
+        self._tflite_name        = ckptfilename.split('.')[0] + '.tflite'
         self._mlmodel_name       = ckptfilename.split('.')[0] + '.mlmodel'
 
         self._is_summary = is_summary

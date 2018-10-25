@@ -323,10 +323,10 @@ class DataSetInput(object):
                                              shuffle=self.is_training)
         if self.is_training:
             # dataset elementwise shuffling
-            dataset = dataset.repeat()
             dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
-            tf.logging.info('[Input_fn] dataset.repeat()')
             tf.logging.info('[Input_fn] dataset.shuffle()')
+            dataset = dataset.repeat()
+            tf.logging.info('[Input_fn] dataset.repeat()')
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):

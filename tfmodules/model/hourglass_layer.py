@@ -83,7 +83,7 @@ def get_hourglass_layer(ch_in,
                     expand_ch_num = np.floor(ch_out_num * model_config.invbottle_expansion_rate)
                     shortcut    = net
 
-                    for shortcut_conv_index in range(0,model_config.num_of_shorcut_invbottleneck_stacking):
+                    for shortcut_conv_index in range(0,model_config.num_of_shorcut_invbottleneck_stacking ):
                         # stacking of inverted bottleneck blocks
                         shortcut,end_points_shortcut = get_inverted_bottleneck_module(ch_in         =shortcut,
                                                                              ch_out_num     =ch_out_num,

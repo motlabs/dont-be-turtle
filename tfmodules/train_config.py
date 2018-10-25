@@ -58,7 +58,6 @@ class TrainConfig(object):
         self.occlusion_loss_fn      = None
         # self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.heatmap_loss_fn        = tf.nn.l2_loss
-
         self.metric_fn              = tf.metrics.root_mean_squared_error
 
         # self.activation_fn_out      = tf.nn.sigmoid
