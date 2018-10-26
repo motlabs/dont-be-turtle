@@ -86,3 +86,8 @@ freeline_project_description.json
 
 *.tfrecord
 checkpoint
+
+*.nate.com
+
+*.tflite
+*.mlmodel
