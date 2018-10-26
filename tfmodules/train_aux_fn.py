@@ -120,9 +120,9 @@ def get_heatmap_activation(logits,scope=None):
     '''
     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
-        activation_fn = train_config.activation_fn_out
+        activation_fn = model_config.activation_fn_out
 
-        if train_config.activation_fn_out == None:
+        if activation_fn == None:
             ''' linear activation case'''
             act_heatmaps = logits
         else:
@@ -169,8 +169,7 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        # total_losssum = loss_fn(label_heatmaps - pred_heatmaps) / NUM_OF_KEYPOINTS
-        total_losssum = loss_fn(label_heatmaps - pred_heatmaps) 
+        total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
 
 
     return total_losssum

@@ -345,6 +345,9 @@ class ModelConfig(object):
         self.hglayer_convbottom_type    = 'inverted_bottleneck'
         self.hglayer_deconv_type        = 'bilinear_resize'
 
+        # output layer final activation
+        self.activation_fn_out      = None
+
         # self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
         # self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         # self.num_of_labels      = NUM_OF_KEYPOINTS
