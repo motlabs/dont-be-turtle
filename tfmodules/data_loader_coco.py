@@ -27,6 +27,7 @@ import os
 import sys
 import tensorflow as tf
 from os.path import join
+import functools
 
 # for COCO templete
 from pycocotools.coco import COCO
@@ -41,8 +42,7 @@ sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,COCO_DATALOAD_DIR)
 sys.path.insert(0,COCO_REALSET_DIR)
 
-from train_config  import BATCH_SIZE
-from train_config  import TRAININGSET_SIZE
+from train_config  import TrainConfig
 from train_config  import PreprocessingConfig
 from train_config  import FLAGS
 
@@ -60,6 +60,7 @@ from dataset_prepare import CocoMetadata
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
 preproc_config = PreprocessingConfig()
+train_config   = TrainConfig()
 
 
 class DataSetInput(object):
@@ -91,13 +92,13 @@ class DataSetInput(object):
 
 
 
-    def _set_shapes(self,img, heatmap):
-        img.set_shape([BATCH_SIZE,
+    def _set_shapes(self,batch_size,img, heatmap):
+        img.set_shape([batch_size,
                        DEFAULT_WIDTH,
                        DEFAULT_HEIGHT,
                        DEFAULT_INPUT_CHNUM])
 
-        heatmap.set_shape([BATCH_SIZE,
+        heatmap.set_shape([batch_size,
                            DEFAULT_HG_INOUT_RESOL,
                            DEFAULT_HG_INOUT_RESOL,
                            NUM_OF_KEYPOINTS])
@@ -208,8 +209,9 @@ class DataSetInput(object):
                 )
             ), num_parallel_calls=multiprocessing_num)
 
-        dataset = dataset.batch(BATCH_SIZE)
-        dataset = dataset.map(self._set_shapes, num_parallel_calls=multiprocessing_num)
+        dataset = dataset.batch(train_config.batch_size)
+        dataset = dataset.map(functools.partial(self._set_shapes, train_config.batch_size),
+                              num_parallel_calls=multiprocessing_num)
 
 
 

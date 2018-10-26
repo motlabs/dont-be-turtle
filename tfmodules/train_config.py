@@ -17,25 +17,18 @@
 import tensorflow as tf
 from absl import flags
 
-
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
-
-
-## realtestdata
-TRAININGSET_SIZE     = 10726
-BATCH_SIZE           = 192  # multiple of 8
-
 
 
 class TrainConfig(object):
     def __init__(self):
 
 
-        self.trainset_size = TRAININGSET_SIZE
+        self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = BATCH_SIZE
+        self.batch_size    = 192
 
         self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95

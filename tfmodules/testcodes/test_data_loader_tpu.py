@@ -49,8 +49,6 @@ sys.path.insert(0,TF_MODEL_DIR)
 
 from model_config import DEFAULT_INPUT_CHNUM
 from train_config import TrainConfig
-from train_config import TRAININGSET_SIZE
-from train_config import BATCH_SIZE
 from train_config import PreprocessingConfig
 from train_aux_fn import metric_fn
 
@@ -141,15 +139,15 @@ class DataLoaderTest(tf.test.TestCase):
         filenames = tf.placeholder(tf.string)
         dataset = tf.data.TFRecordDataset(filenames)
         dataset = dataset.repeat()
-        dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
+        dataset = dataset.shuffle(buffer_size=train_config.trainset_size)
 
         # dataset = dataset.map(dataset_parser)
-        # dataset = dataset.batch(BATCH_SIZE)
-        # dataset = dataset.prefetch(2*BATCH_SIZE)
+        # dataset = dataset.batch(train_config.batch_size)
+        # dataset = dataset.prefetch(2*train_config.batch_size)
 
         dataset = dataset.apply(
             tf.contrib.data.map_and_batch(map_func=dataset_parser,
-                                          batch_size=BATCH_SIZE,
+                                          batch_size=train_config.batch_size,
                                           drop_remainder=True))
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
         iterator_train = dataset.make_initializable_iterator()

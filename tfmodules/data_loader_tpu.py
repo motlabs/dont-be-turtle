@@ -36,10 +36,10 @@ sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,TPU_DATALOAD_DIR)
 
-from train_config  import BATCH_SIZE
-from train_config  import TRAININGSET_SIZE
+
 
 from train_config  import PreprocessingConfig
+from train_config  import TrainConfig
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_HG_INOUT_RESOL
 import preprocessor
@@ -48,6 +48,8 @@ from train_config import FLAGS
 
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
+
+train_config   = TrainConfig()
 preproc_config = PreprocessingConfig()
 
 TRAIN_FILE_BYTE             = 265 * 1024 * 1024  # 6MB for lsp train dataset file
@@ -313,7 +315,6 @@ class DataSetInput(object):
         # Retrieves the batch size for the current shard. The # of shards is
         # computed according to the input pipeline deployment. See
         # tf.contrib.tpu.RunConfig for details.
-        batch_size = BATCH_SIZE
 
         # # Shuffle the filenames to ensure better randomization.
         file_pattern = os.path.join(
@@ -323,7 +324,7 @@ class DataSetInput(object):
                                              shuffle=self.is_training)
         if self.is_training:
             # dataset elementwise shuffling
-            dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
+            dataset = dataset.shuffle(buffer_size=train_config.trainset_size)
             tf.logging.info('[Input_fn] dataset.shuffle()')
             dataset = dataset.repeat()
             tf.logging.info('[Input_fn] dataset.repeat()')
@@ -348,7 +349,7 @@ class DataSetInput(object):
         # # Parse, preprocess, and batch the data in parallel
         dataset = dataset.apply(
             tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
-                                          batch_size=batch_size,
+                                          batch_size=train_config.batch_size,
                                           num_parallel_batches=8,  # 8 == num_cores per host
                                           drop_remainder=True))
 
@@ -361,7 +362,7 @@ class DataSetInput(object):
         ########################################
 
         # Assign static batch size dimension to input data
-        dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
+        dataset = dataset.map(functools.partial(self.set_shapes, train_config.batch_size))
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
@@ -394,20 +395,19 @@ class DataSetInput(object):
 
     def input_fn_null(self, params):
         """Input function which provides null (black) images."""
-        batch_size = BATCH_SIZE
         dataset = tf.data.Dataset.range(1).repeat().map(self._get_null_input)
-        dataset = dataset.prefetch(batch_size)
+        dataset = dataset.prefetch(train_config.batch_size)
 
         dataset = dataset.apply(
-            tf.contrib.data.batch_and_drop_remainder(batch_size))
+            tf.contrib.data.batch_and_drop_remainder(train_config.batch_size))
         # if FLAGS.use_tpu == True and self.transpose_input:
         #   dataset = dataset.map(
         #       lambda images, labels: (tf.transpose(images, [1, 2, 3, 0]), labels),
         #       num_parallel_calls=8)
 
-        dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
+        dataset = dataset.map(functools.partial(self.set_shapes, train_config.batch_size))
 
-        dataset = dataset.prefetch(batch_size)     # Prefetch overlaps in-feed with training
+        dataset = dataset.prefetch(train_config.batch_size)     # Prefetch overlaps in-feed with training
         tf.logging.info('Input dataset: %s', str(dataset))
         return dataset
 
