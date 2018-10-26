@@ -28,7 +28,8 @@ class TrainConfig(object):
 
         self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = 4 #192
+        self.batch_size    = 192
+        self.batch_size_eval    = 1
 
         self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95
@@ -39,9 +40,9 @@ class TrainConfig(object):
         self.iter_per_before_outfeeding = 100
 
 
-        self.step_interval_for_eval         = 10
-        self.step_interval_for_summary      = 10
-        self.step_interval_for_display_loss = 10
+        self.step_interval_for_eval         = 100
+        self.step_interval_for_summary      = 100
+        self.step_interval_for_display_loss = 100
 
 
         if self.total_train_steps < self.iter_per_before_outfeeding:
@@ -206,7 +207,7 @@ flags.DEFINE_integer(
     'train_batch_size', default=train_config.batch_size, help='Batch size for training.')
 
 flags.DEFINE_integer(
-    'eval_batch_size', default=train_config.batch_size, help='Batch size for evaluation.')
+    'eval_batch_size', default=train_config.batch_size_eval, help='Batch size for evaluation.')
 
 flags.DEFINE_integer(
     'num_train_images', default=train_config.trainset_size, help='Size of training data set.')

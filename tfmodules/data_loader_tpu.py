@@ -328,6 +328,9 @@ class DataSetInput(object):
             tf.logging.info('[Input_fn] dataset.shuffle()')
             dataset = dataset.repeat()
             tf.logging.info('[Input_fn] dataset.repeat()')
+            batch_size = train_config.batch_size
+        else:
+            batch_size = train_config.batch_size_eval
 
         # loading dataset from tfrecords files
         def fetch_dataset(filename):
@@ -349,7 +352,7 @@ class DataSetInput(object):
         # # Parse, preprocess, and batch the data in parallel
         dataset = dataset.apply(
             tf.contrib.data.map_and_batch(map_func=self.dataset_parser,
-                                          batch_size=train_config.batch_size,
+                                          batch_size=batch_size,
                                           num_parallel_batches=8,  # 8 == num_cores per host
                                           drop_remainder=True))
 
@@ -362,7 +365,7 @@ class DataSetInput(object):
         ########################################
 
         # Assign static batch size dimension to input data
-        dataset = dataset.map(functools.partial(self.set_shapes, train_config.batch_size))
+        dataset = dataset.map(functools.partial(self.set_shapes, batch_size))
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)

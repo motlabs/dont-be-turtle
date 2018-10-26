@@ -142,7 +142,8 @@ class DataSetInput(object):
 
         # print('joint_list = %s' % img_meta_data.joint_list)
         images, labels  = self.image_preprocessing_fn(img_meta_data=img_meta_data,
-                                                      preproc_config=preproc_config)
+                                                      preproc_config=preproc_config,
+                                                      is_training   = self.is_training)
         return images, labels
 
 
@@ -160,7 +161,6 @@ class DataSetInput(object):
 
             doc reference: https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
         """
-        tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
 
 
         if self.is_testcode:
@@ -185,13 +185,19 @@ class DataSetInput(object):
         imgIds          = TRAIN_ANNO.getImgIds()
         dataset         = tf.data.Dataset.from_tensor_slices(imgIds)
 
-
+        tf.logging.info('----------------------------------------------')
+        tf.logging.info('[Dataloader] is_training = %s' % self.is_training)
         if self.is_training:
+            tf.logging.info('[Dataloader] Building dataset pipeline for training')
+
             # dataset elementwise shuffling and repeat
             dataset = dataset.apply(
                 tf.contrib.data.shuffle_and_repeat(buffer_size=1000))
+            batch_size = train_config.batch_size
         else:
+            tf.logging.info('[Dataloader] Building datast pipeline for evaluation')
             dataset = dataset.repeat(count=None)
+            batch_size = train_config.batch_size_eval
 
 
 
@@ -209,15 +215,15 @@ class DataSetInput(object):
                 )
             ), num_parallel_calls=multiprocessing_num)
 
-        dataset = dataset.batch(train_config.batch_size)
-        dataset = dataset.map(functools.partial(self._set_shapes, train_config.batch_size),
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.map(functools.partial(self._set_shapes, batch_size),
                               num_parallel_calls=multiprocessing_num)
 
 
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
-        tf.logging.info('[Input_fn] dataset pipeline building complete')
+        tf.logging.info('[Dataloader] dataset pipeline building complete')
 
         return dataset
 

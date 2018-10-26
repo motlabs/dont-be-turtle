@@ -237,6 +237,7 @@ def model_fn(features,
         extra_summary_hook  = None
         train_op            = None
         metric_ops          = None
+        tfestimator         = None
         if mode == tf.estimator.ModeKeys.TRAIN:
             # Compute the current epoch and associated learning rate from global_step.
             global_step         = tf.train.get_global_step()
@@ -266,7 +267,8 @@ def model_fn(features,
                 train_op = optimizer.minimize(loss, global_step)
 
             if FLAGS.is_extra_summary:
-                summary_op = summary_fn(loss                    =loss,
+                summary_op = summary_fn(mode                    =mode,
+                                        loss                    =loss,
                                         total_out_losssum       =total_out_losssum ,
                                         total_mid_losssum_list  =total_mid_losssum_list,
                                         learning_rate           =learning_rate,
@@ -275,24 +277,43 @@ def model_fn(features,
                                         pred_out_heatmap        =logits_out_heatmap,
                                         pred_mid_heatmap        =logits_mid_heatmap)
 
-                tf.logging.info('Create SummarySaveHook.')
+                tf.logging.info('Create SummarySaveHook for train')
                 extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
                                                              output_dir=FLAGS.model_dir,
                                                              summary_op=summary_op)
+
+            # estimator instance gen
+            tfestimator = tf.estimator.EstimatorSpec(mode=mode,
+                                                     loss=loss,
+                                                     train_op=train_op,
+                                                     training_hooks=[extra_summary_hook])
 
         elif mode == tf.estimator.ModeKeys.EVAL:
             # in case of Estimator metric_ops must be in a form of dictionary
             tf.logging.info('Create Metric Ops')
             metric_ops          = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
+
+            if FLAGS.is_extra_summary:
+                summary_op = summary_fn(mode                    =mode,
+                                        loss                    =loss,
+                                        total_out_losssum       =total_out_losssum ,
+                                        input_images            =features,
+                                        label_heatmap           =labels,
+                                        pred_out_heatmap        =logits_out_heatmap)
+
+                tf.logging.info('Create SummarySaveHook for eval')
+                extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                                                             output_dir=FLAGS.model_dir+'/eval',
+                                                             summary_op=summary_op)
+
+            tfestimator = tf.estimator.EstimatorSpec(mode=mode,
+                                                     loss=loss,
+                                                     evaluation_hooks=[extra_summary_hook],
+                                                     eval_metric_ops=metric_ops)
         else:
             tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
-        # estimator instance gen
-        tfestimator = tf.estimator.EstimatorSpec(mode=mode,
-                                                 loss=loss,
-                                                 train_op=train_op,
-                                                 eval_metric_ops=metric_ops,
-                                                 training_hooks=[extra_summary_hook])
+
 
     return tfestimator
 

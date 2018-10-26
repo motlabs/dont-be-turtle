@@ -302,26 +302,32 @@ def pose_to_img(meta_l):
            meta_l.get_heatmap(target_size=(_network_w // _scale, _network_h // _scale)).astype(np.float32)
 
 
-def preprocess_image(img_meta_data,preproc_config):
+def preprocess_image(img_meta_data,preproc_config,is_training):
 
-    if preproc_config.is_scale:
-        img_meta_data   = pose_random_scale(img_meta_data)
+    if is_training:
+        if preproc_config.is_scale:
+            img_meta_data   = pose_random_scale(img_meta_data)
 
-    if preproc_config.is_rotate:
-        img_meta_data   = pose_rotation(img_meta_data,preproc_config)
+        if preproc_config.is_rotate:
+            img_meta_data   = pose_rotation(img_meta_data,preproc_config)
 
-    if preproc_config.is_flipping:
-        img_meta_data   = pose_flip(img_meta_data)
+        if preproc_config.is_flipping:
+            img_meta_data   = pose_flip(img_meta_data)
 
-    if preproc_config.is_resize_shortest_edge:
-        img_meta_data   = pose_resize_shortestedge_random(img_meta_data)
+        if preproc_config.is_resize_shortest_edge:
+            img_meta_data   = pose_resize_shortestedge_random(img_meta_data)
 
-    if preproc_config.is_crop:
-        img_meta_data   = pose_crop_random(img_meta_data)
+        if preproc_config.is_crop:
+            img_meta_data   = pose_crop_random(img_meta_data)
+        else:
+            global _network_w, _network_h
+            target_size = (_network_w, _network_h)
+            pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
     else:
         global _network_w, _network_h
         target_size = (_network_w, _network_h)
         pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
+
 
     images, labels  = pose_to_img(img_meta_data)
 
