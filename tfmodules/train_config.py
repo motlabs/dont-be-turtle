@@ -24,8 +24,7 @@ from path_manager import MODEL_BUCKET
 
 
 ## realtestdata
-TRAININGSET_SIZE     = 865
-VALIDATIONSET_SIZE   = 192
+TRAININGSET_SIZE     = 10726
 BATCH_SIZE           = 192  # multiple of 8
 
 
@@ -34,12 +33,16 @@ class TrainConfig(object):
     def __init__(self):
 
 
+        self.trainset_size = TRAININGSET_SIZE
+        self.validset_size = 678
+        self.batch_size    = BATCH_SIZE
+
         self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
         self.epoch_num                  = 10000
-        self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
+        self.total_train_steps          = self.trainset_size / self.batch_size * self.epoch_num
         self.iter_per_before_outfeeding = 100
 
 
@@ -210,16 +213,16 @@ flags.DEFINE_integer(
           ' should be adjusted according to the --train_batch_size flag.'))
 
 flags.DEFINE_integer(
-    'train_batch_size', default=BATCH_SIZE, help='Batch size for training.')
+    'train_batch_size', default=train_config.batch_size, help='Batch size for training.')
 
 flags.DEFINE_integer(
-    'eval_batch_size', default=BATCH_SIZE, help='Batch size for evaluation.')
+    'eval_batch_size', default=train_config.batch_size, help='Batch size for evaluation.')
 
 flags.DEFINE_integer(
-    'num_train_images', default=TRAININGSET_SIZE, help='Size of training data set.')
+    'num_train_images', default=train_config.trainset_size, help='Size of training data set.')
 
 flags.DEFINE_integer(
-    'num_eval_images', default=VALIDATIONSET_SIZE, help='Size of evaluation data set.')
+    'num_eval_images', default=train_config.validset_size, help='Size of evaluation data set.')
 
 
 flags.DEFINE_integer(

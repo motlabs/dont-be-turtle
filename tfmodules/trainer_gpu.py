@@ -241,8 +241,8 @@ def model_fn(features,
             global_step         = tf.train.get_global_step()
             batchnum_per_epoch  = np.floor(FLAGS.num_train_images / FLAGS.train_batch_size)
 
-            current_epoch       = (tf.cast(global_step, tf.float32) /
-                                    batchnum_per_epoch)
+            # current_epoch       = (tf.cast(global_step, tf.float32) /
+            #                         batchnum_per_epoch)
             # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
             # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
 
@@ -290,6 +290,8 @@ def model_fn(features,
 
         elif mode == tf.estimator.ModeKeys.EVAL:
             metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
+
+
             tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
                                                      loss        =loss,
                                                      train_op    =train_op,
@@ -356,9 +358,9 @@ def main(unused_argv):
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
-                            log_device_placement=True)
+                            log_device_placement=False,
+                            gpu_options=tf.GPUOptions(allow_growth=True))
 
-    # config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
