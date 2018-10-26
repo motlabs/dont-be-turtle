@@ -199,7 +199,7 @@ def model_fn(features,
                 get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
                                  label_heatmaps=labels,
                                  scope='out_loss')
-            total_out_losssum = total_out_losssum / FLAGS.train_batch_size
+
 
         ### middle layers ===
         with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
@@ -220,8 +220,8 @@ def model_fn(features,
                                      scope          ='mid_loss_' + str(stacked_hg_index))
 
                 # collect loss and heatmap in list
-                total_mid_losssum_list.append(total_mid_losssum_temp/ FLAGS.train_batch_size)
-                total_mid_losssum_acc += total_mid_losssum_temp / FLAGS.train_batch_size
+                total_mid_losssum_list.append(total_mid_losssum_temp)
+                total_mid_losssum_acc += total_mid_losssum_temp
 
 
         ### total loss ===
@@ -234,8 +234,9 @@ def model_fn(features,
 
 
 
-        extra_summary_hook = None
-        train_op     = None
+        extra_summary_hook  = None
+        train_op            = None
+        metric_ops          = None
         if mode == tf.estimator.ModeKeys.TRAIN:
             # Compute the current epoch and associated learning rate from global_step.
             global_step         = tf.train.get_global_step()
@@ -279,25 +280,19 @@ def model_fn(features,
                                                              output_dir=FLAGS.model_dir,
                                                              summary_op=summary_op)
 
-
-            # in case of Estimator metric_ops must be in a form of dictionary
-            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops,
-                                                     training_hooks = [extra_summary_hook])
-
         elif mode == tf.estimator.ModeKeys.EVAL:
-            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
-
-
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops)
+            # in case of Estimator metric_ops must be in a form of dictionary
+            tf.logging.info('Create Metric Ops')
+            metric_ops          = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
         else:
             tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
+
+        # estimator instance gen
+        tfestimator = tf.estimator.EstimatorSpec(mode=mode,
+                                                 loss=loss,
+                                                 train_op=train_op,
+                                                 eval_metric_ops=metric_ops,
+                                                 training_hooks=[extra_summary_hook])
 
     return tfestimator
 

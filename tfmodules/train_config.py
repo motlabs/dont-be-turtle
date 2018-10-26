@@ -39,9 +39,9 @@ class TrainConfig(object):
         self.iter_per_before_outfeeding = 100
 
 
-        self.step_interval_for_eval         = 20
-        self.step_interval_for_summary      = 20
-        self.step_interval_for_display_loss = 50
+        self.step_interval_for_eval         = 10
+        self.step_interval_for_summary      = 10
+        self.step_interval_for_display_loss = 10
 
 
         if self.total_train_steps < self.iter_per_before_outfeeding:
@@ -52,12 +52,10 @@ class TrainConfig(object):
         self.opt_fn                 = tf.train.AdamOptimizer
 
         self.occlusion_loss_fn      = None
-        # self.heatmap_loss_fn        = tf.losses.mean_squared_error
-        self.heatmap_loss_fn        = tf.nn.l2_loss
+        self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.metric_fn              = tf.metrics.root_mean_squared_error
 
-        # self.activation_fn_out      = tf.nn.sigmoid
-        self.activation_fn_out      = None
+
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False
@@ -196,7 +194,7 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train',
+    'mode', default='train_and_eval',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
