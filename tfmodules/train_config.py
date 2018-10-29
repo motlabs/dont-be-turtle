@@ -28,7 +28,7 @@ class TrainConfig(object):
 
         self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = 192
+        self.batch_size    = 1
         self.batch_size_eval    = 1
 
         self.learning_rate_base       = 1e-3
