@@ -304,7 +304,7 @@ def model_fn(features,
 
             tf.logging.info('Create SummarySaveHook for eval')
             extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                                                         output_dir=FLAGS.model_dir+'/eval',
+                                                         output_dir=FLAGS.model_dir+'eval/',
                                                          summary_op=summary_op)
 
         tfestimator = tf.estimator.EstimatorSpec(mode=mode,
@@ -486,12 +486,13 @@ def main(unused_argv):
                 tf.logging.info('Starting to evaluate.')
                 eval_results    = dontbeturtle_estimator.evaluate(
                     input_fn    =dataset_eval.input_fn,
+                    checkpoint_path=curr_model_dir,
                     steps       =FLAGS.num_eval_images // FLAGS.eval_batch_size)
 
                 tf.logging.info('Eval results: %s' % eval_results)
 
-        elapsed_time = int(time.time() - start_timestamp)
-        tf.logging.info('Finished training up to step %d. Elapsed seconds %d.' %
+                elapsed_time = int(time.time() - start_timestamp)
+                tf.logging.info('Finished training up to step %d. Elapsed seconds %d.' %
                         (FLAGS.train_steps, elapsed_time))
 
         # if FLAGS.export_dir is not None:
