@@ -486,7 +486,6 @@ def main(unused_argv):
                 tf.logging.info('Starting to evaluate.')
                 eval_results    = dontbeturtle_estimator.evaluate(
                     input_fn    =dataset_eval.input_fn,
-                    checkpoint_path=curr_model_dir,
                     steps       =FLAGS.num_eval_images // FLAGS.eval_batch_size)
 
                 tf.logging.info('Eval results: %s' % eval_results)
