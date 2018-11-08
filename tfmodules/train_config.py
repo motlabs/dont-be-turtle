@@ -26,24 +26,23 @@ class TrainConfig(object):
     def __init__(self):
 
 
-        # self.trainset_size = 10726
-        self.trainset_size = 678
+        self.trainset_size = 10726
         self.validset_size = 678
         self.batch_size    = 16
         self.batch_size_eval    = 1
 
-        self.learning_rate_base       = 1e-3
+        self.learning_rate_base       = 5e-4
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
         self.epoch_num                  = 10000
         self.total_train_steps          = self.trainset_size / self.batch_size * self.epoch_num
-        self.iter_per_before_outfeeding = 100
+        self.iter_per_before_outfeeding = 200
 
 
-        self.step_interval_for_eval         = 100
-        self.step_interval_for_summary      = 100
-        self.step_interval_for_display_loss = 100
+        self.step_interval_for_eval         = 200
+        self.step_interval_for_summary      = 200
+        self.step_interval_for_display_loss = 200
 
 
         if self.total_train_steps < self.iter_per_before_outfeeding:
@@ -86,7 +85,7 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 6.0
+        self.heatmap_std        = 10.0
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
@@ -195,8 +194,8 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    # 'mode', default='train_and_eval',
-    'mode', default='train',
+    'mode', default='train_and_eval',
+    # 'mode', default='train',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
