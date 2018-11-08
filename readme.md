@@ -102,15 +102,14 @@ python ${SOURCE}\
 ## Dataset (Under Preparation)
 > You need to create `./dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
 
-- Training set (>15000)
-    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4000)
-    - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (7000)
-    - [FLIC_train](https://bensapp.github.io/flic-dataset.html) (4000)
-    - Custom  (216+462)
+- Training set (10726)
+    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4941)
+    - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (2397)
+    - [FLIC_train](https://bensapp.github.io/flic-dataset.html) (3388)
 
-- Evaluation set (2000)
-    - [FLIC_eval](https://bensapp.github.io/flic-dataset.html) (1000)
-    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (1000)
+- Evaluation set (678)
+    - Custom test data 
+
 
 - Keypoint annotator repos
     - [For iOS Mobile](https://github.com/motlabs/KeypointAnnotation)

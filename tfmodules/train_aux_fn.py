@@ -120,9 +120,9 @@ def get_heatmap_activation(logits,scope=None):
     '''
     with tf.name_scope(name=scope, default_name='heatmap_act',values=[logits]):
 
-        activation_fn = train_config.activation_fn_out
+        activation_fn = model_config.activation_fn_out
 
-        if train_config.activation_fn_out == None:
+        if activation_fn == None:
             ''' linear activation case'''
             act_heatmaps = logits
         else:
@@ -169,11 +169,12 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        # total_losssum = loss_fn(label_heatmaps - pred_heatmaps) / NUM_OF_KEYPOINTS
-        total_losssum = loss_fn(label_heatmaps - pred_heatmaps) 
+        total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
 
 
     return total_losssum
+
+
 
 
 
@@ -269,14 +270,17 @@ def metric_fn(labels, logits,pck_threshold):
 
 
 
-def summary_fn(loss,
+
+
+def summary_fn(mode,
+               loss,
                total_out_losssum,
-               total_mid_losssum_list,
-               learning_rate,
                input_images,
                label_heatmap,
                pred_out_heatmap,
-               pred_mid_heatmap):
+               pred_mid_heatmap=None,
+               total_mid_losssum_list=None,
+               learning_rate=None):
     '''
 
         code ref: https://github.com/wookayin/tensorflow-plot
@@ -284,7 +288,9 @@ def summary_fn(loss,
 
     tf.summary.scalar(name='loss', tensor=loss, family='outlayer')
     tf.summary.scalar(name='out_loss', tensor=total_out_losssum, family='outlayer')
-    tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
+
+    if mode == tf.estimator.ModeKeys.TRAIN:
+        tf.summary.scalar(name='learning_rate', tensor=learning_rate, family='outlayer')
 
 
     batch_size          = FLAGS.train_batch_size
@@ -319,21 +325,23 @@ def summary_fn(loss,
                                      max_outputs    =batch_size)
 
 
-        for n in range(0, model_config.num_of_hgstacking - 1):
-            tf.logging.info ('[summary_fn] pred_mid_heatmap.shape= %s' % pred_mid_heatmap[0].get_shape().as_list())
+        if mode == tf.estimator.ModeKeys.TRAIN:
 
-            tf.summary.scalar(name='mid_loss' + str(n),
-                              tensor=total_mid_losssum_list[n],
-                              family='midlayer')
+            for n in range(0, model_config.num_of_hgstacking - 1):
+                tf.logging.info ('[summary_fn] pred_mid_heatmap.shape= %s' % pred_mid_heatmap[0].get_shape().as_list())
 
-            for keypoint_index in range(0,NUM_OF_KEYPOINTS):
-                tfplot.summary.plot_many(name       =summary_name_pred_mid_heatmap + '_' +
-                                                     str(keypoint_index) +
-                                                     '_hgstage'+str(n),
-                                         plot_func  =overlay_attention_batch,
-                                         in_tensors =[pred_mid_heatmap[n][:, :, :, keypoint_index],
-                                                      resized_input_image],
-                                         max_outputs=batch_size)
+                tf.summary.scalar(name='mid_loss' + str(n),
+                                  tensor=total_mid_losssum_list[n],
+                                  family='midlayer')
+
+                for keypoint_index in range(0,NUM_OF_KEYPOINTS):
+                    tfplot.summary.plot_many(name       =summary_name_pred_mid_heatmap + '_' +
+                                                         str(keypoint_index) +
+                                                         '_hgstage'+str(n),
+                                             plot_func  =overlay_attention_batch,
+                                             in_tensors =[pred_mid_heatmap[n][:, :, :, keypoint_index],
+                                                          resized_input_image],
+                                             max_outputs=batch_size)
 
     return tf.summary.merge_all()
 

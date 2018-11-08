@@ -44,9 +44,8 @@ from path_manager import TFRECORD_TESTIMAGE_DIR
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
 
-from train_config import TRAININGSET_SIZE
 from model_config import DEFAULT_INPUT_CHNUM
-from train_config import BATCH_SIZE
+from train_config import TrainConfig
 from train_config import PreprocessingConfig
 
 import data_loader_tpu
@@ -56,7 +55,7 @@ from test_fn_and_util import dataset_parser
 
 IMAGE_MAX_VALUE = 255.0
 preproc_config = PreprocessingConfig()
-
+train_config   = TrainConfig()
 
 
 class PreprocessorTest(tf.test.TestCase):
@@ -83,10 +82,10 @@ class PreprocessorTest(tf.test.TestCase):
         filenames = tf.placeholder(tf.string)
         dataset = tf.data.TFRecordDataset(filenames)
         dataset = dataset.repeat()
-        dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
+        dataset = dataset.shuffle(buffer_size=train_config.trainset_size)
         dataset = dataset.apply(
             tf.contrib.data.map_and_batch(map_func=dataset_parser,
-                                          batch_size=BATCH_SIZE,
+                                          batch_size=train_config.batch_size,
                                           drop_remainder=True))
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
         iterator_train = dataset.make_initializable_iterator()

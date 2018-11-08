@@ -17,35 +17,32 @@
 import tensorflow as tf
 from absl import flags
 
-
 from path_manager import EXPORT_SAVEMODEL_DIR
 from path_manager import DATASET_BUCKET
 from path_manager import MODEL_BUCKET
-
-
-## realtestdata
-TRAININGSET_SIZE     = 865
-VALIDATIONSET_SIZE   = 192
-BATCH_SIZE           = 192  # multiple of 8
-
 
 
 class TrainConfig(object):
     def __init__(self):
 
 
-        self.learning_rate_base       = 1e-3
+        self.trainset_size = 10726
+        self.validset_size = 678
+        self.batch_size    = 16
+        self.batch_size_eval    = 1
+
+        self.learning_rate_base       = 5e-4
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
         self.epoch_num                  = 10000
-        self.total_train_steps          = TRAININGSET_SIZE / BATCH_SIZE * self.epoch_num
-        self.iter_per_before_outfeeding = 100
+        self.total_train_steps          = self.trainset_size / self.batch_size * self.epoch_num
+        self.iter_per_before_outfeeding = 200
 
 
-        self.step_interval_for_eval         = 20
-        self.step_interval_for_summary      = 20
-        self.step_interval_for_display_loss = 50
+        self.step_interval_for_eval         = 200
+        self.step_interval_for_summary      = 200
+        self.step_interval_for_display_loss = 200
 
 
         if self.total_train_steps < self.iter_per_before_outfeeding:
@@ -56,12 +53,10 @@ class TrainConfig(object):
         self.opt_fn                 = tf.train.AdamOptimizer
 
         self.occlusion_loss_fn      = None
-        # self.heatmap_loss_fn        = tf.losses.mean_squared_error
-        self.heatmap_loss_fn        = tf.nn.l2_loss
+        self.heatmap_loss_fn        = tf.losses.mean_squared_error
         self.metric_fn              = tf.metrics.root_mean_squared_error
 
-        # self.activation_fn_out      = tf.nn.sigmoid
-        self.activation_fn_out      = None
+
 
         self.tf_data_type   = tf.float32
         self.is_image_summary = False
@@ -72,7 +67,6 @@ class TrainConfig(object):
         tf.logging.info('[train_config] Use opt_fn   : %s' % str(self.opt_fn))
         tf.logging.info('[train_config] Use loss_fn  : %s' % str(self.heatmap_loss_fn))
         tf.logging.info('[train_config] Use metric_fn: %s' % str(self.metric_fn))
-        tf.logging.info('[train_config] Use act_fn at output layer: %s' % str(self.activation_fn_out))
 
 
 
@@ -91,7 +85,7 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 6.0
+        self.heatmap_std        = 10.0
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -15.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 15.0
@@ -200,7 +194,8 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train',
+    'mode', default='train_and_eval',
+    # 'mode', default='train',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
@@ -210,16 +205,16 @@ flags.DEFINE_integer(
           ' should be adjusted according to the --train_batch_size flag.'))
 
 flags.DEFINE_integer(
-    'train_batch_size', default=BATCH_SIZE, help='Batch size for training.')
+    'train_batch_size', default=train_config.batch_size, help='Batch size for training.')
 
 flags.DEFINE_integer(
-    'eval_batch_size', default=BATCH_SIZE, help='Batch size for evaluation.')
+    'eval_batch_size', default=train_config.batch_size_eval, help='Batch size for evaluation.')
 
 flags.DEFINE_integer(
-    'num_train_images', default=TRAININGSET_SIZE, help='Size of training data set.')
+    'num_train_images', default=train_config.trainset_size, help='Size of training data set.')
 
 flags.DEFINE_integer(
-    'num_eval_images', default=VALIDATIONSET_SIZE, help='Size of evaluation data set.')
+    'num_eval_images', default=train_config.validset_size, help='Size of evaluation data set.')
 
 
 flags.DEFINE_integer(

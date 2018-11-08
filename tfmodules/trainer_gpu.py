@@ -166,136 +166,155 @@ def model_fn(features,
 
 
     # get model here
-    with tf.device('/device:GPU:0'):
-        logits_out_heatmap, logits_mid_heatmap, end_points = build_network()
+    # with tf.device('/device:GPU:0'):
+    logits_out_heatmap, logits_mid_heatmap, end_points = build_network()
 
-        #--------------------------------------------------------
-        # mode == prediction case manipulation ===================
-        # [[[ here need to change ]]] -----
-        # if mode == tf.estimator.ModeKeys.PREDICT:
-        #     predictions = {
-        #
-        #         # output format should be clarify here
-        #         'pred_head': tf.argmax(logits_heatmap_out[-1,], axis=1),
-        #         'conf_head': tf.nn.softmax(logits, name='confidence_head')
-        #     }
-        #
-        #     # if the prediction case return here
-        #     return tf.estimator.EstimatorSpec(
-        #         mode=mode,
-        #         predictions=predictions,
-        #         export_outputs={
-        #             'classify': tf.estimator.export.PredictOutput(predictions)
-        #         })
-        # -----------------------------
+    #--------------------------------------------------------
+    # mode == prediction case manipulation ===================
+    # [[[ here need to change ]]] -----
+    # if mode == tf.estimator.ModeKeys.PREDICT:
+    #     predictions = {
+    #
+    #         # output format should be clarify here
+    #         'pred_head': tf.argmax(logits_heatmap_out[-1,], axis=1),
+    #         'conf_head': tf.nn.softmax(logits, name='confidence_head')
+    #     }
+    #
+    #     # if the prediction case return here
+    #     return tf.estimator.EstimatorSpec(
+    #         mode=mode,
+    #         predictions=predictions,
+    #         export_outputs={
+    #             'classify': tf.estimator.export.PredictOutput(predictions)
+    #         })
+    # -----------------------------
 
-        ### output layer ===
-        with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
-            # heatmap activation of output layer out
-            act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
-                                                      scope='out_heatmap')
-            # heatmap losses
-            total_out_losssum = \
-                get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
-                                 label_heatmaps=labels,
-                                 scope='out_loss')
-            total_out_losssum = total_out_losssum / FLAGS.train_batch_size
-
-        ### middle layers ===
-        with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
-                                                         labels]):
-            ### supervision layers ===
-            total_mid_losssum_list = []
-            total_mid_losssum_acc = 0.0
-
-            for stacked_hg_index in range(0, model_config.num_of_hgstacking - 1):
-                ## heatmap activation of supervision layer out
-                act_mid_heatmap_temp = \
-                    get_heatmap_activation(logits   =logits_mid_heatmap[stacked_hg_index],
-                                           scope    ='mid_heatmap_' + str(stacked_hg_index))
-                # heatmap loss
-                total_mid_losssum_temp = \
-                    get_loss_heatmap(pred_heatmaps  =act_mid_heatmap_temp,
-                                     label_heatmaps =labels,
-                                     scope          ='mid_loss_' + str(stacked_hg_index))
-
-                # collect loss and heatmap in list
-                total_mid_losssum_list.append(total_mid_losssum_temp/ FLAGS.train_batch_size)
-                total_mid_losssum_acc += total_mid_losssum_temp / FLAGS.train_batch_size
+    ### output layer ===
+    with tf.name_scope(name='out_post_proc', values=[logits_out_heatmap, labels]):
+        # heatmap activation of output layer out
+        act_out_heatmaps = get_heatmap_activation(logits=logits_out_heatmap,
+                                                  scope='out_heatmap')
+        # heatmap losses
+        total_out_losssum = \
+            get_loss_heatmap(pred_heatmaps=act_out_heatmaps,
+                             label_heatmaps=labels,
+                             scope='out_loss')
 
 
-        ### total loss ===
-        with tf.name_scope(name='total_loss', values=[total_out_losssum,
-                                                      total_mid_losssum_acc]):
-            # Collect weight regularizer loss =====
-            loss_regularizer = tf.losses.get_regularization_loss()
-            loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
+    ### middle layers ===
+    with tf.name_scope(name='mid_post_proc', values=[logits_mid_heatmap,
+                                                     labels]):
+        ### supervision layers ===
+        total_mid_losssum_list = []
+        total_mid_losssum_acc = 0.0
+
+        for stacked_hg_index in range(0, model_config.num_of_hgstacking - 1):
+            ## heatmap activation of supervision layer out
+            act_mid_heatmap_temp = \
+                get_heatmap_activation(logits   =logits_mid_heatmap[stacked_hg_index],
+                                       scope    ='mid_heatmap_' + str(stacked_hg_index))
+            # heatmap loss
+            total_mid_losssum_temp = \
+                get_loss_heatmap(pred_heatmaps  =act_mid_heatmap_temp,
+                                 label_heatmaps =labels,
+                                 scope          ='mid_loss_' + str(stacked_hg_index))
+
+            # collect loss and heatmap in list
+            total_mid_losssum_list.append(total_mid_losssum_temp)
+            total_mid_losssum_acc += total_mid_losssum_temp
+
+
+    ### total loss ===
+    with tf.name_scope(name='total_loss', values=[total_out_losssum,
+                                                  total_mid_losssum_acc]):
+        # Collect weight regularizer loss =====
+        loss_regularizer = tf.losses.get_regularization_loss()
+        loss = total_out_losssum + total_mid_losssum_acc + loss_regularizer
 
 
 
 
-        extra_summary_hook = None
-        train_op     = None
-        if mode == tf.estimator.ModeKeys.TRAIN:
-            # Compute the current epoch and associated learning rate from global_step.
-            global_step         = tf.train.get_global_step()
-            batchnum_per_epoch  = np.floor(FLAGS.num_train_images / FLAGS.train_batch_size)
+    extra_summary_hook  = None
+    train_op            = None
+    metric_ops          = None
+    tfestimator         = None
 
-            current_epoch       = (tf.cast(global_step, tf.float32) /
-                                    batchnum_per_epoch)
-            # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
-            # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
+    if mode == tf.estimator.ModeKeys.TRAIN:
+        # Compute the current epoch and associated learning rate from global_step.
+        global_step         = tf.train.get_global_step()
+        batchnum_per_epoch  = np.floor(FLAGS.num_train_images / FLAGS.train_batch_size)
 
-            learning_rate = tf.train.exponential_decay(learning_rate    =train_config.learning_rate_base,
-                                                       global_step      =global_step,
-                                                       decay_steps      =train_config.learning_rate_decay_step,
-                                                       decay_rate       =train_config.learning_rate_decay_rate,
-                                                       staircase        =True)
+        # current_epoch       = (tf.cast(global_step, tf.float32) /
+        #                         batchnum_per_epoch)
+        # learning_rate       = learning_rate_schedule(current_epoch=current_epoch)
+        # learning_rate       = learning_rate_exp_decay(current_epoch=current_epoch)
 
-            optimizer           = train_config.opt_fn(learning_rate=learning_rate,
-                                                       name='opt_op')
+        learning_rate = tf.train.exponential_decay(learning_rate    =train_config.learning_rate_base,
+                                                   global_step      =global_step,
+                                                   decay_steps      =train_config.learning_rate_decay_step,
+                                                   decay_rate       =train_config.learning_rate_decay_rate,
+                                                   staircase        =True)
 
-            '''
-                # Batch normalization requires UPDATE_OPS to be added as a dependency to
-                # the train operation.
-                # when training, the moving_mean and moving_variance need to be updated.
-            '''
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            with tf.control_dependencies(update_ops):
-                train_op = optimizer.minimize(loss, global_step)
+        optimizer           = train_config.opt_fn(learning_rate=learning_rate,
+                                                   name='opt_op')
 
-            if FLAGS.is_extra_summary:
-                summary_op = summary_fn(loss                    =loss,
-                                        total_out_losssum       =total_out_losssum ,
-                                        total_mid_losssum_list  =total_mid_losssum_list,
-                                        learning_rate           =learning_rate,
-                                        input_images            =features,
-                                        label_heatmap           =labels,
-                                        pred_out_heatmap        =logits_out_heatmap,
-                                        pred_mid_heatmap        =logits_mid_heatmap)
+        '''
+            # Batch normalization requires UPDATE_OPS to be added as a dependency to
+            # the train operation.
+            # when training, the moving_mean and moving_variance need to be updated.
+        '''
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            train_op = optimizer.minimize(loss, global_step)
 
-                tf.logging.info('Create SummarySaveHook.')
-                extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
-                                                             output_dir=FLAGS.model_dir,
-                                                             summary_op=summary_op)
+        if FLAGS.is_extra_summary:
+            summary_op = summary_fn(mode                    =mode,
+                                    loss                    =loss,
+                                    total_out_losssum       =total_out_losssum ,
+                                    total_mid_losssum_list  =total_mid_losssum_list,
+                                    learning_rate           =learning_rate,
+                                    input_images            =features,
+                                    label_heatmap           =labels,
+                                    pred_out_heatmap        =logits_out_heatmap,
+                                    pred_mid_heatmap        =logits_mid_heatmap)
+
+            tf.logging.info('Create SummarySaveHook for train')
+            extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                                                         output_dir=FLAGS.model_dir,
+                                                         summary_op=summary_op)
+
+        # estimator instance gen
+        tfestimator = tf.estimator.EstimatorSpec(mode=mode,
+                                                 loss=loss,
+                                                 train_op=train_op,
+                                                 training_hooks=[extra_summary_hook])
+
+    elif mode == tf.estimator.ModeKeys.EVAL:
+        # in case of Estimator metric_ops must be in a form of dictionary
+        tf.logging.info('Create Metric Ops')
+        metric_ops          = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
+
+        if FLAGS.is_extra_summary:
+            summary_op = summary_fn(mode                    =mode,
+                                    loss                    =loss,
+                                    total_out_losssum       =total_out_losssum,
+                                    input_images            =features,
+                                    label_heatmap           =labels,
+                                    pred_out_heatmap        =logits_out_heatmap)
+
+            tf.logging.info('Create SummarySaveHook for eval')
+            extra_summary_hook = tf.train.SummarySaverHook(save_steps=FLAGS.summary_step,
+                                                         output_dir=FLAGS.model_dir+'eval/',
+                                                         summary_op=summary_op)
+
+        tfestimator = tf.estimator.EstimatorSpec(mode=mode,
+                                                 loss=loss,
+                                                 evaluation_hooks=[extra_summary_hook],
+                                                 eval_metric_ops=metric_ops)
+    else:
+        tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
 
-            # in case of Estimator metric_ops must be in a form of dictionary
-            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops,
-                                                     training_hooks = [extra_summary_hook])
-
-        elif mode == tf.estimator.ModeKeys.EVAL:
-            metric_ops = metric_fn(labels, logits_out_heatmap, pck_threshold=FLAGS.pck_threshold)
-            tfestimator = tf.estimator.EstimatorSpec(mode        =mode,
-                                                     loss        =loss,
-                                                     train_op    =train_op,
-                                                     eval_metric_ops=metric_ops)
-        else:
-            tf.logging.error('[model_fn] No estimatorSpec created! ERROR')
 
     return tfestimator
 
@@ -356,9 +375,9 @@ def main(unused_argv):
 
     # for CPU or GPU use
     config = tf.ConfigProto(allow_soft_placement=True,
-                            log_device_placement=True)
+                            log_device_placement=False,
+                            gpu_options=tf.GPUOptions(allow_growth=True))
 
-    # config.gpu_options.allow_growth=True
 
     config = tf.estimator.RunConfig(
                 model_dir                       =FLAGS.model_dir,
@@ -471,8 +490,8 @@ def main(unused_argv):
 
                 tf.logging.info('Eval results: %s' % eval_results)
 
-        elapsed_time = int(time.time() - start_timestamp)
-        tf.logging.info('Finished training up to step %d. Elapsed seconds %d.' %
+                elapsed_time = int(time.time() - start_timestamp)
+                tf.logging.info('Finished training up to step %d. Elapsed seconds %d.' %
                         (FLAGS.train_steps, elapsed_time))
 
         # if FLAGS.export_dir is not None:

@@ -27,6 +27,7 @@ import os
 import sys
 import tensorflow as tf
 from os.path import join
+import functools
 
 # for COCO templete
 from pycocotools.coco import COCO
@@ -34,7 +35,6 @@ from pycocotools.coco import COCO
 from path_manager import TF_MODULE_DIR
 from path_manager import TF_MODEL_DIR
 from path_manager import COCO_DATALOAD_DIR
-from path_manager import COCO_DATASET_BASE_DIR
 from path_manager import COCO_REALSET_DIR
 
 sys.path.insert(0,TF_MODULE_DIR)
@@ -42,8 +42,7 @@ sys.path.insert(0,TF_MODEL_DIR)
 sys.path.insert(0,COCO_DATALOAD_DIR)
 sys.path.insert(0,COCO_REALSET_DIR)
 
-from train_config  import BATCH_SIZE
-from train_config  import TRAININGSET_SIZE
+from train_config  import TrainConfig
 from train_config  import PreprocessingConfig
 from train_config  import FLAGS
 
@@ -61,6 +60,7 @@ from dataset_prepare import CocoMetadata
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL
 preproc_config = PreprocessingConfig()
+train_config   = TrainConfig()
 
 
 class DataSetInput(object):
@@ -77,12 +77,14 @@ class DataSetInput(object):
     def __init__(self, is_training,
                  data_dir,
                  use_bfloat16,
-                 transpose_input=True):
+                 transpose_input=True,
+                 is_testcode    =False):
 
         self.image_preprocessing_fn = dataset_augment.preprocess_image
         self.is_training            = is_training
         self.use_bfloat16           = use_bfloat16
         self.data_dir               = data_dir
+        self.is_testcode            = is_testcode
 
         if self.data_dir == 'null' or self.data_dir == '':
             self.data_dir = None
@@ -90,13 +92,13 @@ class DataSetInput(object):
 
 
 
-    def _set_shapes(self,img, heatmap):
-        img.set_shape([BATCH_SIZE,
+    def _set_shapes(self,batch_size,img, heatmap):
+        img.set_shape([batch_size,
                        DEFAULT_WIDTH,
                        DEFAULT_HEIGHT,
                        DEFAULT_INPUT_CHNUM])
 
-        heatmap.set_shape([BATCH_SIZE,
+        heatmap.set_shape([batch_size,
                            DEFAULT_HG_INOUT_RESOL,
                            DEFAULT_HG_INOUT_RESOL,
                            NUM_OF_KEYPOINTS])
@@ -123,11 +125,14 @@ class DataSetInput(object):
         filename_item_list = img_meta['file_name'].split('/')
         filename = filename_item_list[1] +'/' + filename_item_list[2]
 
-        # for actual training   -----------------------
-        # img_path = join(FLAGS.data_dir, filename)
 
-        # for test_data_loader_coco.py  -----------------------
-        img_path = join(self.data_dir, filename)
+        if self.is_testcode:
+            # for test_data_loader_coco.py  -----------------------
+            img_path = join(self.data_dir, filename)
+        else:
+            # for actual training   -----------------------
+            img_path = join(FLAGS.data_dir,filename)
+
 
         img_meta_data   = CocoMetadata(idx=idx,
                                        img_path=img_path,
@@ -137,7 +142,8 @@ class DataSetInput(object):
 
         # print('joint_list = %s' % img_meta_data.joint_list)
         images, labels  = self.image_preprocessing_fn(img_meta_data=img_meta_data,
-                                                      preproc_config=preproc_config)
+                                                      preproc_config=preproc_config,
+                                                      is_training   = self.is_training)
         return images, labels
 
 
@@ -155,50 +161,51 @@ class DataSetInput(object):
 
             doc reference: https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
         """
-        tf.logging.info('[Input_fn] is_training = %s' % self.is_training)
 
-        # for actual training   -----------------------
-        # json_filename_split = FLAGS.data_dir.split('/')
-        # if self.is_training:
-        #     json_filename       = json_filename_split[-1] + '_train.json'
-        # else:
-        #     json_filename       = json_filename_split[-1] + '_valid.json'
-        #
-        # global TRAIN_ANNO
-        # TRAIN_ANNO      = COCO(join(FLAGS.data_dir,json_filename))
-        #--------------------------------------------------------
-        # for test_data_loader_coco.py  -----------------------
-        json_filename_split = self.data_dir.split('/')
-        if self.is_training:
-            json_filename       = json_filename_split[-2] + '_train.json'
+
+        if self.is_testcode:
+            # for test_data_loader_coco.py  -----------------------
+            json_filename_split = self.data_dir.split('/')
+            if self.is_training:
+                json_filename       = json_filename_split[-2] + '_train.json'
+            else:
+                json_filename       = json_filename_split[-2] + '_valid.json'
+
         else:
-            json_filename       = json_filename_split[-2] + '_valid.json'
+            # for actual training   -----------------------
+            json_filename_split = FLAGS.data_dir.split('/')
+            if self.is_training:
+                json_filename       = json_filename_split[-1] + '_train.json'
+            else:
+                json_filename       = json_filename_split[-1] + '_valid.json'
+                self.data_dir       = FLAGS.data_dir
+
 
         global TRAIN_ANNO
         TRAIN_ANNO      = COCO(join(self.data_dir,json_filename))
-        #--------------------------------------------------------
-
         imgIds          = TRAIN_ANNO.getImgIds()
         dataset         = tf.data.Dataset.from_tensor_slices(imgIds)
 
-
+        tf.logging.info('----------------------------------------------')
+        tf.logging.info('[Dataloader] is_training = %s' % self.is_training)
         if self.is_training:
-            # dataset elementwise shuffling
-            # dataset = dataset.shuffle(buffer_size=TRAININGSET_SIZE)
-            # tf.logging.info('[Input_fn] dataset.shuffle()')
-            # dataset = dataset.repeat()
-            # tf.logging.info('[Input_fn] dataset.repeat()')
+            tf.logging.info('[Dataloader] Building dataset pipeline for training')
 
-            dataset = dataset.apply(tf.contrib.data.shuffle_and_repeat(buffer_size=TRAININGSET_SIZE))
+            # dataset elementwise shuffling and repeat
+            dataset = dataset.apply(
+                tf.contrib.data.shuffle_and_repeat(buffer_size=1000))
+            batch_size = train_config.batch_size
         else:
+            tf.logging.info('[Dataloader] Building datast pipeline for evaluation')
             dataset = dataset.repeat(count=None)
+            batch_size = train_config.batch_size_eval
 
 
 
         # # Read the data from disk in parallel
         # where cycle_length is the Number of training files to read in parallel.
         # multiprocessing_num === < the number of CPU cores >
-        multiprocessing_num = 16
+        multiprocessing_num = 4
 
         dataset = dataset.map(
             lambda imgId: tuple(
@@ -209,14 +216,15 @@ class DataSetInput(object):
                 )
             ), num_parallel_calls=multiprocessing_num)
 
-        dataset = dataset.batch(BATCH_SIZE)
-        dataset = dataset.map(self._set_shapes, num_parallel_calls=multiprocessing_num)
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.map(functools.partial(self._set_shapes, batch_size),
+                              num_parallel_calls=multiprocessing_num)
 
 
 
         # Prefetch overlaps in-feed with training
         dataset = dataset.prefetch(tf.contrib.data.AUTOTUNE)
-        tf.logging.info('[Input_fn] dataset pipeline building complete')
+        tf.logging.info('[Dataloader] dataset pipeline building complete')
 
         return dataset
 
