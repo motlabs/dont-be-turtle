@@ -82,7 +82,7 @@ class DataLoaderTest(tf.test.TestCase):
                     is_testcode = True,
                     use_bfloat16=False) for is_training in [True,False]]
 
-        dataset = dataset_train
+        dataset = dataset_valid
         dataset                 = dataset.input_fn()
         iterator_train          = dataset.make_initializable_iterator()
         feature_op, labels_op   = iterator_train.get_next()
@@ -95,7 +95,7 @@ class DataLoaderTest(tf.test.TestCase):
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
         metric_fn_var_init = tf.variables_initializer(metric_fn_var)
 
-        favorite_image_index = 5
+        favorite_image_index = 0
 
 
         with self.test_session() as sess:

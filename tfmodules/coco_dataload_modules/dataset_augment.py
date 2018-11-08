@@ -322,11 +322,13 @@ def preprocess_image(img_meta_data,preproc_config,is_training):
         else:
             global _network_w, _network_h
             target_size = (_network_w, _network_h)
-            pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
+            img_meta_data = pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
     else:
         global _network_w, _network_h
         target_size = (_network_w, _network_h)
-        pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
+        img_meta_data.img = cv2.resize(img_meta_data.img,
+                                       target_size,
+                                       interpolation=cv2.INTER_AREA)
 
 
     images, labels  = pose_to_img(img_meta_data)

@@ -297,7 +297,7 @@ def model_fn(features,
         if FLAGS.is_extra_summary:
             summary_op = summary_fn(mode                    =mode,
                                     loss                    =loss,
-                                    total_out_losssum       =total_out_losssum ,
+                                    total_out_losssum       =total_out_losssum,
                                     input_images            =features,
                                     label_heatmap           =labels,
                                     pred_out_heatmap        =logits_out_heatmap)

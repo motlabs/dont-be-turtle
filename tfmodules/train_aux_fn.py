@@ -177,6 +177,8 @@ def get_loss_heatmap(pred_heatmaps,
 
 
 
+
+
 def metric_fn(labels, logits,pck_threshold):
     """Evaluation metric function. Evaluates accuracy.
 
@@ -264,6 +266,8 @@ def metric_fn(labels, logits,pck_threshold):
                         }
 
     return metric_dict
+
+
 
 
 
