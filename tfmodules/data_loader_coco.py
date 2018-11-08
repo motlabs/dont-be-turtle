@@ -173,8 +173,15 @@ class DataSetInput(object):
         else:
             # for actual training   -----------------------
             json_filename_split = FLAGS.data_dir.split('/')
+            # if self.is_training:
+            #     json_filename       = json_filename_split[-1] + '_train.json'
+            # else:
+            #     json_filename       = json_filename_split[-1] + '_valid.json'
+            #     self.data_dir       = FLAGS.data_dir
+
+            # for debugging (1108)
             if self.is_training:
-                json_filename       = json_filename_split[-1] + '_train.json'
+                json_filename       = json_filename_split[-1] + '_valid.json'
             else:
                 json_filename       = json_filename_split[-1] + '_valid.json'
                 self.data_dir       = FLAGS.data_dir
