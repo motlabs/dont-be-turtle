@@ -60,11 +60,11 @@ freeline_project_description.json
 
 # tf export files
 
-#*.ckpt
-#*.meta
-#*.pb
-#.index
-#*.data*
+*.ckpt
+*.meta
+*.pb
+.index
+*.data*
 
 # tensorboad files
 *.local
@@ -89,5 +89,5 @@ checkpoint
 
 *.nate.com
 
-*.tflite
-*.mlmodel
+*.DS_Store
+*tflite_files*
