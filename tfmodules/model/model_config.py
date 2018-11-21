@@ -341,6 +341,7 @@ class ModelConfig(object):
         self.num_of_hgstacking                  = 2
 
 
+
         self.hglayer_conv_type          = 'inverted_bottleneck'
         self.hglayer_convbottom_type    = 'inverted_bottleneck'
         self.hglayer_deconv_type        = 'bilinear_resize'
