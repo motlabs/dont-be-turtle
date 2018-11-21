@@ -117,6 +117,9 @@ class CocoMetadata:
         for joints in self.joint_list:
             for idx, point in enumerate(joints):
                 if point[0] < 0 or point[1] < 0:
+                    # print('point[0] %s' % point[0])
+                    # print('point[1] %s' % point[1])
+                    # print('======================')
                     continue
                 CocoMetadata.put_heatmap(heatmap, idx, point, self.sigma)
 
@@ -138,6 +141,8 @@ class CocoMetadata:
         if target_size:
             heatmap = cv2.resize(heatmap, target_size, interpolation=cv2.INTER_AREA)
 
+
+
         return heatmap.astype(np.float16)
 
     @staticmethod
@@ -148,6 +153,9 @@ class CocoMetadata:
 
         th = 1.6052
         delta = math.sqrt(th * 2)
+
+        # if center_x == 0 and center_y == 0 :
+        #     print ('plane_idx = %s' % plane_idx)
 
         x0 = int(max(0, center_x - delta * sigma))
         y0 = int(max(0, center_y - delta * sigma))

@@ -131,15 +131,15 @@ def pose_flip(meta):
     img = cv2.flip(img, 1)
 
     # flip meta
-    flip_list = [CocoPart.Top, CocoPart.Neck, CocoPart.LShoulder, CocoPart.LElbow, CocoPart.LWrist, CocoPart.RShoulder,
-                 CocoPart.RElbow, CocoPart.RWrist,
-                 CocoPart.LHip, CocoPart.LKnee, CocoPart.LAnkle, CocoPart.RHip, CocoPart.RKnee, CocoPart.RAnkle
-                 ]
+    # flip_list = [CocoPart.Top, CocoPart.Neck, CocoPart.LShoulder, CocoPart.LElbow, CocoPart.LWrist, CocoPart.RShoulder,
+    #              CocoPart.RElbow, CocoPart.RWrist,
+    #              CocoPart.LHip, CocoPart.LKnee, CocoPart.LAnkle, CocoPart.RHip, CocoPart.RKnee, CocoPart.RAnkle
+    #              ]
     # ---------------------------------------------------------
     # dont be turtle proj needs only four parts
     # the below parts should be included in the fliped images
     # written by jaewook 180802
-    # flip_list = [CocoPart.Top, CocoPart.Neck, CocoPart.LShoulder, CocoPart.RShoulder]
+    flip_list = [CocoPart.Top, CocoPart.Neck,  CocoPart.RShoulder,CocoPart.LShoulder]
     # -------------------------------------------------------
 
     adjust_joint_list = []
@@ -149,12 +149,15 @@ def pose_flip(meta):
             point = joint[cocopart.value]
             if point[0] < -100 or point[1] < -100:
                 adjust_joint.append((-1000, -1000))
+                # print('cocopart = %s' % cocopart)
+                # print('---------------------------')
                 continue
             # if point[0] <= 0 or point[1] <= 0:
             #     adjust_joint.append((-1, -1))
             #     continue
             adjust_joint.append((meta.width - point[0], point[1]))
         adjust_joint_list.append(adjust_joint)
+
 
     meta.joint_list = adjust_joint_list
 
@@ -304,15 +307,20 @@ def pose_to_img(meta_l):
 
 def preprocess_image(img_meta_data,preproc_config,is_training):
 
+    # print('[preprocessing] meta.width = %s' % img_meta_data.width)
+    # print('[preprocessing] meta.height = %s' % img_meta_data.height)
+
     if is_training:
-        if preproc_config.is_scale:
-            img_meta_data   = pose_random_scale(img_meta_data)
+
+
+        if preproc_config.is_flipping:
+            img_meta_data   = pose_flip(img_meta_data)
 
         if preproc_config.is_rotate:
             img_meta_data   = pose_rotation(img_meta_data,preproc_config)
 
-        if preproc_config.is_flipping:
-            img_meta_data   = pose_flip(img_meta_data)
+        if preproc_config.is_scale:
+            img_meta_data   = pose_random_scale(img_meta_data)
 
         if preproc_config.is_resize_shortest_edge:
             img_meta_data   = pose_resize_shortestedge_random(img_meta_data)
@@ -321,8 +329,12 @@ def preprocess_image(img_meta_data,preproc_config,is_training):
             img_meta_data   = pose_crop_random(img_meta_data)
         else:
             global _network_w, _network_h
+            # target_size = (_network_w, _network_h)
+            # img_meta_data = pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
             target_size = (_network_w, _network_h)
-            img_meta_data = pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
+            img_meta_data.img = cv2.resize(img_meta_data.img,
+                                           target_size,
+                                           interpolation=cv2.INTER_AREA)
     else:
         global _network_w, _network_h
         target_size = (_network_w, _network_h)
