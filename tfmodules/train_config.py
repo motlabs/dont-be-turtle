@@ -28,10 +28,10 @@ class TrainConfig(object):
 
         self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = 4
+        self.batch_size    = 128
         self.batch_size_eval    = 1
 
-        self.learning_rate_base       = 5e-4
+        self.learning_rate_base       = 1e-3
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
@@ -74,11 +74,11 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_crop                    = True
+        self.is_crop                    = False
         self.is_rotate                  = True
-        self.is_flipping                = True
-        self.is_scale                   = True
-        self.is_resize_shortest_edge    = True
+        self.is_flipping                = False
+        self.is_scale                   = False
+        self.is_resize_shortest_edge    = False
 
         # this is when classification task
         # which has an input as pose coordinate
