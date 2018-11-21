@@ -216,7 +216,7 @@ class DataSetInput(object):
                 )
             ), num_parallel_calls=multiprocessing_num)
 
-        dataset = dataset.apply(tf.contrib.batch_and_drop_remainder(batch_size=batch_size))
+        dataset = dataset.apply(tf.contrib.data.batch_and_drop_remainder(batch_size=batch_size))
         dataset = dataset.map(functools.partial(self._set_shapes, batch_size),
                               num_parallel_calls=multiprocessing_num)
 
