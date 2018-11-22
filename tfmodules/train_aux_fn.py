@@ -205,13 +205,14 @@ def metric_fn(labels, logits,pck_threshold):
         # get predicted coordinate
         pred_head_xy       = argmax_2d(logits[:,:,:,0:1])
         pred_neck_xy       = argmax_2d(logits[:,:,:,1:2])
-        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
-        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
+        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
+        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
+
 
         label_head_xy      = argmax_2d(labels[:,:,:,0:1])
         label_neck_xy      = argmax_2d(labels[:,:,:,1:2])
-        label_rshoulder_xy = argmax_2d(labels[:,:,:,2:3])
-        label_lshoulder_xy = argmax_2d(labels[:,:,:,3:4])
+        label_lshoulder_xy = argmax_2d(labels[:,:,:,2:3])
+        label_rshoulder_xy = argmax_2d(labels[:,:,:,3:4])
 
 
         # error distance measure
