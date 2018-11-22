@@ -86,12 +86,9 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-<<<<<<< HEAD
-        self.heatmap_std        = 8.0
-=======
+
         self.heatmap_std        = 10.0
 
->>>>>>> 0906de155561a0336abec48b91317e7774d6510c
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
 
