@@ -88,8 +88,8 @@ class DataLoaderTest(tf.test.TestCase):
         feature_op, labels_op   = iterator_train.get_next()
         argmax_2d_top_op            = argmax_2d(tensor=labels_op[:, :, :, 0:1])
         argmax_2d_nose_op           = argmax_2d(tensor=labels_op[:, :, :, 1:2])
-        argmax_2d_rshoulder_op      = argmax_2d(tensor=labels_op[:, :, :, 2:3])
-        argmax_2d_lshoulder_op      = argmax_2d(tensor=labels_op[:, :, :, 3:4])
+        argmax_2d_lshoulder_op      = argmax_2d(tensor=labels_op[:, :, :, 2:3])
+        argmax_2d_rshoulder_op      = argmax_2d(tensor=labels_op[:, :, :, 3:4])
 
         metric_dict_op = metric_fn(labels=labels_op,logits=labels_op,pck_threshold=0.2)
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
@@ -104,7 +104,7 @@ class DataLoaderTest(tf.test.TestCase):
             # init variable used in metric_fn_var_init
             sess.run(metric_fn_var_init)
 
-            for n in range(0,100):
+            for n in range(0,30):
 
                 # argmax2d find coordinate of head
                 # containing one heatmap
@@ -168,6 +168,8 @@ class DataLoaderTest(tf.test.TestCase):
                 print ('[test_data_loader_coco] keypoint_lshoulder = (%s,%s)' % (keypoint_lshoulder[0],keypoint_lshoulder[1]))
 
                 print (metric_dict)
+                print('---------------------------------------------------------\n')
+
                 # print('---------------------------------------------------------')
 
 
@@ -184,26 +186,31 @@ class DataLoaderTest(tf.test.TestCase):
                                           * IMAGE_MAX_VALUE
                 labels_nose_numpy       = labels_numpy[favorite_image_index, :, :, 1] \
                                           * IMAGE_MAX_VALUE
-                labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
+                labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 2] \
                                           * IMAGE_MAX_VALUE
-                labels_lshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
+                labels_rshoulder_numpy  = labels_numpy[favorite_image_index, :, :, 3] \
                                           * IMAGE_MAX_VALUE
+
                 ### heatmaps
-                # plt.figure(3)
-                # plt.imshow(labels_top_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(4)
-                # plt.imshow(labels_nose_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(5)
-                # plt.imshow(labels_rshoulder_numpy.astype(np.uint8))
-                # plt.show()
-                #
-                # plt.figure(6)
-                # plt.imshow(labels_lshoulder_numpy.astype(np.uint8))
-                # plt.show()
+                if keypoint_top[0] ==0 and keypoint_top[1] ==0:
+                    plt.figure(3)
+                    plt.imshow(labels_top_numpy.astype(np.uint8))
+                    plt.show()
+
+                if keypoint_nose[0] ==0 and keypoint_nose[1] ==0:
+                    plt.figure(4)
+                    plt.imshow(labels_nose_numpy.astype(np.uint8))
+                    plt.show()
+
+                if keypoint_rshoulder[0] ==0 and keypoint_rshoulder[1] ==0:
+                    plt.figure(5)
+                    plt.imshow(labels_rshoulder_numpy.astype(np.uint8))
+                    plt.show()
+
+                if keypoint_lshoulder[0] ==0 and keypoint_lshoulder[1] ==0:
+                    plt.figure(6)
+                    plt.imshow(labels_lshoulder_numpy.astype(np.uint8))
+                    plt.show()
 
 if __name__ == '__main__':
     tf.test.main()
