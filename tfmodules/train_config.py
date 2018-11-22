@@ -28,7 +28,8 @@ class TrainConfig(object):
 
         self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = 128
+
+        self.batch_size    = 64
         self.batch_size_eval    = 1
 
         self.learning_rate_base       = 1e-3
@@ -75,7 +76,7 @@ class PreprocessingConfig(object):
     def __init__(self):
         # image pre-processing
         self.is_crop                    = False
-        self.is_rotate                  = True
+        self.is_rotate                  = False
         self.is_flipping                = False
         self.is_scale                   = False
         self.is_resize_shortest_edge    = False
@@ -85,7 +86,12 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
+<<<<<<< HEAD
         self.heatmap_std        = 8.0
+=======
+        self.heatmap_std        = 10.0
+
+>>>>>>> 0906de155561a0336abec48b91317e7774d6510c
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
 

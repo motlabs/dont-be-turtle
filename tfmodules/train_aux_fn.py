@@ -130,10 +130,11 @@ def get_heatmap_activation(logits,scope=None):
                                                   name='act_head')
             act_heatmap_neck      = activation_fn(logits[:,:,:,1:2],
                                                   name='act_neck')
-            act_heatmap_rshoulder = activation_fn(logits[:,:,:,2:3],
-                                                  name='act_rshoulder')
-            act_heatmap_lshoulder = activation_fn(logits[:,:,:,3:4],
+            act_heatmap_lshoulder = activation_fn(logits[:,:,:,2:3],
                                                   name='act_lshoulder')
+            act_heatmap_rshoulder = activation_fn(logits[:,:,:,3:4],
+                                                  name='act_rshoulder')
+
 
             act_heatmaps = tf.concat([act_heatmap_head, \
                                      act_heatmap_neck, \
