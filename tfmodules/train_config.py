@@ -28,7 +28,7 @@ class TrainConfig(object):
 
         self.trainset_size = 10726
         self.validset_size = 678
-        self.batch_size    = 128
+        self.batch_size    = 64
         self.batch_size_eval    = 1
 
         self.learning_rate_base       = 1e-3
@@ -75,7 +75,7 @@ class PreprocessingConfig(object):
     def __init__(self):
         # image pre-processing
         self.is_crop                    = False
-        self.is_rotate                  = True
+        self.is_rotate                  = False
         self.is_flipping                = False
         self.is_scale                   = False
         self.is_resize_shortest_edge    = False
