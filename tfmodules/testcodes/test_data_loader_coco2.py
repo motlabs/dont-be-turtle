@@ -95,7 +95,7 @@ class DataLoaderTest(tf.test.TestCase):
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
         metric_fn_var_init = tf.variables_initializer(metric_fn_var)
 
-        favorite_image_index = 1
+        favorite_image_index = 5
 
 
         with self.test_session() as sess:
@@ -104,7 +104,7 @@ class DataLoaderTest(tf.test.TestCase):
             # init variable used in metric_fn_var_init
             sess.run(metric_fn_var_init)
 
-            for n in range(0,30):
+            for n in range(0,100):
 
                 # argmax2d find coordinate of head
                 # containing one heatmap
