@@ -346,7 +346,7 @@ class ModelConfig(object):
         self.hglayer_deconv_type        = 'bilinear_resize'
 
         # output layer final activation
-        self.activation_fn_out      = None
+        self.activation_fn_out      = tf.nn.softmax
 
         self.dtype              = tf.float32
 
