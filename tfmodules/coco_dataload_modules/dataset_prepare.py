@@ -78,9 +78,10 @@ class CocoMetadata:
         self.sigma = sigma
 
         self.height = int(img_meta['height'])
-        self.width = int(img_meta['width'])
+        self.width  = int(img_meta['width'])
 
         joint_list = []
+        # print('annotations = %s' % annotations)
         for ann in annotations:
             if ann.get('num_keypoints', 0) == 0:
                 continue
@@ -92,7 +93,25 @@ class CocoMetadata:
 
             joint_list.append([(x, y) if v >= 1 else (-1000, -1000) for x, y, v in zip(xs, ys, vs)])
 
+            # print('xs= %s'% kp[0::3])
+            # print('ys= %s'% kp[1::3])
+            # print('vs= %s'% kp[2::3])
+        '''
+        [{"supercategory": "human", 
+        "skeleton": [[1, 2], [2, 3], [2, 4], [3, 5], 
+        [5, 7], [4, 6], [6, 8], [2, 9], [2, 10], [9, 11], [10, 12], [11, 13], [12, 14]], 
+        "id": 1, 
+        "keypoints": ["top_head", "neck", "left_shoulder", "right_shoulder", 
+        "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_hip", 
+        "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle"], 
+        "name": "human"}]
+        '''
+        # for coor_list in joint_list:
+        #     print('joint_list = %s\n' % coor_list)
+        # print('----------------------------------')
+
         self.joint_list = []
+
         transform = list(zip(
             [1, 2, 4, 6, 8, 3, 5, 7, 10, 12, 14, 9, 11, 13],
             [1, 2, 4, 6, 8, 3, 5, 7, 10, 12, 14, 9, 11, 13]
@@ -114,13 +133,14 @@ class CocoMetadata:
     def get_heatmap(self, target_size):
         heatmap = np.zeros((CocoMetadata.__coco_parts, self.height, self.width), dtype=np.float32)
 
+        # print ('target_size=',target_size)
         for joints in self.joint_list:
             for idx, point in enumerate(joints):
+
                 if point[0] < 0 or point[1] < 0:
-                    # print('point[0] %s' % point[0])
-                    # print('point[1] %s' % point[1])
-                    # print('======================')
+                    heatmap[idx,:,:] = 1.0 / (target_size[0] * target_size[1])
                     continue
+
                 CocoMetadata.put_heatmap(heatmap, idx, point, self.sigma)
 
         heatmap = heatmap.transpose((1, 2, 0))
@@ -131,19 +151,32 @@ class CocoMetadata:
         #---------------------------------------------
         # taking only top neck Rshoulder Lshoulder for dontbe turtle proj
         # by jaewook kang
+        # Top = 0
+        # Neck = 1
+        # RShoulder = 2
+        # LShoulder = 5
+
         bodyparts_list = [CocoPart.Top.value,\
                           CocoPart.Neck.value,\
-                          CocoPart.RShoulder.value,\
-                          CocoPart.LShoulder.value]
+                          CocoPart.LShoulder.value,\
+                          CocoPart.RShoulder.value]
         heatmap = heatmap[:,:,bodyparts_list]
         #---------------------------------------------
 
+
         if target_size:
             heatmap = cv2.resize(heatmap, target_size, interpolation=cv2.INTER_AREA)
+        # print ('[get_heatmap] heatmap shape: %s', heatmap.shape)
 
+        # heatmap normalization
+        for index in range(len(bodyparts_list)):
+            heatmap[:,:,index] = heatmap[:,:,index] / sum(sum(heatmap[:,:,index]))
+            # print('sum of heatmap[:,:,%s] = %s' %(index,sum(sum(heatmap[:,:,index]))))
 
 
         return heatmap.astype(np.float16)
+
+
 
     @staticmethod
     # the below function actually made heatmap
@@ -154,8 +187,8 @@ class CocoMetadata:
         th = 1.6052
         delta = math.sqrt(th * 2)
 
-        # if center_x == 0 and center_y == 0 :
-        #     print ('plane_idx = %s' % plane_idx)
+        if center_x == 0 and center_y == 0 :
+            print ('plane_idx = %s' % plane_idx)
 
         x0 = int(max(0, center_x - delta * sigma))
         y0 = int(max(0, center_y - delta * sigma))

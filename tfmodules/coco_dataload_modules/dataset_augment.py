@@ -139,7 +139,7 @@ def pose_flip(meta):
     # dont be turtle proj needs only four parts
     # the below parts should be included in the fliped images
     # written by jaewook 180802
-    flip_list = [CocoPart.Top, CocoPart.Neck,  CocoPart.RShoulder,CocoPart.LShoulder]
+    flip_list = [CocoPart.Top, CocoPart.Neck,  CocoPart.LShoulder,CocoPart.RShoulder]
     # -------------------------------------------------------
 
     adjust_joint_list = []
@@ -311,7 +311,8 @@ def preprocess_image(img_meta_data,preproc_config,is_training):
     # print('[preprocessing] meta.height = %s' % img_meta_data.height)
 
     if is_training:
-
+        # print ('img_meta_data.width = %s' % img_meta_data.width)
+        # print ('img_meta_data.height = %s' % img_meta_data.height)
 
         if preproc_config.is_flipping:
             img_meta_data   = pose_flip(img_meta_data)
@@ -332,17 +333,29 @@ def preprocess_image(img_meta_data,preproc_config,is_training):
             # target_size = (_network_w, _network_h)
             # img_meta_data = pose_crop(img_meta_data, 0, 0, target_size[0], target_size[1])
             target_size = (_network_w, _network_h)
+
+
+            # image is resized to the target size here
             img_meta_data.img = cv2.resize(img_meta_data.img,
                                            target_size,
                                            interpolation=cv2.INTER_AREA)
+
     else:
         global _network_w, _network_h
         target_size = (_network_w, _network_h)
+
+        # image is resized to the target size here
         img_meta_data.img = cv2.resize(img_meta_data.img,
                                        target_size,
                                        interpolation=cv2.INTER_AREA)
+    # print ('-------')
+    # print ('[augmented] img_meta_data.width = %s' % img_meta_data.width)
+    # print ('[augmented] img_meta_data.height = %s' % img_meta_data.height)
+    # print ('------------------------------------------')
+    #
 
-
+    # the heatmap is generated based on the original coordinate (x,y)
+    # and resize to target size
     images, labels  = pose_to_img(img_meta_data)
 
     return images, labels
