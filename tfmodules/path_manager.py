@@ -62,7 +62,7 @@ COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle/'
 
 # GCP BUCKET ADDRESS
 # DATASET_BUCKET          = 'gs://pose_dataset_tfrecord/tfrecords/testdataset'
-DATASET_BUCKET          = '/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle'
+DATASET_BUCKET          = '/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle_865'
 
 MODEL_BUCKET             = '/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/'
 # TENSORBOARD_BUCKET      = 'gs://dontbeturtle_tflogs'

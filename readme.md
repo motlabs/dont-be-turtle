@@ -22,8 +22,8 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 
 | Version | Framework            |  Device           | size (MB) | avg FPS |
 |---------|----------------------|-------------------|-----------|---------|
-| 1.0.0   | Android Pie + Tflite | Google Pixel2     |  1.4MB    |   TBU   |
-| 1.0.0   | iOS 11.4.1  + CoreML | iPhoneX           |  1.5MB    |   TBU   |
+| 0.4.0   | Android Pie + Tflite | Google Pixel2     |  1.4MB    |   TBU   |
+| 0.4.0   | iOS 11.4.1  + CoreML | iPhoneX           |  1.5MB    |   TBU   |
 
 ### Repository Components
 ```bash
@@ -152,7 +152,7 @@ python ${SOURCE}\
 
 
 ## Project Contributors
-- Dontbeturtle v1.0
+- Dontbeturtle v0.4
     - [Jaewook Kang](https://github.com/jwkanggist/) (PI)
     - [Doyoung Gwak](https://github.com/tucan9389/)
     - [Jeongah Shin](https://github.com/Jeongah-Shin)
