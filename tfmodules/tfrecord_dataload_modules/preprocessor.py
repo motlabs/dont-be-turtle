@@ -291,7 +291,7 @@ def preprocess_image(image_bytes,
                                                 use_bfloat16     =use_bfloat16,
                                                 gaussian_ksize=preproc_config.heatmap_std)
 
-        label_heatmap_Rshoulder = _heatmap_generator(label_list =label_list[2],
+        label_heatmap_Lshoulder = _heatmap_generator(label_list =label_list[2],
                                                     image_orig_height=image_orig_height,
                                                     image_orig_width =image_orig_width,
                                                     is_flip          = is_flip,
@@ -299,13 +299,15 @@ def preprocess_image(image_bytes,
                                                     use_bfloat16     =use_bfloat16,
                                                     gaussian_ksize=preproc_config.heatmap_std)
 
-        label_heatmap_Lshoulder = _heatmap_generator(label_list =label_list[3],
+        label_heatmap_Rshoulder = _heatmap_generator(label_list =label_list[3],
                                                     image_orig_height=image_orig_height,
                                                     image_orig_width =image_orig_width,
                                                     is_flip          = is_flip,
                                                     random_ang_rad   = random_ang_rad,
                                                     use_bfloat16     =use_bfloat16,
                                                     gaussian_ksize=preproc_config.heatmap_std)
+
+
 
 
         label_heatmap           = tf.stack([label_heatmap_head,

@@ -138,8 +138,8 @@ def get_heatmap_activation(logits,scope=None):
 
             act_heatmaps = tf.concat([act_heatmap_head, \
                                      act_heatmap_neck, \
-                                     act_heatmap_rshoulder, \
-                                     act_heatmap_lshoulder],axis=3)
+                                      act_heatmap_lshoulder,
+                                     act_heatmap_rshoulder],axis=3)
     return act_heatmaps
 
 
@@ -170,7 +170,8 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
+        # total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
+        total_losssum = loss_fn(label_heatmaps - pred_heatmaps)
 
 
     return total_losssum
