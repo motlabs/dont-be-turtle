@@ -96,12 +96,14 @@ python ${SOURCE}\
   --is_ckpt_init=False\
   --ckptinit_dir=None
 ```
-- You have an option to use `./sh_scripts/run_train_gpu.sh` with some custormization
+- You have an option to use `./sh_scripts/run_train_gpu.sh` with some customization
 
 
-## Dataset (Under Preparation)
-> You need to create `./dataset/coco_form/dontbeturtle/` and download our dataset from [here]().
+## Dataset 
+> You need to create `./dataset/coco_form/` and place the data set 
+- [Donbeturtle dataset v1.0 (trainset only 865) download]()
 
+#### Donbeturtle dataset v2.0 (under preperation)
 - Training set (10726)
     - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4941)
     - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (2397)
@@ -145,6 +147,7 @@ python ${SOURCE}\
 
 
 ## Related  Materials
+- [Jaewook Kang, " Don't be turtle project beyond Google Camp," GDGDevFest 2018 Pangyo, 2018 Nov](https://docs.google.com/presentation/d/1fxgYB1DbFVbRz0d_hIuG9DxFtLrhorWEDzDTJlf6f6U/edit#slide=id.g473a2a4e39_1_46)
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
 - [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
 - [Jaewook Kang, "_Mobile Vision Learning: Model Compression and Efficient Convolution perspective_," ETRI, 2018 June 12th](https://docs.google.com/presentation/d/1_spnxEttqiTTh31c8S7xvHoSdZ3k4Rhm1f7GM7wNMdw/edit#slide=id.p1)
