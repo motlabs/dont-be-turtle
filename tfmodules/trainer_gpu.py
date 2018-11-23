@@ -109,10 +109,10 @@ def model_fn(features,
         features = tf.transpose(features, [3, 0, 1, 2])  # HWCN to NHWC
 
 
-    with tf.name_scope(name='feature_norm',values=[features]):
-        # Standardization to the image by zero mean and unit variance.
-        features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
-        features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
+    # with tf.name_scope(name='feature_norm',values=[features]):
+    #     # Standardization to the image by zero mean and unit variance.
+    #     features -= tf.constant(preproc_config.MEAN_RGB,   shape=[1, 1, 3], dtype=features.dtype)
+    #     features /= tf.constant(preproc_config.STDDEV_RGB, shape=[1, 1, 3], dtype=features.dtype)
 
     # set input_shape
     features.set_shape(features.get_shape().merge_with(
