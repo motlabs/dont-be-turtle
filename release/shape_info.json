@@ -1,1 +1,0 @@
-{"dtype": "<dtype: 'float32'>", "input_node_name": "model_in", "input_shape": [1, 256, 256, 3], "keypoints": ["Head", "Nose", "Rshoulder", "Lshoulder"], "output_node_name": "build_network/model/model_out", "output_shape": [1, 64, 64, 4]}
