@@ -170,8 +170,7 @@ def get_loss_heatmap(pred_heatmaps,
 
         ### get loss function of each part
         loss_fn         = train_config.heatmap_loss_fn
-        # total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
-        total_losssum = loss_fn(label_heatmaps,pred_heatmaps) / NUM_OF_KEYPOINTS
+        total_losssum = loss_fn(label_heatmaps,pred_heatmaps)
 
 
     return total_losssum
