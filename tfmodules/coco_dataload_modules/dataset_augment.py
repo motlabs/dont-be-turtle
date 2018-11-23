@@ -313,15 +313,14 @@ def preprocess_image(img_meta_data,preproc_config,is_training):
     if is_training:
         # print ('img_meta_data.width = %s' % img_meta_data.width)
         # print ('img_meta_data.height = %s' % img_meta_data.height)
-
-        if preproc_config.is_flipping:
-            img_meta_data   = pose_flip(img_meta_data)
+        if preproc_config.is_scale:
+            img_meta_data   = pose_random_scale(img_meta_data)
 
         if preproc_config.is_rotate:
             img_meta_data   = pose_rotation(img_meta_data,preproc_config)
 
-        if preproc_config.is_scale:
-            img_meta_data   = pose_random_scale(img_meta_data)
+        if preproc_config.is_flipping:
+            img_meta_data   = pose_flip(img_meta_data)
 
         if preproc_config.is_resize_shortest_edge:
             img_meta_data   = pose_resize_shortestedge_random(img_meta_data)

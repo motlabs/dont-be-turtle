@@ -337,7 +337,7 @@ class ModelConfig(object):
         self.hglayer_invbottle_expansion_rate   = 5.0
         self.rclayer_invbottle_expansion_rate   = 5.0
         self.num_of_shorcut_invbottleneck_stacking = 4
-        self.hglayer_num_of_stage               = 4
+        self.hglayer_num_of_stage               = 2
         self.num_of_hgstacking                  = 1
 
 

@@ -138,7 +138,8 @@ class CocoMetadata:
             for idx, point in enumerate(joints):
 
                 if point[0] < 0 or point[1] < 0:
-                    heatmap[idx,:,:] = 1.0 / (target_size[0] * target_size[1])
+                    # uniform labeling for mislabeled data
+                    # heatmap[idx,:,:] = 1.0 / (target_size[0] * target_size[1])
                     continue
 
                 CocoMetadata.put_heatmap(heatmap, idx, point, self.sigma)
