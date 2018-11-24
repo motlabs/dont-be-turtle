@@ -77,11 +77,11 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_crop                    = True
-        self.is_rotate                  = True
-        self.is_flipping                = True
-        self.is_scale                   = True
-        self.is_resize_shortest_edge    = True
+        self.is_crop                    = False
+        self.is_rotate                  = False
+        self.is_flipping                = False
+        self.is_scale                   = False
+        self.is_resize_shortest_edge    = False
 
         # this is when classification task
         # which has an input as pose coordinate
