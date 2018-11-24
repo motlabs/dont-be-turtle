@@ -139,7 +139,7 @@ class CocoMetadata:
 
                 if point[0] < 0 or point[1] < 0:
                     # uniform labeling for mislabeled data
-                    # heatmap[idx,:,:] = 1.0 / (target_size[0] * target_size[1])
+                    heatmap[idx,:,:] = 1.0 / (target_size[0] * target_size[1])
                     continue
 
                 CocoMetadata.put_heatmap(heatmap, idx, point, self.sigma)
@@ -171,7 +171,7 @@ class CocoMetadata:
 
         # heatmap normalization
         for index in range(len(bodyparts_list)):
-            if sum(sum(heatmap[:, :, index])) is not 0.0:
+            if abs(sum(sum(heatmap[:, :, index]))) > 0:
                 heatmap[:,:,index] = heatmap[:,:,index] / sum(sum(heatmap[:,:,index]))
                 # print('sum of heatmap[:,:,%s] = %s' %(index,sum(sum(heatmap[:,:,index]))))
 
