@@ -55,8 +55,8 @@ class TrainConfig(object):
         self.opt_fn                 = tf.train.AdamOptimizer
 
         self.occlusion_loss_fn      = None
-        # self.heatmap_loss_fn        = tf.losses.mean_squared_error
-        self.heatmap_loss_fn        = tf.nn.l2_loss
+        self.heatmap_loss_fn        = tf.losses.mean_squared_error
+        # self.heatmap_loss_fn        = tf.nn.l2_loss
         self.metric_fn              = tf.metrics.root_mean_squared_error
 
 
@@ -77,11 +77,11 @@ class PreprocessingConfig(object):
 
     def __init__(self):
         # image pre-processing
-        self.is_crop                    = False
-        self.is_rotate                  = False
-        self.is_flipping                = False
-        self.is_scale                   = False
-        self.is_resize_shortest_edge    = False
+        self.is_crop                    = True
+        self.is_rotate                  = True
+        self.is_flipping                = True
+        self.is_scale                   = True
+        self.is_resize_shortest_edge    = True
 
         # this is when classification task
         # which has an input as pose coordinate

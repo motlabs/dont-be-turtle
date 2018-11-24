@@ -170,9 +170,9 @@ class CocoMetadata:
         # print ('[get_heatmap] heatmap shape: %s', heatmap.shape)
 
         # heatmap normalization
-        # for index in range(len(bodyparts_list)):
-        #     heatmap[:,:,index] = heatmap[:,:,index] / sum(sum(heatmap[:,:,index]))
-        #     # print('sum of heatmap[:,:,%s] = %s' %(index,sum(sum(heatmap[:,:,index]))))
+        for index in range(len(bodyparts_list)):
+            heatmap[:,:,index] = heatmap[:,:,index] / sum(sum(heatmap[:,:,index]))
+            # print('sum of heatmap[:,:,%s] = %s' %(index,sum(sum(heatmap[:,:,index]))))
 
 
         return heatmap.astype(np.float16)
