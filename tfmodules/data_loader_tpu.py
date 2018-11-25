@@ -77,16 +77,17 @@ def image_serving_input_fn():
 
     label_head_bytes      = tf.placeholder(shape=[None],dtype=tf.string)
     label_neck_bytes      = tf.placeholder(shape=[None],dtype=tf.string)
-    label_Rshoulder_bytes = tf.placeholder(shape=[None],dtype=tf.string)
     label_Lshoulder_bytes = tf.placeholder(shape=[None],dtype=tf.string)
+    label_Rshoulder_bytes = tf.placeholder(shape=[None],dtype=tf.string)
 
     image_height          = tf.placeholder(shape=[None],dtype=tf.int32)
     image_width           = tf.placeholder(shape=[None],dtype=tf.int32)
 
     label_byte_list = [label_head_bytes,
                        label_neck_bytes,
-                       label_Rshoulder_bytes,
-                       label_Lshoulder_bytes]
+                       label_Lshoulder_bytes,
+                       label_Rshoulder_bytes]
+
 
 
     images = tf.map_fn(fn=_preprocess_image,
@@ -101,8 +102,8 @@ def image_serving_input_fn():
       images, {'image_bytes': image_bytes,
                'label_head_bytes': label_head_bytes,
                'label_neck_bytes': label_neck_bytes,
-               'label_Rshoulder': label_Rshoulder_bytes,
                'label_Lshoulder': label_Lshoulder_bytes,
+               'label_Rshoulder': label_Rshoulder_bytes,
                'image_height':    image_height,
                'imaeg_width':     image_width})
 
@@ -266,8 +267,8 @@ class DataSetInput(object):
 
         label_list = [label_head_list,
                       label_neck_list,
-                      label_Rshoulder_list,
-                      label_Lshoulder_list]
+                      label_Lshoulder_list,
+                      label_Rshoulder_list]
 
 
         # get the original image shape

@@ -30,15 +30,18 @@ if [ "$OS" == "$OS_X" ]; then
     export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle
 #    export DATA_BUCKET=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/dataset/coco_form/dontbeturtle_train865
     export SOURCE=~/SourceCodes/dont-be-turtle/tfmodules/trainer_gpu.py
+#    export CKPT_INIT_DIR=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/release/ckpt/v0.4
 else
     rm -rf /tmp/gcs_filesystem*
     export MODEL_BUCKET=gs://dontbeturtle_ckpt3
 #    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/youtube_turtle_lsp
-#    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle
-    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle_train865
+    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle
+#    export DATA_BUCKET=/home/jwkangmacpro2/dataset/coco_form/dontbeturtle_train865
 
 #    export DATA_BUCKET=null
     export SOURCE=~/dont-be-turtle/tfmodules/trainer_gpu.py
+#    export CKPT_INIT_DIR=~/dont-be-turtle/release/ckpt/v0.4
+
 fi
 
 

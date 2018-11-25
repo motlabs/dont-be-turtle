@@ -227,10 +227,11 @@ def metric_fn(labels, logits,pck_threshold):
                                                                         predictions=pred_head_xy)
         errdist_neck,update_op_errdist_neck             = metric_err_fn(labels=label_neck_xy,
                                                                         predictions= pred_neck_xy)
-        errdist_rshoulder, update_op_errdist_rshoulder  = metric_err_fn(labels=label_rshoulder_xy,
-                                                                        predictions= pred_rshoulder_xy)
         errdist_lshoulder, update_op_errdist_lshoulder  = metric_err_fn(labels=label_lshoulder_xy,
                                                                         predictions= pred_lshoulder_xy)
+        errdist_rshoulder, update_op_errdist_rshoulder  = metric_err_fn(labels=label_rshoulder_xy,
+                                                                        predictions= pred_rshoulder_xy)
+
         # percentage of correct keypoints
         total_errdist = (errdist_head +
                          errdist_neck +
