@@ -15,7 +15,7 @@ whether you are maintaining good working posture.
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
 ![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
-> Above model is trained by 870 custom dataset, and will be updated as soon as a new dataset is prepared.
+> Above model is trained by 865 custom dataset, and will be updated as soon as a new dataset is prepared.
 
 ### Release Benchmarks
 - Pose Estimation Accuracy (PCKh): xx.xx %
