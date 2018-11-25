@@ -26,10 +26,10 @@ class TrainConfig(object):
     def __init__(self):
 
 
-        self.trainset_size = 10726
-        self.validset_size = 678
-        # self.trainset_size = 865
-        # self.validset_size = 0
+        # self.trainset_size = 10726
+        # self.validset_size = 678
+        self.trainset_size = 865
+        self.validset_size = 0
         self.batch_size    = 32
         self.batch_size_eval    = 1
 
@@ -197,8 +197,8 @@ flags.DEFINE_string(
 
 
 flags.DEFINE_string(
-    'mode', default='train_and_eval',
-    # 'mode', default='train',
+    # 'mode', default='train_and_eval',
+    'mode', default='train',
     help='One of {"train_and_eval", "train", "eval"}.')
 
 flags.DEFINE_integer(
