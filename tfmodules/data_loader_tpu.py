@@ -267,8 +267,8 @@ class DataSetInput(object):
 
         label_list = [label_head_list,
                       label_neck_list,
-                      label_Rshoulder_list,
-                      label_Lshoulder_list]
+                      label_Lshoulder_list,
+                      label_Rshoulder_list]
 
 
         # get the original image shape

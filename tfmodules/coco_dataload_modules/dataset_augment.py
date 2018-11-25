@@ -131,16 +131,13 @@ def pose_flip(meta):
     img = cv2.flip(img, 1)
 
     # flip meta
-    # flip_list = [CocoPart.Top, CocoPart.Neck, CocoPart.LShoulder, CocoPart.LElbow, CocoPart.LWrist, CocoPart.RShoulder,
-    #              CocoPart.RElbow, CocoPart.RWrist,
-    #              CocoPart.LHip, CocoPart.LKnee, CocoPart.LAnkle, CocoPart.RHip, CocoPart.RKnee, CocoPart.RAnkle
-    #              ]
-    # ---------------------------------------------------------
-    # dont be turtle proj needs only four parts
-    # the below parts should be included in the fliped images
-    # written by jaewook 180802
-    flip_list = [CocoPart.Top, CocoPart.Neck,  CocoPart.LShoulder,CocoPart.RShoulder]
-    # -------------------------------------------------------
+    flip_list = [CocoPart.Top, CocoPart.Neck, CocoPart.LShoulder, CocoPart.LElbow, CocoPart.LWrist, CocoPart.RShoulder,
+                 CocoPart.RElbow, CocoPart.RWrist,
+                 CocoPart.LHip, CocoPart.LKnee, CocoPart.LAnkle, CocoPart.RHip, CocoPart.RKnee, CocoPart.RAnkle
+                 ]
+
+    # print('width =%s'% meta.width)
+    # print('joint =%s'% meta.joint_list)
 
     adjust_joint_list = []
     for joint in meta.joint_list:
@@ -158,6 +155,7 @@ def pose_flip(meta):
             adjust_joint.append((meta.width - point[0], point[1]))
         adjust_joint_list.append(adjust_joint)
 
+    # print('adjust_joint_list =%s'% adjust_joint_list)
 
     meta.joint_list = adjust_joint_list
 

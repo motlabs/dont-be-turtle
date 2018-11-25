@@ -95,7 +95,7 @@ class DataLoaderTest(tf.test.TestCase):
         metric_fn_var  = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES,scope='metric_fn')
         metric_fn_var_init = tf.variables_initializer(metric_fn_var)
 
-        favorite_image_index = 1
+        favorite_image_index = 2
 
 
         with self.test_session() as sess:
@@ -111,15 +111,15 @@ class DataLoaderTest(tf.test.TestCase):
                 feature_numpy, labels_numpy, \
                 coord_top_numpy,\
                 coord_nose_numpy,\
-                coord_rshoulder_numpy,\
                 coord_lshoulder_numpy,\
+                coord_rshoulder_numpy,\
                 metric_dict   \
                     = sess.run([feature_op,
                                 labels_op,
                                 argmax_2d_top_op,
                                 argmax_2d_nose_op,
-                                argmax_2d_rshoulder_op,
                                 argmax_2d_lshoulder_op,
+                                argmax_2d_rshoulder_op,
                                 metric_dict_op])
 
                 # some post processing
@@ -141,8 +141,8 @@ class DataLoaderTest(tf.test.TestCase):
                 '''
                 keypoint_top        = coord_top_numpy[favorite_image_index].astype(np.uint8)
                 keypoint_nose       = coord_nose_numpy[favorite_image_index].astype(np.uint8)
-                keypoint_rshoulder  = coord_rshoulder_numpy[favorite_image_index].astype(np.uint8)
                 keypoint_lshoulder  = coord_lshoulder_numpy[favorite_image_index].astype(np.uint8)
+                keypoint_rshoulder  = coord_rshoulder_numpy[favorite_image_index].astype(np.uint8)
 
                 image_sample_resized[keypoint_top[1],keypoint_top[0],0] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_top[1],keypoint_top[0],1] = IMAGE_MAX_VALUE
@@ -151,21 +151,21 @@ class DataLoaderTest(tf.test.TestCase):
                 image_sample_resized[keypoint_nose[1],keypoint_nose[0],0] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_nose[1],keypoint_nose[0],1] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_nose[1],keypoint_nose[0],2] = IMAGE_MAX_VALUE
+                #
+                # image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],0] = IMAGE_MAX_VALUE
+                # image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],1] = IMAGE_MAX_VALUE
+                # image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],2] = IMAGE_MAX_VALUE
 
                 image_sample_resized[keypoint_rshoulder[1],keypoint_rshoulder[0],0] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_rshoulder[1],keypoint_rshoulder[0],1] = IMAGE_MAX_VALUE
                 image_sample_resized[keypoint_rshoulder[1],keypoint_rshoulder[0],2] = IMAGE_MAX_VALUE
 
-                image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],0] = IMAGE_MAX_VALUE
-                image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],1] = IMAGE_MAX_VALUE
-                image_sample_resized[keypoint_lshoulder[1],keypoint_lshoulder[0],2] = IMAGE_MAX_VALUE
-
 
 
                 print ('[test_data_loader_coco] keypoint_top       = (%s,%s)' % (keypoint_top[0],keypoint_top[1]))
                 print ('[test_data_loader_coco] keypoint_nose      = (%s,%s)' % (keypoint_nose[0],keypoint_nose[1]))
-                print ('[test_data_loader_coco] keypoint_rshoulder = (%s,%s)' % (keypoint_rshoulder[0],keypoint_rshoulder[1]))
                 print ('[test_data_loader_coco] keypoint_lshoulder = (%s,%s)' % (keypoint_lshoulder[0],keypoint_lshoulder[1]))
+                print ('[test_data_loader_coco] keypoint_rshoulder = (%s,%s)' % (keypoint_rshoulder[0],keypoint_rshoulder[1]))
 
                 print (metric_dict)
                 print('---------------------------------------------------------\n')

@@ -133,8 +133,8 @@ class PreprocessorTest(tf.test.TestCase):
                     la[batch_index][list_index]
                     la[0][0] : head
                     la[0][1] : neck
-                    la[0][2] : Rshoulder
-                    la[0][3] : Lshoulder
+                    la[0][2] : Lshoulder
+                    la[0][3] : Rshoulder
                 '''
                 image_prepro_numpy,heatmap_numpy,heatmap_x0,heatmap_y0,is_flip,random_ang_rad = \
                                                      sess.run([image_prepro_op,
