@@ -169,8 +169,8 @@ def get_heatmap_activation(logits,scope=None):
             ''' linear activation case'''
             act_heatmap_head        = logits[:,:,:,0:1]
             act_heatmap_neck        = logits[:,:,:,1:2]
-            act_heatmap_rshoulder   = logits[:,:,:,2:3]
-            act_heatmap_lshoulder   = logits[:,:,:,3:4]
+            act_heatmap_lshoulder   = logits[:,:,:,2:3]
+            act_heatmap_rshoulder   = logits[:,:,:,3:4]
         else:
             act_heatmap_head      = activation_fn(logits[:,:,:,0:1],
                                                   name='act_head')
@@ -236,11 +236,13 @@ def get_loss_heatmap(pred_heatmaps,
         loss_neck       = loss_fn(labels     =label_heatmaps[:,:,:,1:2],
                                   predictions=pred_heatmaps[:,:,:,1:2])
 
-        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
+        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,2:3],
                                   predictions=pred_heatmaps[:,:,:,2:3])
 
-        loss_lshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
+        loss_rshoulder  = loss_fn(labels     =label_heatmaps[:,:,:,3:4],
                                   predictions=pred_heatmaps[:,:,:,3:4])
+
+
 
         # loss_tensor = tf.stack([loss_head, loss_neck, loss_rshoulder, loss_lshoulder])
         total_losssum = loss_head + loss_neck + loss_rshoulder + loss_lshoulder
@@ -291,13 +293,13 @@ def metric_fn(labels, logits):
         # get predicted coordinate
         pred_head_xy       = argmax_2d(logits[:,:,:,0:1])
         pred_neck_xy       = argmax_2d(logits[:,:,:,1:2])
-        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
-        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
+        pred_lshoulder_xy  = argmax_2d(logits[:,:,:,2:3])
+        pred_rshoulder_xy  = argmax_2d(logits[:,:,:,3:4])
 
         label_head_xy      = argmax_2d(labels[:,:,:,0:1])
         label_neck_xy      = argmax_2d(labels[:,:,:,1:2])
-        label_rshoulder_xy = argmax_2d(labels[:,:,:,2:3])
-        label_lshoulder_xy = argmax_2d(labels[:,:,:,3:4])
+        label_lshoulder_xy = argmax_2d(labels[:,:,:,2:3])
+        label_rshoulder_xy = argmax_2d(labels[:,:,:,3:4])
 
         # error distance measure
         metric_err_fn                 = train_config.metric_fn
