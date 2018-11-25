@@ -30,10 +30,10 @@ class TrainConfig(object):
         self.validset_size = 678
         # self.trainset_size = 865
         # self.validset_size = 0
-        self.batch_size    = 32
+        self.batch_size    = 64
         self.batch_size_eval    = 1
 
-        self.learning_rate_base       = 1e-3
+        self.learning_rate_base       = 1e-4
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
@@ -88,7 +88,7 @@ class PreprocessingConfig(object):
         # self.is_label_coordinate_norm   = False
 
         # for ground true heatmap generation
-        self.heatmap_std        = 12.0
+        self.heatmap_std        = 14.0
 
         self.MIN_AUGMENT_ROTATE_ANGLE_DEG = -5.0
         self.MAX_AUGMENT_ROTATE_ANGLE_DEG = 5.0
