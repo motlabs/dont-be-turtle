@@ -54,7 +54,8 @@ TFRECORD_TESTIMAGE_DIR      = DATASET_DIR   + '/tfrecords/testimagedataset'
 
 
 COCO_DATASET_BASE_DIR        = DATASET_DIR + '/coco_form'
-COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle/'
+# COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle/'
+COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/dontbeturtle_train865/'
 
 # COCO_REALSET_DIR             = COCO_DATASET_BASE_DIR     + '/ai_challenger/'
 # COCO_REALSET_DIR           = COCO_DATASET_BASE_DIR     + '/lsp/'
