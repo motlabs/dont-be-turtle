@@ -30,10 +30,10 @@ class TrainConfig(object):
         # self.validset_size = 678
         self.trainset_size = 865
         self.validset_size = 0
-        self.batch_size    = 32
+        self.batch_size    = 192
         self.batch_size_eval    = 1
 
-        self.learning_rate_base       = 1e-3
+        self.learning_rate_base       = 1e-4
         self.learning_rate_decay_rate = 0.95
         self.learning_rate_decay_step = 2000
 
