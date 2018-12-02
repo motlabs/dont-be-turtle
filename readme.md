@@ -1,7 +1,6 @@
-# Don't be a Turtle Project
+# Don't be a Turtle Project 
 
 Author: Jaewook Kang
-
 
 
 ## About
@@ -15,131 +14,123 @@ For this purpose, we monitor neck, detecting
 whether you are maintaining good working posture. 
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
+![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
+> Note that the above model in .gif was trained only by 865 custom dataset.
 
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/about.jpg)
+### Release Benchmarks
+- Pose Estimation Accuracy (PCKh): TBU
 
+| Version | Framework            |  Device           | size (KB) | 
+|---------|----------------------|-------------------|-----------|
+| 0.5.0   | Android Pie + Tflite | Google Pixel2     |  749 KB    | 
+| 0.5.0   | iOS 11.4.1  + CoreML | iPhoneX           |  811 KB    | 
 
-### Our Solution Approach
-- A Classification + estimation approach
-    - TASK1: Pose Estimation Task: Neck pose estimation from CNN features using four joint positions of human body: head, neck, right shoulder, left shoulder
-    - TASK2: Pose Classification task: Classification whether neck posture is neck tech from CNN features.
-
-
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/approach.jpg)
-
-
-## Keywords
-- Tech neck classification
-- Human pose estimation
-- Transfer learning
-- Mobile convolutional neural networks
-- Tensorflow Lite
-
-## Technical Stacks
-- Tensorflow >= 1.8
-- Tf slim library (python model module building, pb/ckpt file export)
-- Tensorflow lite
-- Android + nnapi / iOS + coreML (Mobile running optimization and Hardware delegation)
-
-
-## Expected Results
-![alt text](https://github.com/MachineLearningOfThings/smile-turtle-proj/blob/develop/images/product.jpg)
-
-### Product outputs
-- Tensorflow model (`.pb`/`.ckpt`)
-- Tensorflow lite model (`tflite`)
-- An Android/iOS Mobile benchmark APP
-- An arXiv Paper
+### Repository Components
+```bash
+.
+├── images              # some images for documentation
+├── dataset/coco_form   # Unzip the dontbeturtle dataset at ./dataset/coco_form
+├── note                # Some notes under Google Camps
+├── sh_scripts          # A collection of shell scripts for easy operations
+├── release             # dontbe turtle tflite and mlmodel here
+└── tfmodules           # A collection of TF python files
+```
 
 
 
-### Benchmarks
-- Million Mult-Add / Parameters
-- tflite model size (MB)
-- per-runtime accuracy (acc/ms) ([see LPIRC CVPR 2018 measure](https://docs.google.com/document/d/1_toBzIrfcrZwxF9B1jMIbMvqxrw9AS1rWy-fdSP_OvI/edit))
-- App Battery consumption (mAh)
+### Mobile Apps 
+- [Android repo](https://github.com/motlabs/dont-be-turtle-android)
+- [iOS repo](https://github.com/motlabs/dont-be-turtle-ios) 
+
+
+##   Frameworks
+
+### Technical Stacks
+- Tensorflow (+ Tf Slim) >= 1.9
+- Tf plot       == 0.2.0.dev0 
+- opencv-python >= 3.4.2
+- pycocotools   == 2.0.0
+- Cython        == 0.28.4
+- tensorpack    == 0.8.0
+- tfcoreml      == 0.2.0
+
+### Repository Installation 
+
+```bash
+git clone https://github.com/motlabs/dont-be-turtle
+# cd dont-be-turtle/
+git init
+git submodule init
+git submodule update
+
+pip install -r requirement.txt
+./sh_scripts/install_tensorflow_gpu.sh
+```
+
+
+### How to Run Training
+```bash
+export MODEL_BUCKET=./tfmodules/export/model/       # set path for exporting ckpt and tfsummary
+export DATA_BUCKET=./dataset/coco_form/dontbeturtle # set path for placing dataset
+export SOURCE=./tfmodules/trainer_gpu.py            # set path for tensorflow trainer
+
+python ${SOURCE}\
+  --data_dir=${DATA_BUCKET}\
+  --model_dir=${MODEL_BUCKET}\
+  --is_ckpt_init=False\
+  --ckptinit_dir=None
+```
+- You have an option to use `./sh_scripts/run_train_gpu.sh` with some customization
+
+### How to Get .tflite and .mlmodel
+> Note that you need to configure ./tfmodule/model/model_config_released.py before executing the below command. 
+```bash
+python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
+# Args:
+#  1) is-summary==True : collect tf summary for model graph
+#     is-summary==False: None
+#  2) --import-ckpt-dir: global path directory .ckpt stored
+#
+# An example:
+# python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/run-20180815075050/
+#
+```
+
+
+## Donbeturtle Dataset v1.0
+> You need to create `./dataset/coco_form/` and place the data set 
+- [Donbeturtle dataset v1.0 (trainset only, 865 images) download](https://drive.google.com/open?id=122v9ZyRn-MGhrv9pXiplsO0AVZQitiNY)
+
+
+- Keypoint annotator repos
+    - [For iOS Mobile](https://github.com/motlabs/KeypointAnnotation)
+    - [For OSX](https://github.com/motlabs/dont-be-turtle-pose-annotation-tool)
 
 
 
-## What we do in Jeju Camp?
-In the camp, we aim to mainly focus on the below items:
-- Reducing model size
-- Reducing inference time (App battery consumption)
-- Improving classification accuracy.
-- Checking feasibility of transfer learning, whether face detection data sets are effective to neck pose estimation.
-
-Most of development works and background study will be done before starting the Jeju camp.
-- Mobile CNN background study (On going)
-- Pose estimation background study  (On going)
-- App implementation  (On going)
-- Data set labeling and managing python module
-- Tensorflow model training / validation framework development
-- ~Tflite conversion (Done)~
+#### Baseline Papers
+- [MobileNet v2](https://arxiv.org/abs/1801.04381)
+- [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
 
 
-## Tentative Schedules
-~~- Apr: Writing project proposal and submission~~
 
-~~- May: Background study and establishing a baseline model using mobilenetv2 and DeepPose ideas~~
-
-- June:
-    - Tensorflow development to shorten training pipeline.
-    - Tensorflow to Tensorflowlite conversion automation
-    - Building a benchmark android or iOS Apps.
-
-- July (In Jeju camp)
-    - Week1: Investigation for improving accuracy of our proposed model without concerning model size and inference time.
-    - Week2: Investigation for reducing model size while maintaining the accuracy
-    - Week3: Investigation for reducing inference time given maintaining the accuracy and the model size.
-    - Week4: Paper writing and final presentation preparation
-
-
-## Baselines
-
-
-### Dataset Baseline
-- [FLIC dataset 4000+1000 (training + vtest)](https://bensapp.github.io/flic-dataset.html)
-- [LSP  dataset 11000+1000 (training +test)](http://sam.johnson.io/research/lsp.html)
-- [MPII Human Pose Dataset](http://human-pose.mpi-inf.mpg.de/#)
-    - Image dataset
-    - 25K images
-    - 410 types of activities
-    - 2D annotation
-- https://posetrack.net/
-    - 500 video sequence → 20k frames
-    - 2D annotation
-- [VGG pose dataset](https://www.robots.ox.ac.uk/~vgg/data/pose/)
-    - YouTobe pose
-    - BBC pose
-    - BBC extended pose
-    - Short BBC pose
-    - 2D annocation
-
-- Also see [this](https://docs.google.com/document/d/1C1kp-qXud6xqhB2-cuPmA1_YvcLfVMbs7udzqNoq3Zk/edit#)
-
-
-### Model Baselines
-- Mobile CNN models
-    - [MobileNets v1](https://arxiv.org/abs/1704.04861)
-    - [MobileNet v2](https://arxiv.org/abs/1801.04381)
-    - [SqueezeNet](https://arxiv.org/abs/1602.07360)
-    - [Shufflenet](https://arxiv.org/abs/1707.01083)
-    - [Unet](https://arxiv.org/abs/1505.04597)
-
-- Pose estimation models
-    - [DeepPose](https://arxiv.org/abs/1312.4659)
-
-## Related  Activities
+## Related  Materials
+- [Jaewook Kang, " Don't be turtle project beyond Google Camp," GDGDevFest 2018 Pangyo, 2018 Nov](https://docs.google.com/presentation/d/1fxgYB1DbFVbRz0d_hIuG9DxFtLrhorWEDzDTJlf6f6U/edit#slide=id.g473a2a4e39_1_46)
 - [Jaewook Kang, "_From NIN to Inception V3_," Modulabs Machine Learning of Things (MoT) Lab 2018 Mar](https://docs.google.com/presentation/d/1JfH6bHnx14zlclglhoGIymzp0HJDQgE7g4gFKbudmkc/edit#slide=id.p3)
 - [Jaewwok Kang, "_Machine Learning on Your Hands: Introduction to Tensorflow Lite Preview_," Tensorflow dev Exteneded X Modulabs, 2018 Apr](https://www.slideshare.net/modulabs/machine-learning-on-your-hand-introduction-to-tensorflow-lite-preview)
-- [Jaewook Kang, "_Mobile Vision Learning_," Hanlim Univ, 2018 May](https://www.slideshare.net/JaewookKang1/180525-mobile-visionnethanlimextended)
 - [Jaewook Kang, "_Mobile Vision Learning: Model Compression and Efficient Convolution perspective_," ETRI, 2018 June 12th](https://docs.google.com/presentation/d/1_spnxEttqiTTh31c8S7xvHoSdZ3k4Rhm1f7GM7wNMdw/edit#slide=id.p1)
+- [Jaewook Kang, "_Let's use Cloud TPU_", Aug 2018](https://docs.google.com/presentation/d/1LqlZc8IjXzp255UIXWQRBRGvvqwnLzkz1qAoq5YD1hs/edit?usp=drive_web&ouid=105579430994700782636)
 
-
-## Further Application Extension
-- Distracted driver detection ([A Kaggle link](https://www.kaggle.com/c/state-farm-distracted-driver-detection#description))
-    - Which is not in the scope of the Jeju camp
 
 ## Project Contributors
-Modulabs, Machine Learning of Things (MoT) labs members:
-- 2018 June: Jaewook Kang, Sungjin Lee, Seoyeon Yang, Joonho Lee, Yunbum Baek, Joongwon Hwang, Doyoung Gwak, Jeongah Shin, Taekmin Kim, YongGeunLee, Jihwan Lee, Jonguk Lee
+- Dontbeturtle v0.5
+    - [Jaewook Kang](https://github.com/jwkanggist/) (PI)
+    - [Doyoung Gwak](https://github.com/tucan9389/)
+    - [Jeongah Shin](https://github.com/Jeongah-Shin)
+    - [YongGeunLee](https://github.com/YongGeunLee)
+    - [Joonho Lee](https://github.com/junhoning)
+    - DongSeok Yang
+
+
+## Acknowledgement
+- This project was supported by Google Deep Learning Camp Jeju 2018.
