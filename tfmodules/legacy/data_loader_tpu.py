@@ -28,9 +28,9 @@ import sys
 import tensorflow as tf
 import functools
 from glob import glob
-from path_manager import TF_MODULE_DIR
-from path_manager import TF_MODEL_DIR
-from path_manager import TPU_DATALOAD_DIR
+from tfmodules.path_manager import TF_MODULE_DIR
+from tfmodules.path_manager import TF_MODEL_DIR
+from tfmodules.path_manager import TPU_DATALOAD_DIR
 
 sys.path.insert(0,TF_MODULE_DIR)
 sys.path.insert(0,TF_MODEL_DIR)
@@ -38,13 +38,13 @@ sys.path.insert(0,TPU_DATALOAD_DIR)
 
 
 
-from train_config  import PreprocessingConfig
-from train_config  import TrainConfig
+from tfmodules.train_config import PreprocessingConfig
+from tfmodules.train_config import TrainConfig
 from model_config  import DEFAULT_INPUT_RESOL
 from model_config  import DEFAULT_HG_INOUT_RESOL
 import preprocessor
 
-from train_config import FLAGS
+from tfmodules.train_config import FLAGS
 
 DEFAULT_HEIGHT = DEFAULT_INPUT_RESOL
 DEFAULT_WIDTH  = DEFAULT_INPUT_RESOL

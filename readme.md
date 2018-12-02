@@ -15,15 +15,15 @@ whether you are maintaining good working posture.
 If you are working in an overhanging posture, you will be alerted to maintain a good posture.
 
 ![alt text](https://github.com/MachineLearningOfThings/dont-be-turtle/blob/develop/images/turtle_180829_edit.gif)
-> Above model is trained by 865 custom dataset, and will be updated as soon as a new dataset is prepared.
+> Note that the above model in .gif was trained only by 865 custom dataset.
 
 ### Release Benchmarks
-- Pose Estimation Accuracy (PCKh): xx.xx %
+- Pose Estimation Accuracy (PCKh): TBU
 
-| Version | Framework            |  Device           | size (MB) | avg FPS |
-|---------|----------------------|-------------------|-----------|---------|
-| 0.4.0   | Android Pie + Tflite | Google Pixel2     |  1.4MB    |   TBU   |
-| 0.4.0   | iOS 11.4.1  + CoreML | iPhoneX           |  1.5MB    |   TBU   |
+| Version | Framework            |  Device           | size (KB) | 
+|---------|----------------------|-------------------|-----------|
+| 0.5.0   | Android Pie + Tflite | Google Pixel2     |  749 KB    | 
+| 0.5.0   | iOS 11.4.1  + CoreML | iPhoneX           |  811 KB    | 
 
 ### Repository Components
 ```bash
@@ -37,28 +37,13 @@ If you are working in an overhanging posture, you will be alerted to maintain a 
 ```
 
 
-## Mobile Frameworks
-
-
-### How to Get .tflite and .mlmodel
-```bash
-python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
-# Args:
-#  1) is-summary==True : collect tf summary for model graph
-#     is-summary==False: None
-#  2) --import-ckpt-dir: global path directory .ckpt stored
-#
-# An example:
-# python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/run-20180815075050/
-#
-```
 
 ### Mobile Apps 
-- Android repo : TBU 
+- [Android repo](https://github.com/motlabs/dont-be-turtle-android)
 - [iOS repo](https://github.com/motlabs/dont-be-turtle-ios) 
 
 
-## Tensorflow Training Frameworks
+##   Frameworks
 
 ### Technical Stacks
 - Tensorflow (+ Tf Slim) >= 1.9
@@ -83,7 +68,6 @@ pip install -r requirement.txt
 ```
 
 
-
 ### How to Run Training
 ```bash
 export MODEL_BUCKET=./tfmodules/export/model/       # set path for exporting ckpt and tfsummary
@@ -98,19 +82,24 @@ python ${SOURCE}\
 ```
 - You have an option to use `./sh_scripts/run_train_gpu.sh` with some customization
 
+### How to Get .tflite and .mlmodel
+> Note that you need to configure ./tfmodule/model/model_config_released.py before executing the below command. 
+```bash
+python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=<ckpt path directory>
+# Args:
+#  1) is-summary==True : collect tf summary for model graph
+#     is-summary==False: None
+#  2) --import-ckpt-dir: global path directory .ckpt stored
+#
+# An example:
+# python gen_tflite_coreml.py  --is-summary=False --import-ckpt-dir=/Users/jwkangmacpro2/SourceCodes/dont-be-turtle/tfmodules/export/model/run-20180815075050/
+#
+```
 
-## Dataset 
+
+## Donbeturtle Dataset v1.0
 > You need to create `./dataset/coco_form/` and place the data set 
-- [Donbeturtle dataset v1.0 (trainset only 865) download]()
-
-#### Donbeturtle dataset v2.0 (under preperation)
-- Training set (10726)
-    - [Youtubepose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (4941)
-    - [Sampled Shortbbcpose](https://www.robots.ox.ac.uk/~vgg/data/pose/) (2397)
-    - [FLIC_train](https://bensapp.github.io/flic-dataset.html) (3388)
-
-- Evaluation set (678)
-    - Custom test data 
+- [Donbeturtle dataset v1.0 (trainset only, 865 images) download](https://drive.google.com/open?id=122v9ZyRn-MGhrv9pXiplsO0AVZQitiNY)
 
 
 - Keypoint annotator repos
@@ -118,31 +107,10 @@ python ${SOURCE}\
     - [For OSX](https://github.com/motlabs/dont-be-turtle-pose-annotation-tool)
 
 
-## Benchmarks wrt Model Config
-- Percentage of correct keypoint (PCKh)
-- Tflite model size (MB)
-- Frame per sec (FPS) on Google Pixel 2
 
-#### Baselines Model
+#### Baseline Papers
 - [MobileNet v2](https://arxiv.org/abs/1801.04381)
 - [Stacked Hourglass](https://arxiv.org/abs/1603.06937)
-
-#### wrt Number of HG stacking
-- TBU 
-
-| # of HG stages  |  # of HG stacking |  PCKh (%)  | tflite size (MB) | avg FPS |
-|-----------------|-------------------|-----------|-------------------|---------|
-| 4               |  4                |           |                   |         |  
-| 4               |  2                |           |                   |         |
-| 4               |  1                |           |                   |         |
-
-
-#### wrt Number of HG stages
-| # of HG stages  |  # of HG stacking |  PCKh (%)  | tflite size (MB) | avg FPS |
-|-----------------|-------------------|-----------|-------------------|---------|
-| 4               |  2                |           |                   |         |          
-| 3               |  2                |           |                   |         |              
-| 2               |  2                |           |                   |         |             
 
 
 
@@ -155,12 +123,13 @@ python ${SOURCE}\
 
 
 ## Project Contributors
-- Dontbeturtle v0.4
+- Dontbeturtle v0.5
     - [Jaewook Kang](https://github.com/jwkanggist/) (PI)
     - [Doyoung Gwak](https://github.com/tucan9389/)
     - [Jeongah Shin](https://github.com/Jeongah-Shin)
     - [YongGeunLee](https://github.com/YongGeunLee)
     - [Joonho Lee](https://github.com/junhoning)
+    - DongSeok Yang
 
 
 ## Acknowledgement

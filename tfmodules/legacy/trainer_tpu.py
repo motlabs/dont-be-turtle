@@ -36,12 +36,12 @@ import numpy as np
 from datetime import datetime
 
 # directory path addition
-from path_manager import TF_MODULE_DIR
-from path_manager import TF_MODEL_DIR
-from path_manager import EXPORT_DIR
-from path_manager import TF_CNN_MODULE_DIR
+from tfmodules.path_manager import TF_MODULE_DIR
+from tfmodules.path_manager import TF_MODEL_DIR
+from tfmodules.path_manager import EXPORT_DIR
+from tfmodules.path_manager import TF_CNN_MODULE_DIR
 
-from path_manager import TENSORBOARD_BUCKET
+from tfmodules.path_manager import TENSORBOARD_BUCKET
 
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
@@ -60,13 +60,13 @@ from model_builder import get_model
 from model_config  import ModelConfig
 
 #### training config
-from train_config  import TrainConfig
-from train_config  import PreprocessingConfig
+from tfmodules.train_config import TrainConfig
+from tfmodules.train_config import PreprocessingConfig
 
-from train_config  import LR_SCHEDULE
-from train_config  import MEAN_RGB
-from train_config  import STDDEV_RGB
-from train_config  import FLAGS
+from tfmodules.train_config import LR_SCHEDULE
+from tfmodules.train_config import MEAN_RGB
+from tfmodules.train_config import STDDEV_RGB
+from tfmodules.train_config import FLAGS
 
 
 

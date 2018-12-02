@@ -33,12 +33,12 @@ from datetime import datetime
 from subprocess import check_output
 
 # directory path addition
-from path_manager import TF_MODULE_DIR
-from path_manager import TF_MODEL_DIR
-from path_manager import EXPORT_DIR
-from path_manager import EXPORT_MODEL_DIR
-from path_manager import TF_CNN_MODULE_DIR
-from path_manager import COCO_DATALOAD_DIR
+from tfmodules.path_manager import TF_MODULE_DIR
+from tfmodules.path_manager import TF_MODEL_DIR
+from tfmodules.path_manager import EXPORT_DIR
+from tfmodules.path_manager import EXPORT_MODEL_DIR
+from tfmodules.path_manager import TF_CNN_MODULE_DIR
+from tfmodules.path_manager import COCO_DATALOAD_DIR
 
 # PATH INSERSION
 sys.path.insert(0,TF_MODULE_DIR)
@@ -52,25 +52,25 @@ sys.path.insert(0,COCO_DATALOAD_DIR)
 # custom python packages
 
 ### data loader
-import data_loader_coco
+import tfmodules.data_loader_coco
 
 ### models
 from model_builder import get_model
 from model_config  import ModelConfig
 
 #### training config
-from train_config  import TrainConfig
-from train_config  import PreprocessingConfig
+from tfmodules.train_config import TrainConfig
+from tfmodules.train_config import PreprocessingConfig
 
-from train_config  import FLAGS
+from tfmodules.train_config import FLAGS
 
 
-from train_aux_fn import get_loss_heatmap
-from train_aux_fn import learning_rate_schedule
-from train_aux_fn import learning_rate_exp_decay
-from train_aux_fn import get_heatmap_activation
-from train_aux_fn import metric_fn
-from train_aux_fn import summary_fn
+from tfmodules.train_aux_fn import get_loss_heatmap
+from tfmodules.train_aux_fn import learning_rate_schedule
+from tfmodules.train_aux_fn import learning_rate_exp_decay
+from tfmodules.train_aux_fn import get_heatmap_activation
+from tfmodules.train_aux_fn import metric_fn
+from tfmodules.train_aux_fn import summary_fn
 
 from tensorflow.contrib.training.python.training import evaluation
 from tensorflow.python.estimator import estimator
@@ -389,7 +389,7 @@ def main(unused_argv):
     # preprocessing) between training and evaluation.
     '''
     dataset_train, dataset_eval = \
-        [data_loader_coco.DataSetInput(
+        [tfmodules.data_loader_coco.DataSetInput(
         is_training     =is_training,
         data_dir        =FLAGS.data_dir,
         transpose_input =FLAGS.transpose_input,
