@@ -320,7 +320,7 @@ class OutputConfig(object):
 class ModelConfigReleased(object):
 
     def __init__(self):
-        '''gs://dontbeturtle_ckpt3/run-20180815075050 (3.83MB)
+        '''gs://dontbeturtle_ckpt3/run-20181125125403 (3.83MB)
 
         "{
         'num_of_labels': 4,
@@ -339,12 +339,40 @@ class ModelConfigReleased(object):
         'hglayer_convbottom_type': 'inverted_bottleneck',
         'hglayer_conv_type': 'inverted_bottleneck',
 
+        'hglayer_invbottle_expansion_rate': 5.0,
+        'rclayer_invbottle_expansion_rate': 5.0,
         'num_of_shorcut_invbottleneck_stacking': 4,
+
+        'hglayer_num_of_stage': 2,
+        'num_of_hgstacking': 1,
+        'weights_regularizer': None,
+        }"
+
+
+        gs://dontbeturtle_ckpt3/run-20181125125403 (3.83MB)
+
+        "{
+        'num_of_labels': 4,
+        'dtype': tf.float32,
+        'input_height': 256,
+        'input_width': 256,
+        'input_channel_num': 3,
+
+        'depth_multiplier': 0.0625,
+        'resol_multiplier': 1.0,
+
+        'is_hglayer_conv_after_resize': True,
+        'is_hglayer_shortcut_conv': True
+
+        'hglayer_deconv_type': 'bilinear_resize',
+        'hglayer_convbottom_type': 'inverted_bottleneck',
+        'hglayer_conv_type': 'inverted_bottleneck',
 
         'hglayer_invbottle_expansion_rate': 5.0,
         'rclayer_invbottle_expansion_rate': 5.0,
+        'num_of_shorcut_invbottleneck_stacking': 4,
 
-        'hglayer_num_of_stage': 4,
+        'hglayer_num_of_stage': 2,
         'num_of_hgstacking': 1,
         'weights_regularizer': None,
         }"
@@ -356,7 +384,7 @@ class ModelConfigReleased(object):
         self.input_width        = int(DEFAULT_INPUT_RESOL)
         self.input_channel_num  = int(DEFAULT_INPUT_CHNUM)
 
-        self.depth_multiplier   = 0.125 # 1.0 0.75 0.5 0.25
+        self.depth_multiplier   = 0.0625 # 1.0 0.75 0.5 0.25
         self.resol_multiplier   = 1.0 # 1.0 0.75 0.5 0.25
         self.num_of_labels      = NUM_OF_KEYPOINTS
 
@@ -368,7 +396,7 @@ class ModelConfigReleased(object):
         self.hglayer_invbottle_expansion_rate   = 5.0
         self.rclayer_invbottle_expansion_rate   = 5.0
         self.num_of_shorcut_invbottleneck_stacking = 4
-        self.hglayer_num_of_stage               = 4
+        self.hglayer_num_of_stage               = 2
         self.num_of_hgstacking                  = 1
 
 

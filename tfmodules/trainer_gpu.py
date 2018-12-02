@@ -157,7 +157,7 @@ def model_fn(features,
 
                 # weight init from ckpt
             if FLAGS.is_ckpt_init:
-                tf.logging.info('[model_fn] ckpt loading from %s' % FLAGS.ckptinit_dir)
+                tf.logging.info('[model_fn] ckpt loading from %s' % FLAGS.cd)
                 tf.train.init_from_checkpoint(ckpt_dir_or_file=FLAGS.ckptinit_dir,
                                               assignment_map={"model/": "model/"})
 
