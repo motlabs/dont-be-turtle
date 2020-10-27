@@ -19,7 +19,7 @@ cloudpickle==0.5.3
 cloudstorage==0.5
 configparser==3.5.0
 coremltools==0.8
-cryptography==2.3
+cryptography==3.2
 cycler==0.10.0
 Cython==0.28.4
 dask==0.18.2
