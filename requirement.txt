@@ -55,7 +55,7 @@ ipython-genutils==0.2.0
 iso8601==0.1.12
 isodate==0.6.0
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.11.3
 jmespath==0.9.3
 jsonpatch==1.23
 jsonpointer==2.0
