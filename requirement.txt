@@ -119,7 +119,7 @@ requests==2.19.1
 requests-oauthlib==1.0.0
 requestsexceptions==1.4.0
 rfc6266-parser==0.0.5.post2
-rsa==3.4.2
+rsa==4.1
 s3transfer==0.1.13
 scandir==1.7
 scikit-image==0.14.0
