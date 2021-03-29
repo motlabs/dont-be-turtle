@@ -103,7 +103,7 @@ pyasn1==0.4.3
 pyasn1-modules==0.2.2
 pycocotools==2.0.0
 pycparser==2.18
-Pygments==2.2.0
+Pygments==2.7.4
 PyJWT==1.6.4
 pyparsing==2.2.0
 PySide2==5.11.1
