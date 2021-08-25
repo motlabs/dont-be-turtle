@@ -135,7 +135,7 @@ style==1.1.0
 subprocess32==3.5.2
 tabulate==0.8.2
 tensorboard==1.9.0
-tensorflow==1.9.0
+tensorflow==2.5.1
 tensorpack==0.8.0
 termcolor==1.1.0
 terminado==0.8.1
