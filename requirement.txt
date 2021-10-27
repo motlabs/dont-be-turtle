@@ -22,7 +22,7 @@ coremltools==0.8
 cryptography==2.3
 cycler==0.10.0
 Cython==0.28.4
-dask==0.18.2
+dask==2021.10.0
 decorator==4.3.0
 deprecation==2.0.5
 docutils==0.14
