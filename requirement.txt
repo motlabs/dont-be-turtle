@@ -50,7 +50,7 @@ idna==2.7
 inflection==0.3.1
 ipaddress==1.0.22
 ipykernel==4.8.2
-ipython==5.7.0
+ipython==7.16.3
 ipython-genutils==0.2.0
 iso8601==0.1.12
 isodate==0.6.0
